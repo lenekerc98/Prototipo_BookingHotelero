@@ -1,0 +1,10 @@
+{
+  "description": "Streamlines booking, reservation management, and revenue tracking for budget hotels, enhancing operational efficiency and guest experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

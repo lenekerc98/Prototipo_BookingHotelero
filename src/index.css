@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+}
+
+:root {
+  --background: #0c1220;
+  --foreground: #e8edf5;
+  --card: #131c2e;
+  --card-foreground: #e8edf5;
+  --primary: #f59e0b;
+  --primary-foreground: #0c1220;
+  --secondary: #1e2d47;
+  --secondary-foreground: #94a3b8;
+  --muted: #1a2540;
+  --muted-foreground: #64748b;
+  --accent: #f59e0b;
+  --accent-foreground: #0c1220;
+  --border: #1e2d47;
+  --ring: #f59e0b;
+  --radius: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3 {
+  font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e2d47; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #f59e0b44; }
+
+/* status badges */
+.badge-confirmed { background: #064e3b; color: #6ee7b7; }
+.badge-pending { background: #451a03; color: #fcd34d; }
+.badge-checkin { background: #1e3a5f; color: #93c5fd; }
+.badge-checkout { background: #3b1f5e; color: #d8b4fe; }
+.badge-cancelled { background: #1f1f23; color: #6b7280; }
+.badge-occupied { background: #1e3a5f; color: #93c5fd; }
+.badge-available { background: #064e3b; color: #6ee7b7; }
+.badge-maintenance { background: #451a03; color: #fcd34d; }
+.badge-cleaning { background: #3b1f5e; color: #d8b4fe; }
