@@ -1,6 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { GuestUser } from "./AuthPage";
 import { HOTEL_SRI_INFO } from "./hotelData";
+import {
+  MANTA_HOTELS,
+  INITIAL_DEMO_RESERVATIONS,
+  type Hotel,
+  type RoomOffer,
+  type MyReservation,
+} from "./mantaHotels";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,164 +21,20 @@ interface SearchParams {
   children: number;
 }
 
-interface Hotel {
-  id: string;
-  name: string;
-  stars: 1 | 2 | 3;
-  city: string;
-  address: string;
-  image: string;
-  rating: number;
-  reviews: number;
-  priceFrom: number;
-  tags: string[];
-  amenities: string[];
-  description: string;
-  distance: string;
-  gravaServicio10?: boolean;
-  rooms: RoomOffer[];
-}
-
-interface RoomOffer {
-  id: string;
-  type: string;
-  beds: string;
-  capacity: number;
-  size: number;
-  pricePerNight: number;
-  originalPrice?: number;
-  image: string;
-  amenities: string[];
-  available: number;
-  breakfastIncluded?: boolean;
-}
-
-interface MyReservation {
-  id: string;
-  hotel: string;
-  city: string;
-  room: string;
-  checkIn: string;
-  checkOut: string;
-  nights: number;
-  total: number;
-  status: "upcoming" | "completed" | "cancelled";
-  image: string;
-}
-
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const HOTELS: Hotel[] = [
-  {
-    id: "costa-sol", name: "Hotel Costa Sol", stars: 3, city: "Manta - Barbasquillo",
-    address: "Av. Malecón Jaime Chávez Gutiérrez y Calle 15, Manta",
-    image: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=700&h=460&fit=crop&auto=format",
-    rating: 4.5, reviews: 342, priceFrom: 55,
-    tags: ["Frente al mar", "Piscina exterior", "10% Servicio"],
-    amenities: ["WiFi alta velocidad", "Piscina", "Estacionamiento", "Restaurante", "Bar", "Aire acondicionado", "Recepción 24h"],
-    description: "Hotel 3 estrellas premium frente a la bahía de Manta y playa El Murciélago. Habitaciones luminosas con balcón y vista panorámica al mar.",
-    distance: "Frente a la playa El Murciélago",
-    gravaServicio10: true,
-    rooms: [
-      { id: "r1", type: "Individual Vista Mar", beds: "1 cama individual", capacity: 1, size: 18, pricePerNight: 55, image: "https://images.unsplash.com/photo-1777383505025-c0edf7047083?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV Smart", "A/C", "Baño privado"], available: 5 },
-      { id: "r2", type: "Doble Superior Frente al Mar", beds: "1 cama queen", capacity: 2, size: 26, pricePerNight: 85, originalPrice: 95, image: "https://images.unsplash.com/photo-1780126752257-cae35f118114?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV Smart", "A/C", "Vista al mar", "Balcón", "Baño privado"], available: 4, breakfastIncluded: true },
-      { id: "r3", type: "Villa Familiar con Piscina", beds: "1 queen + 2 individuales", capacity: 4, size: 45, pricePerNight: 135, image: "https://images.unsplash.com/photo-1767348923171-f5535f88fb39?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV Smart", "A/C", "Cocina equipada", "Baño privado", "Terraza"], available: 2 },
-    ],
-  },
-  {
-    id: "las-palmeras", name: "Hotel Las Palmeras", stars: 3, city: "Manta - El Murciélago",
-    address: "Av. Flavio Reyes y Calle 24, Manta",
-    image: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=700&h=460&fit=crop&auto=format",
-    rating: 4.3, reviews: 312, priceFrom: 60,
-    tags: ["Zona Comercial", "Piscina", "10% Servicio"],
-    amenities: ["WiFi gratis", "Piscina", "Estacionamiento", "Recepción 24h", "Bar", "Aire acondicionado"],
-    description: "Ubicado en la mejor zona gastronómica y hotelera de Manta, a 3 minutos del Mall del Pacífico y playa El Murciélago.",
-    distance: "200 m de Playa El Murciélago",
-    gravaServicio10: true,
-    rooms: [
-      { id: "r1", type: "Habitación Individual", beds: "1 cama individual", capacity: 1, size: 16, pricePerNight: 60, image: "https://images.unsplash.com/photo-1777383505025-c0edf7047083?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado"], available: 4 },
-      { id: "r2", type: "Habitación Doble", beds: "1 cama doble o 2 individuales", capacity: 2, size: 22, pricePerNight: 75, originalPrice: 90, image: "https://images.unsplash.com/photo-1781004672179-9790a9623a77?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado", "Caja fuerte"], available: 3 },
-      { id: "r3", type: "Triple Familiar", beds: "1 doble + 1 individual", capacity: 3, size: 28, pricePerNight: 115, image: "https://images.unsplash.com/photo-1767348923171-f5535f88fb39?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado", "Minibar"], available: 2 },
-    ],
-  },
-  {
-    id: "mirador-alhambra", name: "Hotel Mirador del Pacífico", stars: 3, city: "Manta - Barbasquillo",
-    address: "Vía a Barbasquillo y Calle 120, Manta",
-    image: "https://images.unsplash.com/photo-1620677368158-32b1293fac36?w=700&h=460&fit=crop&auto=format",
-    rating: 4.6, reviews: 218, priceFrom: 65,
-    tags: ["Vista al Océano", "Barbasquillo", "10% Servicio"],
-    amenities: ["WiFi gratis", "Desayuno incluido", "Recepción 24h", "Estacionamiento", "Jardín", "Aire acondicionado"],
-    description: "Hotel boutique con vista panorámica a los acantilados y el mar de Barbasquillo. Ambiente exclusivo y tranquilo.",
-    distance: "3 min en auto a Barbasquillo",
-    gravaServicio10: true,
-    rooms: [
-      { id: "r1", type: "Individual Ejecutiva", beds: "1 cama individual", capacity: 1, size: 16, pricePerNight: 65, image: "https://images.unsplash.com/photo-1777383505025-c0edf7047083?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado"], available: 2 },
-      { id: "r2", type: "Doble con Vistas al Mar", beds: "1 cama queen", capacity: 2, size: 24, pricePerNight: 100, image: "https://images.unsplash.com/photo-1769123300291-81262063e667?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "Vistas al Mar", "Baño privado"], available: 3, breakfastIncluded: true },
-      { id: "r3", type: "Suite Panorámica Manta", beds: "1 cama king", capacity: 2, size: 38, pricePerNight: 155, image: "https://images.unsplash.com/photo-1779547011126-c646b7de93b5?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV 4K", "Minibar", "Jacuzzi", "Vistas panorámicas", "Desayuno incluido"], available: 1, breakfastIncluded: true },
-    ],
-  },
-  {
-    id: "hostal-centro", name: "Hostal El Centro", stars: 2, city: "Manta - Tarqui",
-    address: "Calle 13 y Av. 4, Tarqui, Manta",
-    image: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=700&h=460&fit=crop&auto=format",
-    rating: 3.9, reviews: 521, priceFrom: 28,
-    tags: ["Económico Tarqui", "Tarifa Neta", "Sin 10%"],
-    amenities: ["WiFi gratis", "Recepción 24h", "Custodia de equipaje", "Aire acondicionado"],
-    description: "Hostal familiar tradicional en el corazón de Tarqui, Manta. Habitaciones confortables con excelente relación calidad-precio. No grava el 10% de servicio.",
-    distance: "300 m del Mercado de Mariscos de Tarqui",
-    gravaServicio10: false,
-    rooms: [
-      { id: "r1", type: "Individual Económica", beds: "1 cama individual", capacity: 1, size: 14, pricePerNight: 28, image: "https://images.unsplash.com/photo-1777383504729-bd8364d28de8?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C"], available: 5 },
-      { id: "r2", type: "Doble Estándar", beds: "1 cama matrimonial", capacity: 2, size: 18, pricePerNight: 40, image: "https://images.unsplash.com/photo-1780126752257-cae35f118114?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado"], available: 3 },
-      { id: "r3", type: "Doble con Balcón", beds: "1 cama matrimonial grande", capacity: 2, size: 22, pricePerNight: 50, image: "https://images.unsplash.com/photo-1769123300291-81262063e667?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Balcón", "Baño privado"], available: 1 },
-    ],
-  },
-  {
-    id: "hostal-rambla", name: "Hostal Rambla", stars: 2, city: "Manta - Tarqui",
-    address: "Av. 102 y Calle 108, Tarqui, Manta",
-    image: "https://images.unsplash.com/photo-1628950752032-06fed9c9d0f8?w=700&h=460&fit=crop&auto=format",
-    rating: 3.8, reviews: 412, priceFrom: 32,
-    tags: ["Frente Malecón Tarqui", "Tarifa Neta", "Sin 10%"],
-    amenities: ["WiFi gratis", "Recepción 24h", "Consigna", "Aire acondicionado"],
-    description: "Hospedaje acogedor frente al malecón de Tarqui. Ideal para estancias cortas y viajes comerciales en Manta. Tarifa neta directa sin recargo de servicio.",
-    distance: "100 m de Playa de Tarqui",
-    gravaServicio10: false,
-    rooms: [
-      { id: "r1", type: "Individual Confort", beds: "1 cama individual", capacity: 1, size: 14, pricePerNight: 32, image: "https://images.unsplash.com/photo-1777383504729-bd8364d28de8?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C"], available: 6 },
-      { id: "r2", type: "Doble Estándar", beds: "2 camas individuales o 1 matrimonial", capacity: 2, size: 20, pricePerNight: 45, image: "https://images.unsplash.com/photo-1781004672179-9790a9623a77?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado"], available: 4 },
-    ],
-  },
-  {
-    id: "pension-marina", name: "Pensión La Marina", stars: 1, city: "Manta - Centro Histórico",
-    address: "Av. 2 y Calle 9, Manta",
-    image: "https://images.unsplash.com/photo-1579678918123-79d85d5b3873?w=700&h=460&fit=crop&auto=format",
-    rating: 3.6, reviews: 89, priceFrom: 20,
-    tags: ["Super Económico", "Puerto de Manta", "Sin 10%"],
-    amenities: ["WiFi gratis", "Recepción", "Ventilador / A/C"],
-    description: "Alojamiento básico y accesible a pasos del puerto de Manta y la Plaza Cívica. No aplica tasa de servicio del 10%.",
-    distance: "5 min a pie del Puerto de Manta",
-    gravaServicio10: false,
-    rooms: [
-      { id: "r1", type: "Individual Básica", beds: "1 cama individual", capacity: 1, size: 12, pricePerNight: 20, image: "https://images.unsplash.com/photo-1777383504729-bd8364d28de8?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "Baño privado", "Ventilador"], available: 4 },
-      { id: "r2", type: "Doble Clásica", beds: "1 cama doble", capacity: 2, size: 16, pricePerNight: 30, image: "https://images.unsplash.com/photo-1781004672179-9790a9623a77?w=600&h=380&fit=crop&auto=format", amenities: ["WiFi", "TV", "A/C", "Baño privado"], available: 3 },
-    ],
-  },
-];
+const HOTELS: Hotel[] = MANTA_HOTELS;
 
 const DESTINATIONS = [
-  { city: "Manta - El Murciélago", img: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=400&h=300&fit=crop&auto=format", hotels: 38 },
-  { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 28 },
-  { city: "Manta - Tarqui", img: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=400&h=300&fit=crop&auto=format", hotels: 24 },
-  { city: "Manta - Los Esteros", img: "https://images.unsplash.com/photo-1628950752032-06fed9c9d0f8?w=400&h=300&fit=crop&auto=format", hotels: 18 },
-  { city: "Manta - San Mateo", img: "https://images.unsplash.com/photo-1620677368158-32b1293fac36?w=400&h=300&fit=crop&auto=format", hotels: 6 },
-  { city: "Manta - Santa Marianita", img: "https://images.unsplash.com/photo-1579678918123-79d85d5b3873?w=400&h=300&fit=crop&auto=format", hotels: 4 },
+  { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 6 },
+  { city: "Manta - El Murciélago", img: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=400&h=300&fit=crop&auto=format", hotels: 5 },
+  { city: "Manta - Tarqui", img: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=400&h=300&fit=crop&auto=format", hotels: 4 },
+  { city: "Manta - Santa Marianita", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop&auto=format", hotels: 2 },
+  { city: "Manta - San Mateo", img: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&h=300&fit=crop&auto=format", hotels: 3 },
+  { city: "Manta - Los Esteros", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=300&fit=crop&auto=format", hotels: 2 },
 ];
 
-const DEMO_RESERVATIONS: MyReservation[] = [
-  { id: "RES-4821", hotel: "Hotel Costa Sol", city: "Manta - Barbasquillo", room: "Doble Superior Frente al Mar", checkIn: "2026-08-15", checkOut: "2026-08-18", nights: 3, total: 318.75, status: "completed", image: "https://images.unsplash.com/photo-1781004672179-9790a9623a77?w=400&h=250&fit=crop&auto=format" },
-  { id: "RES-5103", hotel: "Hotel Las Palmeras", city: "Manta - El Murciélago", room: "Habitación Doble", checkIn: "2026-09-05", checkOut: "2026-09-08", nights: 3, total: 281.25, status: "upcoming", image: "https://images.unsplash.com/photo-1769123300291-81262063e667?w=400&h=250&fit=crop&auto=format" },
-  { id: "RES-3970", hotel: "Hostal El Centro", city: "Manta - Tarqui", room: "Individual Económica", checkIn: "2026-05-20", checkOut: "2026-05-22", nights: 2, total: 64.40, status: "completed", image: "https://images.unsplash.com/photo-1777383504729-bd8364d28de8?w=400&h=250&fit=crop&auto=format" },
-];
+const DEMO_RESERVATIONS: MyReservation[] = INITIAL_DEMO_RESERVATIONS;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -364,33 +227,33 @@ function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => voi
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>{sri.nombreComercial}</p>
-                <span className="text-[9px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded border border-amber-500/30">FACTURA DIRECTA</span>
+                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">PAGO ACREDITADO</span>
               </div>
               <p className="text-xs text-slate-300">{sri.razonSocial}</p>
-              <p className="text-[10px] text-slate-400 font-mono">RUC: {sri.ruc} · {sri.regimen}</p>
+              <p className="text-[10px] text-slate-400 font-mono">RUC: {sri.ruc} · Manta, Manabí</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">AUTORIZADA SRI</span>
-              <p className="font-mono font-bold text-slate-100 text-xs mt-1">{invoiceNum}</p>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER DIGITAL</span>
+              <p className="font-mono font-bold text-slate-100 text-xs mt-1">REC-{res.id}</p>
               <p className="text-[10px] text-slate-400">Fecha: {fmtDateShort(res.checkOut)}</p>
             </div>
           </div>
         </div>
 
-        <div className="p-3 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
+        <div className="p-3 bg-blue-50 border-b border-blue-200 text-[11px] text-blue-900 flex items-center gap-2">
           <span>🏛️</span>
-          <span><strong>Facturación Directa del Hotel:</strong> Emitida bajo normativa tributaria del SRI por el establecimiento en Manta.</span>
+          <span><strong>Facturación Directa por el Hotel:</strong> Este documento certifica su pago online transferido al hotel. Su factura fiscal oficial (SRI) será emitida directamente por {sri.nombreComercial} al momento de su estancia.</span>
         </div>
 
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Facturado a</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Titular de Reserva</p>
               <p className="font-semibold text-slate-700">Huésped Registrado</p>
-              <p className="text-xs text-slate-500 font-mono">Reserva {res.id}</p>
+              <p className="text-xs text-slate-500 font-mono">Código {res.id}</p>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Establecimiento</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Establecimiento Destino</p>
               <p className="font-semibold text-slate-700">{res.hotel}</p>
               <p className="text-xs text-slate-500">{res.city}</p>
             </div>
@@ -398,14 +261,14 @@ function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => voi
 
           <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#e2e8f0" }}>
             <table className="w-full text-sm">
-              <thead><tr style={{ background: "#f8fafc" }}><th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500">Concepto</th><th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500">Importe</th></tr></thead>
+              <thead><tr style={{ background: "#f8fafc" }}><th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500">Detalle de Hospedaje</th><th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500">Monto</th></tr></thead>
               <tbody>
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
                   <td className="px-4 py-2.5"><p className="font-medium text-slate-700">{res.room}</p><p className="text-xs text-slate-400">{res.nights} noche{res.nights > 1 ? "s" : ""} · {fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</p></td>
                   <td className="px-4 py-2.5 text-right font-medium text-slate-700">{fmt(base)}</td>
                 </tr>
                 <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
-                  <td className="px-4 py-2 text-xs text-slate-500">IVA (15% SRI)</td>
+                  <td className="px-4 py-2 text-xs text-slate-500">IVA (15% base para factura hotel)</td>
                   <td className="px-4 py-2 text-right text-xs text-slate-500">{fmt(iva)}</td>
                 </tr>
                 <tr style={{ background: "#f8fafc" }}>
@@ -414,12 +277,12 @@ function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => voi
                 </tr>
                 {hasServicio && (
                   <tr style={{ background: "#f8fafc" }}>
-                    <td className="px-4 py-2 text-xs text-emerald-600 font-medium">10% Cargo gubernamental (Ley Turismo Art. 41)</td>
+                    <td className="px-4 py-2 text-xs text-emerald-600 font-medium">10% Servicio Turístico (Art. 41 Ley Turismo)</td>
                     <td className="px-4 py-2 text-right text-xs text-emerald-600 font-bold">{fmt(servicio)}</td>
                   </tr>
                 )}
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-3 font-bold text-slate-800">Total Pagado</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">Total Cobrado</td>
                   <td className="px-4 py-3 text-right font-bold text-lg" style={{ color: "#f59e0b" }}>{fmt(res.total)}</td>
                 </tr>
               </tbody>
@@ -428,12 +291,12 @@ function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => voi
 
           <div className="flex items-center gap-2 rounded-xl p-3" style={{ background: "#d1fae5", border: "1px solid #a7f3d0" }}>
             <span className="text-green-600 font-bold">✓</span>
-            <span className="text-xs font-semibold text-green-700">Comprobante y pago liquidado en mostrador/enlace digital</span>
+            <span className="text-xs font-semibold text-green-700">Cobro liquidado vía pasarela y transferido al hotel</span>
           </div>
         </div>
         <div className="px-6 py-4 border-t flex gap-2" style={{ borderColor: "#e2e8f0" }}>
           <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>Cerrar</button>
-          <button className="flex-1 py-2 rounded-xl text-sm font-bold" style={{ background: "#f59e0b", color: "#0c1220" }}>⬇ Descargar RIDE PDF</button>
+          <button className="flex-1 py-2 rounded-xl text-sm font-bold" style={{ background: "#f59e0b", color: "#0c1220" }}>⬇ Descargar Voucher PDF</button>
         </div>
       </div>
     </div>
@@ -443,26 +306,44 @@ function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => voi
 
 // ─── My Account view ──────────────────────────────────────────────────────────
 
-function AccountView({ user, onLogout }: { user: GuestUser; onLogout: () => void }) {
-  const [invoiceRes, setInvoiceRes] = useState<MyReservation | null>(null);
-  const statusStyle = {
+function AccountView({
+  user,
+  reservations,
+  onLogout,
+  onCancelReservation,
+  onViewVoucher,
+}: {
+  user: GuestUser;
+  reservations: MyReservation[];
+  onLogout: () => void;
+  onCancelReservation: (id: string) => void;
+  onViewVoucher: (res: MyReservation) => void;
+}) {
+  const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
     upcoming: { bg: "#1e3a5f", color: "#93c5fd", label: "Próxima" },
     completed: { bg: "#064e3b", color: "#6ee7b7", label: "Completada" },
-    cancelled: { bg: "#1f1f23", color: "#6b7280", label: "Cancelada" },
+    cancelled: { bg: "#450a0a", color: "#fca5a5", label: "Cancelada" },
   };
+
+  const userReservations = reservations.filter(r =>
+    r.guestEmail.toLowerCase() === user.email.toLowerCase() ||
+    r.guestName.toLowerCase().includes(user.name.toLowerCase())
+  );
+  const displayList = userReservations.length > 0 ? userReservations : reservations;
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Profile */}
-      <div className="flex items-center gap-4 mb-8 p-5 rounded-2xl border bg-white" style={{ borderColor: "#e2e8f0" }}>
+      <div className="flex items-center gap-4 mb-8 p-5 rounded-2xl border bg-white shadow-xs" style={{ borderColor: "#e2e8f0" }}>
         <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0" style={{ background: "#fef3c7", color: "#92400e" }}>
           {user.name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1">
           <p className="font-bold text-slate-800 text-lg">{user.name}</p>
           <p className="text-sm text-slate-400">{user.email}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Miembro desde agosto 2026 · {DEMO_RESERVATIONS.length} reservas</p>
+          <p className="text-xs text-slate-400 mt-0.5">Miembro activo · {displayList.length} reservas registradas en Manta</p>
         </div>
-        <button onClick={onLogout} className="text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors hover:bg-red-50" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
+        <button onClick={onLogout} className="text-xs px-3.5 py-2 rounded-lg border font-medium transition-colors hover:bg-red-50 cursor-pointer" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
           Cerrar sesión
         </button>
       </div>
@@ -470,11 +351,11 @@ function AccountView({ user, onLogout }: { user: GuestUser; onLogout: () => void
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { label: "Reservas", val: String(DEMO_RESERVATIONS.length) },
-          { label: "Noches hospedado", val: String(DEMO_RESERVATIONS.reduce((s, r) => s + r.nights, 0)) },
-          { label: "Total gastado", val: fmt(DEMO_RESERVATIONS.reduce((s, r) => s + r.total, 0)) },
+          { label: "Reservas", val: String(displayList.length) },
+          { label: "Noches hospedado", val: String(displayList.reduce((s, r) => s + r.nights, 0)) },
+          { label: "Total abonado", val: fmt(displayList.reduce((s, r) => s + r.total, 0)) },
         ].map(s => (
-          <div key={s.label} className="rounded-xl p-4 border bg-white text-center" style={{ borderColor: "#e2e8f0" }}>
+          <div key={s.label} className="rounded-xl p-4 border bg-white text-center shadow-xs" style={{ borderColor: "#e2e8f0" }}>
             <p className="text-xl font-bold text-slate-800">{s.val}</p>
             <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
           </div>
@@ -482,12 +363,15 @@ function AccountView({ user, onLogout }: { user: GuestUser; onLogout: () => void
       </div>
 
       {/* Reservations */}
-      <h2 className="font-bold text-slate-800 text-lg mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Mis reservas</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-bold text-slate-800 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>Mis Reservas en Manta</h2>
+        <span className="text-xs text-slate-400">{displayList.length} registro{displayList.length !== 1 ? "s" : ""}</span>
+      </div>
       <div className="space-y-4">
-        {DEMO_RESERVATIONS.map(res => {
-          const st = statusStyle[res.status];
+        {displayList.map(res => {
+          const st = statusStyle[res.status] || statusStyle.upcoming;
           return (
-            <div key={res.id} className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
+            <div key={res.id} className="rounded-2xl border bg-white overflow-hidden shadow-xs" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex flex-col sm:flex-row">
                 <img src={res.image} alt={res.room} className="sm:w-44 w-full object-cover" style={{ height: 130 }} />
                 <div className="flex-1 p-4 flex flex-col justify-between">
@@ -505,18 +389,23 @@ function AccountView({ user, onLogout }: { user: GuestUser; onLogout: () => void
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
                     <div>
-                      <p className="text-xs text-slate-400">Nº reserva</p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wide">Código de reserva</p>
                       <p className="font-mono text-sm font-semibold text-slate-700">{res.id}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <p className="font-bold" style={{ color: "#f59e0b" }}>{fmt(res.total)}</p>
-                      {res.status === "completed" && (
-                        <button onClick={() => setInvoiceRes(res)} className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-80" style={{ background: "#f1f5f9", color: "#475569" }}>
-                          🧾 Factura
-                        </button>
-                      )}
+                      <p className="font-bold text-base" style={{ color: "#f59e0b" }}>{fmt(res.total)}</p>
+                      <button onClick={() => onViewVoucher(res)} className="text-xs px-3 py-1.5 rounded-lg font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer">
+                        🧾 Ver Voucher
+                      </button>
                       {res.status === "upcoming" && (
-                        <button className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all" style={{ background: "#fee2e2", color: "#ef4444" }}>
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Deseas cancelar la reserva ${res.id}?`)) {
+                              onCancelReservation(res.id);
+                            }
+                          }}
+                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-all border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                        >
                           Cancelar
                         </button>
                       )}
@@ -528,7 +417,389 @@ function AccountView({ user, onLogout }: { user: GuestUser; onLogout: () => void
           );
         })}
       </div>
-      {invoiceRes && <InvoiceModal res={invoiceRes} onClose={() => setInvoiceRes(null)} />}
+    </div>
+  );
+}
+
+// ─── Consult Reservations Modal ──────────────────────────────────────────────
+
+function ConsultReservationModal({
+  reservations,
+  onClose,
+  onViewVoucher,
+  onCancelReservation,
+}: {
+  reservations: MyReservation[];
+  onClose: () => void;
+  onViewVoucher: (res: MyReservation) => void;
+  onCancelReservation: (resId: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const trimmed = query.trim().toLowerCase();
+
+  const results = trimmed
+    ? reservations.filter(r =>
+        r.id.toLowerCase().includes(trimmed) ||
+        r.guestEmail.toLowerCase().includes(trimmed) ||
+        r.guestName.toLowerCase().includes(trimmed) ||
+        r.hotel.toLowerCase().includes(trimmed) ||
+        (r.guestPhone && r.guestPhone.includes(trimmed))
+      )
+    : reservations;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
+        {/* Header */}
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#0c1220", borderColor: "#1e293b" }}>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-white text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+                Consultar Reservas de Hotel
+              </h3>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
+                Manta 2026
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Busca por código de confirmación (ej: RES-4821), correo o nombre del titular
+            </p>
+          </div>
+          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-white cursor-pointer">×</button>
+        </div>
+
+        {/* Search input */}
+        <div className="p-5 border-b bg-slate-50" style={{ borderColor: "#e2e8f0" }}>
+          <div className="relative">
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Escribe RES-4821, tu correo (cmendez@gmail.com) o nombre..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              style={{ borderColor: "#cbd5e1" }}
+              autoFocus
+            />
+            <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
+            {query && (
+              <button onClick={() => setQuery("")} className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer">
+                Limpiar
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-xs">
+            <span className="text-slate-400">Códigos rápidos para probar:</span>
+            {["RES-4821", "RES-5103", "RES-3970", "RES-7720", "RES-8941"].map(c => (
+              <button
+                key={c}
+                onClick={() => setQuery(c)}
+                className="font-mono text-[11px] px-2 py-0.5 rounded bg-white border border-slate-200 text-amber-800 hover:bg-amber-50 cursor-pointer font-semibold"
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Results List */}
+        <div className="p-5 overflow-y-auto space-y-3 flex-1">
+          {results.length > 0 ? (
+            results.map(res => {
+              const statusColors: Record<string, { bg: string; color: string; label: string }> = {
+                upcoming: { bg: "#eff6ff", color: "#1d4ed8", label: "Próxima estancia" },
+                completed: { bg: "#ecfdf5", color: "#047857", label: "Completada / Pagada" },
+                cancelled: { bg: "#fef2f2", color: "#b91c1c", label: "Cancelada" },
+              };
+              const st = statusColors[res.status] || statusColors.upcoming;
+
+              return (
+                <div key={res.id} className="rounded-xl border p-4 hover:shadow-md transition-all bg-white" style={{ borderColor: "#e2e8f0" }}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b" style={{ borderColor: "#f1f5f9" }}>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-sm text-slate-800">{res.id}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase" style={{ background: st.bg, color: st.color }}>
+                          {st.label}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-slate-700 mt-0.5">{res.hotel} · {res.city}</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs text-slate-400">Total abonado</p>
+                      <p className="font-bold text-base text-amber-600">{fmt(res.total)}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-2.5 text-xs text-slate-600">
+                    <div>
+                      <p className="text-slate-400 text-[10px]">Huésped Titular</p>
+                      <p className="font-medium truncate">{res.guestName}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-[10px]">Habitación</p>
+                      <p className="font-medium truncate">{res.room}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-[10px]">Fechas</p>
+                      <p className="font-medium">{fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-[10px]">Duración</p>
+                      <p className="font-medium">{res.nights} noche{res.nights > 1 ? "s" : ""}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2.5 border-t gap-2" style={{ borderColor: "#f1f5f9" }}>
+                    <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                      <span>💳</span> {res.payMethod || "Cobro digital liquidado"}
+                    </span>
+                    <div className="flex gap-2">
+                      {res.status === "upcoming" && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Estás seguro de cancelar la reserva ${res.id}?`)) {
+                              onCancelReservation(res.id);
+                            }
+                          }}
+                          className="px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg border border-red-200 cursor-pointer font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          onViewVoucher(res);
+                        }}
+                        className="px-3 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg shadow-xs cursor-pointer flex items-center gap-1"
+                      >
+                        <span>🧾</span>
+                        <span>Ver Voucher & Comprobante</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-12">
+              <span className="text-4xl block mb-2">🔍</span>
+              <p className="font-bold text-slate-700">No encontramos reservas con ese término</p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                Verifica haber escrito correctamente tu código de confirmación (ej: RES-4821) o el correo con el que hiciste la reserva.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-between text-xs text-slate-500" style={{ borderColor: "#e2e8f0" }}>
+          <span>¿Inquietudes sobre tu estancia? Central Manta: +593 5 262 8900</span>
+          <button onClick={onClose} className="px-4 py-1.5 bg-white border rounded-lg text-slate-700 font-medium hover:bg-slate-100 cursor-pointer">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Login & Session Modal ────────────────────────────────────────────────────
+
+function LoginModal({
+  onClose,
+  onGuestLogin,
+  onAdminAccess,
+}: {
+  onClose: () => void;
+  onGuestLogin: (u: GuestUser) => void;
+  onAdminAccess?: () => void;
+}) {
+  const [tab, setTab] = useState<"guest" | "admin">("guest");
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+
+  function handleGuestSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) {
+      setError("Completa correo y contraseña.");
+      return;
+    }
+    onGuestLogin({ name: name || email.split("@")[0], email });
+    onClose();
+  }
+
+  function handleDemoLogin(u: GuestUser) {
+    onGuestLogin(u);
+    onClose();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-md rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col">
+        {/* Header */}
+        <div className="px-6 py-4 flex items-center justify-between" style={{ background: "#0c1220", borderColor: "#1e293b" }}>
+          <div>
+            <span className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+              HotelDirekt Manta
+            </span>
+            <p className="text-xs text-slate-300">Acceso al sistema y consulta de reservas</p>
+          </div>
+          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-white cursor-pointer">×</button>
+        </div>
+
+        {/* Tab switch */}
+        <div className="flex border-b" style={{ borderColor: "#e2e8f0", background: "#f8fafc" }}>
+          <button
+            onClick={() => setTab("guest")}
+            className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+              tab === "guest" ? "border-amber-500 text-slate-900 bg-white" : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            👤 Huésped / Turista
+          </button>
+          <button
+            onClick={() => setTab("admin")}
+            className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+              tab === "admin" ? "border-amber-500 text-slate-900 bg-white" : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            🏨 Personal de Hotel / PMS
+          </button>
+        </div>
+
+        <div className="p-6">
+          {tab === "guest" ? (
+            <div className="space-y-4">
+              <form onSubmit={handleGuestSubmit} className="space-y-3">
+                {mode === "register" && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nombre y Apellido</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="Ej. Carlos Méndez"
+                      className="w-full px-3 py-2 text-sm border rounded-xl"
+                      style={{ borderColor: "#cbd5e1" }}
+                      required
+                    />
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="tu@correo.com"
+                    className="w-full px-3 py-2 text-sm border rounded-xl"
+                    style={{ borderColor: "#cbd5e1" }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Contraseña</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3 py-2 text-sm border rounded-xl"
+                    style={{ borderColor: "#cbd5e1" }}
+                    required
+                  />
+                </div>
+
+                {error && <p className="text-xs text-red-600">{error}</p>}
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm cursor-pointer"
+                >
+                  {mode === "login" ? "Ingresar a mi cuenta" : "Crear cuenta"}
+                </button>
+              </form>
+
+              <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+                <button
+                  onClick={() => setMode(mode === "login" ? "register" : "login")}
+                  className="text-amber-600 hover:underline font-medium cursor-pointer"
+                >
+                  {mode === "login" ? "¿No tienes cuenta? Regístrate gratis" : "¿Ya tienes cuenta? Inicia sesión"}
+                </button>
+              </div>
+
+              {/* Acceso Rápido Demo */}
+              <div className="pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
+                <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                  Acceso Rápido de Prueba:
+                </p>
+                <button
+                  onClick={() => handleDemoLogin({ name: "Carlos Méndez", email: "cmendez@gmail.com" })}
+                  className="w-full py-2 px-3 text-xs rounded-xl border border-amber-300 bg-amber-50 text-amber-900 font-semibold hover:bg-amber-100 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>⚡</span>
+                  <span>Ingresar como Carlos Méndez (3 reservas listas)</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+                <p className="font-bold">Panel Multi-Hotel Cantón Manta</p>
+                <p className="text-[11px] text-amber-800 mt-0.5">
+                  Acceso directo con roles RBAC para los 22 establecimientos de Manta.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  { role: "Superadmin Cantonal", name: "Carlos Admin", email: "admin@hoteldirekt.com", desc: "Supervisión de los 22 hoteles de Manta" },
+                  { role: "Administrador de Hotel", name: "Ana Administradora", email: "direccion@laspalmeras.com", desc: "Hotel Las Palmeras Manta" },
+                  { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@laspalmeras.com", desc: "Operación de reservas y cobros" },
+                ].map(acc => (
+                  <button
+                    key={acc.email}
+                    onClick={() => {
+                      onClose();
+                      onAdminAccess?.();
+                    }}
+                    className="w-full p-3 rounded-xl border text-left hover:border-amber-400 hover:bg-slate-50 transition-all flex items-center justify-between cursor-pointer"
+                    style={{ borderColor: "#e2e8f0" }}
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">{acc.name} <span className="text-[10px] text-amber-600 font-mono">({acc.role})</span></p>
+                      <p className="text-[11px] text-slate-400">{acc.desc}</p>
+                    </div>
+                    <span className="text-xs text-amber-600 font-bold">Entrar →</span>
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => {
+                  onClose();
+                  onAdminAccess?.();
+                }}
+                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-colors cursor-pointer"
+              >
+                Abrir pantalla completa de acceso hotelero
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -537,9 +808,22 @@ function AccountView({ user, onLogout }: { user: GuestUser; onLogout: () => void
 
 type BookingStep = "auth" | "details" | "payment" | "invoice";
 
-function BookingModal({ hotel, room, params, user, onClose, onGuestLogin }: {
-  hotel: Hotel; room: RoomOffer; params: SearchParams;
-  user: GuestUser | null; onClose: () => void; onGuestLogin: (u: GuestUser) => void;
+function BookingModal({
+  hotel,
+  room,
+  params,
+  user,
+  onClose,
+  onGuestLogin,
+  onReservationCreated,
+}: {
+  hotel: Hotel;
+  room: RoomOffer;
+  params: SearchParams;
+  user: GuestUser | null;
+  onClose: () => void;
+  onGuestLogin: (u: GuestUser) => void;
+  onReservationCreated?: (r: MyReservation) => void;
 }) {
   const tasaMunicipal = 2.50;
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
@@ -602,7 +886,27 @@ function BookingModal({ hotel, room, params, user, onClose, onGuestLogin }: {
     e.preventDefault();
     if (!cardNum || !cardExp || !cardCvv || !cardHolder) return;
     setProcessing(true);
-    setTimeout(() => { setProcessing(false); setStep("invoice"); }, 1800);
+    setTimeout(() => {
+      setProcessing(false);
+      setStep("invoice");
+      onReservationCreated?.({
+        id: resId,
+        hotel: hotel.name,
+        hotelId: hotel.id,
+        city: hotel.city,
+        room: room.type,
+        checkIn: params.checkIn,
+        checkOut: params.checkOut,
+        nights,
+        total,
+        status: "upcoming",
+        image: room.image || hotel.image,
+        guestName: form.name || cardHolder || "Huésped Registrado",
+        guestEmail: form.email || user?.email || "cliente@gmail.com",
+        guestPhone: form.phone || "+593 98 000 0000",
+        payMethod: "Tarjeta Digital (PayPhone / Kushki)",
+      });
+    }, 1800);
   }
 
   // ── Shared backdrop
@@ -995,7 +1299,7 @@ function BookingModal({ hotel, room, params, user, onClose, onGuestLogin }: {
                 <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>Cerrar</button>
                 <button className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-1.5" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   <span>⬇</span>
-                  <span>Descargar Factura SRI (RIDE PDF)</span>
+                  <span>Descargar Comprobante & Voucher PDF</span>
                 </button>
               </div>
               <p className="text-center text-xs text-slate-400 pt-1">Comprobante enviado a <strong>{form.email || user?.email}</strong></p>
@@ -1261,37 +1565,37 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
         </div>
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(12,18,32,0.3) 0%, rgba(12,18,32,0.75) 100%)" }} />
         <div className="relative max-w-5xl mx-auto px-4 pt-20 pb-10 text-center">
-          <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">+2.000 hoteles · 1 a 3 estrellas · Toda España</p>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel perfecto</h1>
-          <p className="text-white/70 text-base mb-8 max-w-lg mx-auto">Compara y reserva hoteles, hostales y pensiones. Sin comisiones ocultas, precio directo garantizado.</p>
+          <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">22 Alojamientos · Catastro Oficial Cantón Manta 2026 · Manabí, Ecuador</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel en Manta</h1>
+          <p className="text-white/70 text-base mb-8 max-w-lg mx-auto">Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.</p>
           <div className="max-w-4xl mx-auto"><SearchBar params={params} onChange={onChange} onSearch={onSearch} /></div>
         </div>
       </div>
       <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap gap-5 justify-center sm:justify-between">
-          {[["🛡️", "Pago seguro"], ["✅", "Confirmación instantánea"], ["🔄", "Cancelación gratuita"], ["🏆", "Precio directo"], ["💬", "Soporte 24/7 en español"]].map(([icon, text]) => (
+          {[["🛡️", "Cobro digital seguro (PayPhone/DeUna)"], ["✅", "Confirmación instantánea"], ["🔄", "Cancelación flexible"], ["🏆", "Tarifa directa sin sobreprecio OTA"], ["💬", "Atención local en Manta"]].map(([icon, text]) => (
             <div key={text as string} className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><span>{icon}</span>{text}</div>
           ))}
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>Destinos populares</h2>
+        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>Sectores y Playas de Manta</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-12">
           {DESTINATIONS.map(d => (
-            <button key={d.city} onClick={() => { onChange({ ...params, destination: d.city }); onSearch(); }} className="relative rounded-xl overflow-hidden transition-transform hover:scale-105 hover:shadow-lg" style={{ height: 110 }}>
+            <button key={d.city} onClick={() => { onChange({ ...params, destination: d.city }); onSearch(); }} className="relative rounded-xl overflow-hidden transition-transform hover:scale-105 hover:shadow-lg cursor-pointer" style={{ height: 110 }}>
               <img src={d.img} alt={d.city} className="w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 60%)" }} />
               <div className="absolute bottom-0 left-0 right-0 p-2 text-left">
-                <p className="text-white font-bold text-sm">{d.city}</p>
+                <p className="text-white font-bold text-sm">{d.city.replace("Manta - ", "")}</p>
                 <p className="text-white/70 text-[10px]">{d.hotels} hoteles</p>
               </div>
             </button>
           ))}
         </div>
-        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>Destacados</h2>
+        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>Alojamientos Destacados de Manta</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-          {HOTELS.filter(h => h.rating >= 4.1).map(h => (
-            <button key={h.id} onClick={() => { onChange({ ...params, destination: h.city }); onSearch(); }} className="rounded-2xl overflow-hidden border bg-white text-left hover:shadow-lg group transition-all" style={{ borderColor: "#e2e8f0" }}>
+          {HOTELS.filter(h => h.rating >= 4.4).slice(0, 6).map(h => (
+            <button key={h.id} onClick={() => { onChange({ ...params, destination: h.city }); onSearch(); }} className="rounded-2xl overflow-hidden border bg-white text-left hover:shadow-lg group transition-all cursor-pointer" style={{ borderColor: "#e2e8f0" }}>
               <div style={{ height: 160 }} className="overflow-hidden"><img src={h.image} alt={h.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" /></div>
               <div className="p-3">
                 <div className="flex items-center justify-between mb-0.5"><StarsRow n={h.stars} /><span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "#1e3a5f", color: "#93c5fd" }}>{h.rating}</span></div>
@@ -1303,7 +1607,7 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
           ))}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[["💰", "Sin comisiones ocultas", "Reserva directamente con el hotel. Lo que ves es lo que pagas."], ["⭐", "Solo alojamientos verificados", "Puntuaciones reales de huéspedes verificados."], ["📞", "Soporte en español", "Atención en español todos los días del año."]].map(([icon, title, desc]) => (
+          {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales."], ["⭐", "Catastro Oficial de Manta", "Establecimientos verificados: hostales, hoteles y hosterías del cantón."], ["🏛️", "Facturación Directa", "El hotel emite tu factura fiscal en recepción. La plataforma liquida y transfiere el cobro al alojamiento."]].map(([icon, title, desc]) => (
             <div key={title as string} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
               <span className="text-2xl">{icon}</span>
               <h4 className="font-bold text-slate-800 mt-2 mb-1 text-sm">{title}</h4>
@@ -1315,15 +1619,15 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
       <footer className="border-t mt-10" style={{ background: "#1e293b", borderColor: "#334155" }}>
         <div className="max-w-5xl mx-auto px-4 py-8 flex flex-wrap gap-8 justify-between">
           <div>
-            <p className="font-bold text-white text-lg mb-1" style={{ fontFamily: "DM Serif Display, serif" }}>HotelDirekt</p>
-            <p className="text-xs text-slate-400 max-w-xs">La plataforma líder en reservas de hoteles económicos en España.</p>
+            <p className="font-bold text-white text-lg mb-1" style={{ fontFamily: "DM Serif Display, serif" }}>HotelDirekt Manta</p>
+            <p className="text-xs text-slate-400 max-w-xs">Plataforma de comercialización directa y gestión de reservas hoteleras para el cantón Manta, Ecuador.</p>
           </div>
           <div className="flex gap-10 text-xs text-slate-400">
-            <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Hoteles</p><p>Listar mi hotel</p><p>Área de propietarios</p></div>
-            <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Ayuda</p><p>Centro de ayuda</p><p>Política de cancelación</p><p>Contacto</p></div>
+            <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Sectores</p><p>Barbasquillo & El Murciélago</p><p>Tarqui & Los Esteros</p><p>San Mateo & Santa Marianita</p></div>
+            <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Ayuda & Soporte</p><p>Consultar Reserva</p><p>Contacto directo hotel</p><p>Términos de servicio</p></div>
           </div>
         </div>
-        <div className="border-t text-center py-3 text-[11px] text-slate-500" style={{ borderColor: "#334155" }}>© 2026 HotelDirekt · Plataforma de reservas hoteleras</div>
+        <div className="border-t text-center py-3 text-[11px] text-slate-500" style={{ borderColor: "#334155" }}>© 2026 HotelDirekt · Prototipo del Sistema de Reservas Hoteleras Cantón Manta</div>
       </footer>
     </div>
   );
@@ -1331,16 +1635,73 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
-export default function GuestPage({ user, onGuestLogin, onLogout, onAdminAccess }: { user: GuestUser | null; onGuestLogin: (u: GuestUser) => void; onLogout: () => void; onAdminAccess?: () => void }) {
+export default function GuestPage({
+  user,
+  onGuestLogin,
+  onLogout,
+  onAdminAccess,
+}: {
+  user: GuestUser | null;
+  onGuestLogin: (u: GuestUser) => void;
+  onLogout: () => void;
+  onAdminAccess?: () => void;
+}) {
   const [view, setView] = useState<GuestView>("home");
-  const [params, setParams] = useState<SearchParams>({ destination: "", checkIn: addDays(todayStr(), 1), checkOut: addDays(todayStr(), 3), adults: 2, children: 0 });
+  const [params, setParams] = useState<SearchParams>({
+    destination: "",
+    checkIn: addDays(todayStr(), 1),
+    checkOut: addDays(todayStr(), 3),
+    adults: 2,
+    children: 0,
+  });
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [bookingRoom, setBookingRoom] = useState<RoomOffer | null>(null);
+
+  // Modales
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showConsultModal, setShowConsultModal] = useState(false);
+  const [voucherRes, setVoucherRes] = useState<MyReservation | null>(null);
+
+  // Reservas persistentes
+  const [reservations, setReservations] = useState<MyReservation[]>(() => {
+    try {
+      const saved = localStorage.getItem("hoteldirekt_guest_reservations");
+      return saved ? JSON.parse(saved) : INITIAL_DEMO_RESERVATIONS;
+    } catch {
+      return INITIAL_DEMO_RESERVATIONS;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("hoteldirekt_guest_reservations", JSON.stringify(reservations));
+    } catch {
+      // Ignorar si no hay storage
+    }
+  }, [reservations]);
+
+  function handleCancelReservation(resId: string) {
+    setReservations(prev =>
+      prev.map(r => (r.id === resId ? { ...r, status: "cancelled" as const } : r))
+    );
+  }
+
+  function handleReservationCreated(newRes: MyReservation) {
+    setReservations(prev => [newRes, ...prev]);
+  }
+
   const logoClickCount = useRef(0);
   const logoClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function handleSearch() { setView("results"); setSelectedHotel(null); }
-  function handleSelectHotel(h: Hotel) { setSelectedHotel(h); setView("hotel"); window.scrollTo({ top: 0 }); }
+  function handleSearch() {
+    setView("results");
+    setSelectedHotel(null);
+  }
+  function handleSelectHotel(h: Hotel) {
+    setSelectedHotel(h);
+    setView("hotel");
+    window.scrollTo({ top: 0 });
+  }
 
   function handleLogoClick() {
     setView("home");
@@ -1352,30 +1713,77 @@ export default function GuestPage({ user, onGuestLogin, onLogout, onAdminAccess 
       onAdminAccess?.();
       return;
     }
-    logoClickTimer.current = setTimeout(() => { logoClickCount.current = 0; }, 2000);
+    logoClickTimer.current = setTimeout(() => {
+      logoClickCount.current = 0;
+    }, 2000);
   }
 
   return (
     <div className="min-h-screen" style={{ background: "#f8fafc" }}>
       {/* Nav */}
-      <header className="sticky top-0 z-30 border-b" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
+      <header className="sticky top-0 z-30 border-b shadow-xs" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={handleLogoClick} className="flex items-center gap-2">
-            <span className="font-bold text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>HotelDirekt</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "#fef3c7", color: "#92400e" }}>BETA</span>
+          <button onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer">
+            <span className="font-bold text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>
+              HotelDirekt
+            </span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+              MANTA 2026
+            </span>
           </button>
-          <div className="flex items-center gap-2">
-            <a href="#" className="text-sm font-medium hidden sm:block text-slate-500 hover:text-slate-800 transition-colors">Para hoteles</a>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Botón Consultar Reserva */}
+            <button
+              onClick={() => setShowConsultModal(true)}
+              className="text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all hover:bg-amber-50 hover:border-amber-300 text-slate-800 cursor-pointer shadow-2xs"
+              style={{ borderColor: "#cbd5e1" }}
+            >
+              <span>🔍</span>
+              <span className="hidden sm:inline">Consultar mi reserva</span>
+              <span className="sm:hidden">Buscar Reserva</span>
+            </button>
+
+            {/* Acceso Hotel / PMS */}
+            <button
+              onClick={() => {
+                if (onAdminAccess) onAdminAccess();
+                else setShowLoginModal(true);
+              }}
+              className="text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer hidden md:flex items-center gap-1"
+            >
+              <span>🏨</span>
+              <span>Acceso Hotel / PMS</span>
+            </button>
+
             {user ? (
-              <>
-                <button onClick={() => setView("account")} className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-all ${view === "account" ? "text-amber-700" : "text-slate-600"}`} style={{ background: view === "account" ? "#fef3c7" : "#f1f5f9" }}>
-                  👤 {user.name.split(" ")[0]}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setView("account")}
+                  className={`text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                    view === "account" ? "text-amber-800 bg-amber-100" : "text-slate-700 bg-slate-100 hover:bg-slate-200"
+                  }`}
+                >
+                  <span className="w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-xs flex items-center justify-center font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span>{user.name.split(" ")[0]}</span>
                 </button>
-                <button onClick={onLogout} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Salir</button>
-              </>
+                <button
+                  onClick={onLogout}
+                  className="text-xs text-slate-400 hover:text-red-600 transition-colors px-1 cursor-pointer"
+                  title="Cerrar sesión"
+                >
+                  Salir
+                </button>
+              </div>
             ) : (
-              <button onClick={() => {}} className="text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-all" style={{ background: "#0c1220", color: "#fff" }}>
-                Iniciar sesión
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-lg hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm text-slate-950 bg-amber-500 hover:bg-amber-400"
+              >
+                <span>👤</span>
+                <span>Iniciar sesión</span>
               </button>
             )}
           </div>
@@ -1385,10 +1793,59 @@ export default function GuestPage({ user, onGuestLogin, onLogout, onAdminAccess 
       {view === "home" && <HomePage params={params} onChange={setParams} onSearch={handleSearch} />}
       {view === "results" && <ResultsView params={params} onChange={setParams} onSearch={handleSearch} onSelect={handleSelectHotel} />}
       {view === "hotel" && selectedHotel && <HotelDetail hotel={selectedHotel} params={params} onBack={() => setView("results")} onBook={r => setBookingRoom(r)} />}
-      {view === "account" && user && <AccountView user={user} onLogout={onLogout} />}
+      {view === "account" && user && (
+        <AccountView
+          user={user}
+          reservations={reservations}
+          onLogout={onLogout}
+          onCancelReservation={handleCancelReservation}
+          onViewVoucher={setVoucherRes}
+        />
+      )}
 
+      {/* Modal de Reserva y Pago */}
       {bookingRoom && selectedHotel && (
-        <BookingModal hotel={selectedHotel} room={bookingRoom} params={params} user={user} onClose={() => setBookingRoom(null)} onGuestLogin={onGuestLogin} />
+        <BookingModal
+          hotel={selectedHotel}
+          room={bookingRoom}
+          params={params}
+          user={user}
+          onClose={() => setBookingRoom(null)}
+          onGuestLogin={onGuestLogin}
+          onReservationCreated={handleReservationCreated}
+        />
+      )}
+
+      {/* Modal de Inicio de Sesión */}
+      {showLoginModal && (
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onGuestLogin={u => {
+            onGuestLogin(u);
+            setShowLoginModal(false);
+          }}
+          onAdminAccess={() => {
+            setShowLoginModal(false);
+            onAdminAccess?.();
+          }}
+        />
+      )}
+
+      {/* Modal de Consulta de Reservas */}
+      {showConsultModal && (
+        <ConsultReservationModal
+          reservations={reservations}
+          onClose={() => setShowConsultModal(false)}
+          onViewVoucher={res => {
+            setVoucherRes(res);
+          }}
+          onCancelReservation={handleCancelReservation}
+        />
+      )}
+
+      {/* Modal de Voucher / Comprobante de Cobro */}
+      {voucherRes && (
+        <InvoiceModal res={voucherRes} onClose={() => setVoucherRes(null)} />
       )}
     </div>
   );

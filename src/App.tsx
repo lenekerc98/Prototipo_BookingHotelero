@@ -3,6 +3,7 @@ import GuestPage from "./GuestPage";
 import AuthPage, { type AdminRole, type AdminUser, type GuestUser } from "./AuthPage";
 import SriInvoiceModal from "./SriInvoiceModal";
 import PaymentLinkModal, { type NewPaymentLinkData } from "./PaymentLinkModal";
+import { MANTA_HOTELS } from "./mantaHotels";
 import {
   DEFAULT_HOTEL_RATES,
   HOTEL_SRI_INFO,
@@ -2470,7 +2471,7 @@ const NAV_ITEMS: { view: View; label: string; icon: string; divider?: boolean; r
   { view: "reservations", label: "Reservas", icon: "R", roles: ALL_ROLES },
   { view: "rooms", label: "Habitaciones", icon: "A", roles: ALL_ROLES },
   { view: "guests", label: "Huéspedes", icon: "H", roles: ALL_ROLES },
-  { view: "billing", label: "Facturación", icon: "F", roles: ["superadmin", "admin", "manager"], divider: true },
+  { view: "billing", label: "Liquidaciones al Hotel", icon: "L", roles: ["superadmin", "admin", "manager"], divider: true },
   { view: "payments", label: "Pagos", icon: "P", roles: ALL_ROLES },
   { view: "rates", label: "Tarifas", icon: "T", roles: ALL_ROLES },
   { view: "revenue", label: "Analítica", icon: "N", roles: MANAGEMENT_ROLES },
@@ -2508,16 +2509,24 @@ interface StaffUser {
   lastAccess: string;
 }
 
-const DEFAULT_HOTELS: PlatformHotel[] = [
-  { id: "las-palmeras", name: "Hotel Las Palmeras Manta", city: "Manta - Barbasquillo", stars: 3, rooms: 19, occupancy: 78, monthRevenue: 21600, rating: 4.2, status: "active", gravaServicio10: true, address: "Av. Barbasquillo y Calle 120", phone: "+593 5 262 4455", taxId: "1391789456001", amenities: ["WiFi de alta velocidad", "Piscina frente al mar", "Restaurante", "Recepción 24 h"], gallery: ["https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=900&h=600&fit=crop", "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=900&h=600&fit=crop"] },
-  { id: "hostal-centro", name: "Hostal El Centro Manta", city: "Manta - Tarqui", stars: 2, rooms: 12, occupancy: 65, monthRevenue: 9800, rating: 3.9, status: "active", gravaServicio10: false, address: "Av. 105 y Calle 102", phone: "+593 5 262 1122", taxId: "1391789456002", amenities: ["WiFi gratuito", "Aire Acondicionado", "Recepción 24 h"], gallery: ["https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=900&h=600&fit=crop"] },
-  { id: "mirador-alhambra", name: "Hotel Mirador del Pacífico", city: "Manta - El Murciélago", stars: 3, rooms: 8, occupancy: 82, monthRevenue: 14200, rating: 4.5, status: "active", gravaServicio10: true, address: "Malecón Escénico, Edif. Mirador", phone: "+593 5 262 8899", taxId: "1391789456003", amenities: ["Vista al mar", "Desayuno incluido", "Parqueadero privado"], gallery: ["https://images.unsplash.com/photo-1620677368158-32b1293fac36?w=900&h=600&fit=crop"] },
-  { id: "hostal-rambla", name: "Hostal Rambla Marina", city: "Manta - Los Esteros", stars: 2, rooms: 15, occupancy: 91, monthRevenue: 18400, rating: 3.7, status: "active", gravaServicio10: false, address: "Av. 4 de Noviembre", phone: "+593 5 262 3344", taxId: "1391789456004" },
-  { id: "costa-sol", name: "Hotel Costa Sol Manta", city: "Manta - Barbasquillo", stars: 3, rooms: 22, occupancy: 55, monthRevenue: 12100, rating: 4.1, status: "active", gravaServicio10: true, address: "Km 2.5 Vía a Barbasquillo", phone: "+593 5 262 5566", taxId: "1391789456005" },
-  { id: "pension-marina", name: "Pensión La Marina", city: "Manta - San Mateo", stars: 1, rooms: 9, occupancy: 48, monthRevenue: 4200, rating: 3.5, status: "paused", gravaServicio10: false, address: "Puerto Pesquero de San Mateo", phone: "+593 5 262 7711", taxId: "1391789456006" },
-  { id: "camino-real", name: "Hotel Camino Real Manta", city: "Manta - Tarqui", stars: 3, rooms: 16, occupancy: 60, monthRevenue: 11800, rating: 4.3, status: "active", gravaServicio10: true, address: "Av. 109 y Calle 101", phone: "+593 5 262 9900", taxId: "1391789456007" },
-  { id: "sierra-nevada", name: "Hostería El Faro Manta", city: "Manta - Santa Marianita", stars: 3, rooms: 11, occupancy: 35, monthRevenue: 6900, rating: 4.4, status: "active", gravaServicio10: true, address: "Playa Santa Marianita", phone: "+593 5 262 6633", taxId: "1391789456008" },
-];
+const DEFAULT_HOTELS: PlatformHotel[] = MANTA_HOTELS.map((h, idx) => ({
+  id: h.id,
+  name: h.name,
+  city: h.city,
+  stars: h.stars,
+  rooms: 12 + ((idx * 3) % 25),
+  occupancy: 50 + ((idx * 8) % 45),
+  monthRevenue: 6000 + ((idx * 2100) % 24000),
+  rating: h.rating,
+  status: idx === 13 ? "paused" : "active",
+  gravaServicio10: h.gravaServicio10,
+  address: h.address,
+  phone: h.phone,
+  taxId: h.taxId,
+  description: h.description,
+  amenities: h.amenities,
+  gallery: [h.image],
+}));
 
 const DEFAULT_STAFF: StaffUser[] = [
   { id: "usr-001", name: "Carlos Admin", email: "admin@hotelmanta.com.ec", phone: "+593 99 100 1001", role: "superadmin", hotelIds: [], status: "active", lastAccess: "Hoy, 09:42" },

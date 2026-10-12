@@ -1,3 +1,5 @@
+import { MANTA_HOTELS } from "./mantaHotels";
+
 // ─── Hotel Data & Rates Configuration ──────────────────────────────────────────
 
 export interface SeasonInfo {
@@ -177,6 +179,27 @@ export const HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
     gravaServicio10: false, // Pequeño hospedaje 1 estrella: no grava 10%
   },
 };
+
+// Asegurar que todos los 22 alojamientos de Manta tengan su ficha fiscal registrada
+MANTA_HOTELS.forEach(h => {
+  if (!HOTEL_SRI_INFO[h.id]) {
+    HOTEL_SRI_INFO[h.id] = {
+      ruc: h.taxId || "1391789456001",
+      razonSocial: `${h.name.toUpperCase()} OPERADORA TURISTICA C.A.`,
+      nombreComercial: h.name,
+      dirMatriz: h.address,
+      dirSucursal: `${h.address}, Manta - Manabí`,
+      obligadoContabilidad: h.stars >= 3 ? "SÍ" : "NO",
+      regimen: h.stars >= 3 ? "CONTRIBUYENTE RÉGIMEN GENERAL" : "CONTRIBUYENTE RÉGIMEN RIMPE - EMPRENDEDOR",
+      estab: "001",
+      ptoEmi: "001",
+      phone: h.phone || "+593 5 262 0000",
+      email: `contacto@${h.id.replace(/-/g, "")}.ec`,
+      city: h.city,
+      gravaServicio10: h.gravaServicio10 ?? (h.stars >= 3),
+    };
+  }
+});
 
 export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
   "costa-sol": {
