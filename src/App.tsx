@@ -3415,6 +3415,9 @@ export default function App() {
           setAppMode("admin");
         }}
         onGuestLogin={user => { setGuestUser(user); setAppMode("guest"); }}
+        onBackToGuest={() => setAppMode("guest")}
+        theme={theme}
+        onToggleTheme={() => setTheme(t => t === "light" ? "dark" : "light")}
       />
     );
   }
@@ -3427,6 +3430,8 @@ export default function App() {
         onGuestLogin={user => setGuestUser(user)}
         onLogout={() => setGuestUser(null)}
         onAdminAccess={() => { setAuthDefaultTab("admin"); setAppMode("auth"); }}
+        theme={theme}
+        onToggleTheme={() => setTheme(t => t === "light" ? "dark" : "light")}
       />
     );
   }

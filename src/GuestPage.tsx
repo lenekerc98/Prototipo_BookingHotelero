@@ -455,21 +455,21 @@ function ConsultReservationModal({
     >
       <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#0c1220", borderColor: "#1e293b" }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-white text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
                 Consultar Reservas de Hotel
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold border border-amber-300">
                 Manta 2026
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Busca por código de confirmación (ej: RES-4821), correo o nombre del titular
             </p>
           </div>
-          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-white cursor-pointer">×</button>
+          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-slate-800 cursor-pointer">×</button>
         </div>
 
         {/* Search input */}
@@ -648,14 +648,14 @@ function LoginModal({
     >
       <div className="w-full max-w-md rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 flex items-center justify-between" style={{ background: "#0c1220", borderColor: "#1e293b" }}>
+        <div className="px-6 py-4 flex items-center justify-between border-b" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
           <div>
-            <span className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+            <span className="font-bold text-amber-600 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
               HotelDirekt Manta
             </span>
-            <p className="text-xs text-slate-300">Acceso al sistema y consulta de reservas</p>
+            <p className="text-xs text-slate-500">Acceso al sistema y consulta de reservas</p>
           </div>
-          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-white cursor-pointer">×</button>
+          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-slate-800 cursor-pointer">×</button>
         </div>
 
         {/* Tab switch */}
@@ -1640,11 +1640,15 @@ export default function GuestPage({
   onGuestLogin,
   onLogout,
   onAdminAccess,
+  theme = "light",
+  onToggleTheme,
 }: {
   user: GuestUser | null;
   onGuestLogin: (u: GuestUser) => void;
   onLogout: () => void;
   onAdminAccess?: () => void;
+  theme?: "light" | "dark";
+  onToggleTheme?: () => void;
 }) {
   const [view, setView] = useState<GuestView>("home");
   const [params, setParams] = useState<SearchParams>({
@@ -1733,6 +1737,19 @@ export default function GuestPage({
           </button>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {onToggleTheme && (
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                className="text-xs sm:text-sm font-semibold px-2.5 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all hover:bg-slate-100 text-slate-800 cursor-pointer shadow-2xs"
+                style={{ borderColor: "#cbd5e1", background: "#ffffff" }}
+                title="Cambiar tema claro / oscuro"
+              >
+                <span>{theme === "dark" ? "☀️" : "🌙"}</span>
+                <span className="hidden lg:inline">{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+              </button>
+            )}
+
             {/* Botón Consultar Reserva */}
             <button
               onClick={() => setShowConsultModal(true)}
