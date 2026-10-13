@@ -204,7 +204,7 @@ function SearchBar({ params, onChange, onSearch, variant = "hero" }: { params: S
 
 // ─── Invoice modal ────────────────────────────────────────────────────────────
 
-function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => void }) {
+export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => void }) {
   // Buscar datos fiscales reales del hotel en Manta
   const hotelKey = Object.keys(HOTEL_SRI_INFO).find(k => 
     res.hotel.toLowerCase().includes(k.replace(/-/g, " ")) || 

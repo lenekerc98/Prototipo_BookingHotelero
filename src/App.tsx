@@ -1,9 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
-import GuestPage from "./GuestPage";
+import GuestPage, { InvoiceModal } from "./GuestPage";
 import AuthPage, { type AdminRole, type AdminUser, type GuestUser } from "./AuthPage";
 import SriInvoiceModal from "./SriInvoiceModal";
 import PaymentLinkModal, { type NewPaymentLinkData } from "./PaymentLinkModal";
-import { MANTA_HOTELS } from "./mantaHotels";
+import {
+  MANTA_HOTELS,
+  INITIAL_DEMO_RESERVATIONS,
+  type RoomOffer,
+  type MyReservation,
+} from "./mantaHotels";
 import {
   DEFAULT_HOTEL_RATES,
   HOTEL_SRI_INFO,
@@ -1250,177 +1255,674 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
   );
 }
 
-function RoomsView({ hotelId }: { hotelId: string }) {
-  const [rooms, setRooms] = usePersistentState<Room[]>(`hoteldirekt.${hotelId}.rooms`, ROOMS);
-  const [filter, setFilter] = useState<RoomStatus | "all">("all");
-  const [editing, setEditing] = useState<Room | null>(null);
-  const [editingOriginalNumber, setEditingOriginalNumber] = useState<string | null>(null);
-  const filters: { key: RoomStatus | "all"; label: string; color?: string }[] = [
-    { key: "all", label: "Todas" },
-    { key: "available", label: "Disponibles" },
-    { key: "occupied", label: "Ocupadas" },
-    { key: "cleaning", label: "Limpieza" },
-    { key: "maintenance", label: "Mantenimiento" },
-  ];
+function RoomsView({
+  hotelId,
+  hotel,
+  allHotels,
+  onSelectHotel,
+  onGoToGuestWeb,
+}: {
+  hotelId: string;
+  hotel?: PlatformHotel;
+  allHotels?: PlatformHotel[];
+  onSelectHotel?: (id: string) => void;
+  onGoToGuestWeb?: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<"client_choices" | "offered_rooms" | "hotels_catalog">("client_choices");
+  const [filterStatus, setFilterStatus] = useState<"all" | "upcoming" | "completed" | "cancelled">("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [voucherRes, setVoucherRes] = useState<MyReservation | null>(null);
+  const [editingOffer, setEditingOffer] = useState<RoomOffer | null>(null);
 
-  const filtered =
-    filter === "all" ? rooms : rooms.filter((r) => r.status === filter);
+  // Buscar hotel en el catálogo de Manta
+  const currentMantaHotel = MANTA_HOTELS.find(h => h.id === hotelId) || MANTA_HOTELS[0];
 
-  const floors = [...new Set(rooms.map((r) => r.floor))].sort();
+  // Tipos de habitaciones ofertadas en la plataforma por este hotel
+  const [roomOffers, setRoomOffers] = usePersistentState<RoomOffer[]>(
+    `hoteldirekt.${hotelId}.room_offers`,
+    currentMantaHotel.rooms || []
+  );
 
-  const statusColor: Record<RoomStatus, string> = {
-    available: "#064e3b",
-    occupied: "#1e3a5f",
-    cleaning: "#3b1f5e",
-    maintenance: "#451a03",
-  };
+  // Reservas hechas por clientes en la plataforma (sincronizadas con la vista del huésped)
+  const [clientReservations, setClientReservations] = useState<MyReservation[]>(() => {
+    try {
+      const saved = localStorage.getItem("hoteldirekt_guest_reservations");
+      return saved ? JSON.parse(saved) : INITIAL_DEMO_RESERVATIONS;
+    } catch {
+      return INITIAL_DEMO_RESERVATIONS;
+    }
+  });
 
-  const statusBorder: Record<RoomStatus, string> = {
-    available: "#6ee7b7",
-    occupied: "#93c5fd",
-    cleaning: "#d8b4fe",
-    maintenance: "#fcd34d",
+  function handleUpdateStatus(resId: string, newStatus: "upcoming" | "completed" | "cancelled") {
+    const updated = clientReservations.map(r => (r.id === resId ? { ...r, status: newStatus } : r));
+    setClientReservations(updated);
+    try {
+      localStorage.setItem("hoteldirekt_guest_reservations", JSON.stringify(updated));
+    } catch {}
+  }
+
+  function handleAdjustQuota(offerId: string, delta: number) {
+    setRoomOffers(prev => prev.map(o => (o.id === offerId ? { ...o, available: Math.max(0, o.available + delta) } : o)));
+  }
+
+  // Filtrar reservas que corresponden a este hotel
+  const hotelReservations = clientReservations.filter(r =>
+    r.hotelId === hotelId ||
+    r.hotel.toLowerCase().includes(currentMantaHotel.name.toLowerCase().slice(0, 8))
+  );
+  const displayedReservations = (hotelReservations.length > 0 ? hotelReservations : clientReservations).filter(r => {
+    const matchesStatus = filterStatus === "all" || r.status === filterStatus;
+    const matchesSearch =
+      r.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.guestEmail && r.guestEmail.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesStatus && matchesSearch;
+  });
+
+  const totalNights = displayedReservations.reduce((acc, r) => acc + (r.nights || 1), 0);
+  const totalRevenue = displayedReservations.reduce((acc, r) => acc + (r.total || 0), 0);
+
+  const statusBadges: Record<string, { bg: string; color: string; label: string }> = {
+    upcoming: { bg: "rgba(59, 130, 246, 0.15)", color: "#93c5fd", label: "Próxima estancia" },
+    completed: { bg: "rgba(16, 185, 129, 0.15)", color: "#6ee7b7", label: "Pagada / Finalizada" },
+    cancelled: { bg: "rgba(239, 68, 68, 0.15)", color: "#fca5a5", label: "Cancelada" },
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-          Habitaciones
-        </h1>
-        <div className="flex gap-2 text-xs items-center">
-          <span className="mono px-2 py-1 rounded" style={{ background: "#064e3b", color: "#6ee7b7" }}>
-            {rooms.filter((r) => r.status === "available").length} disponibles
-          </span>
-          <span className="mono px-2 py-1 rounded" style={{ background: "#1e3a5f", color: "#93c5fd" }}>
-            {rooms.filter((r) => r.status === "occupied").length} ocupadas
-          </span>
-          <span className="mono px-2 py-1 rounded" style={{ background: "#3b1f5e", color: "#d8b4fe" }}>
-            {rooms.filter((r) => r.status === "cleaning").length} limpieza
-          </span>
-          <button onClick={() => { setEditingOriginalNumber(null); setEditing({ number: "", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi"] }); }} className="px-3 py-1.5 rounded font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Habitación</button>
+    <div className="space-y-6">
+      {/* Banner de delimitación conceptual (Sistema de reservas vs PMS) */}
+      <div
+        className="p-4 rounded-xl border flex items-start gap-3"
+        style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.3)" }}
+      >
+        <span className="text-2xl flex-shrink-0">🏨</span>
+        <div className="text-xs leading-relaxed">
+          <p className="font-bold text-amber-400 text-sm">
+            Portal de Reservas Hoteleras · Manta (Booking / Extranet)
+          </p>
+          <p className="mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            Este sistema gestiona la intermediación turística, las <strong>opciones de habitación que los clientes escogieron</strong> y el catálogo de habitaciones publicadas en la web. No incluye módulos de aseo de habitaciones ni llaves físicas de mostrador porque <strong>no es un sistema PMS</strong>.
+          </p>
         </div>
       </div>
 
-      <div className="flex gap-1">
-        {filters.map((f) => (
+      {/* Cabecera con selector de pestañas */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+            Habitaciones y Reservas del Hotel
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
+            Hotel activo: <strong style={{ color: "var(--primary)" }}>{currentMantaHotel.name}</strong> ({currentMantaHotel.city})
+          </p>
+        </div>
+
+        {onGoToGuestWeb && (
           <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
-            style={{
-              background: filter === f.key ? "var(--primary)" : "var(--card)",
-              color:
-                filter === f.key ? "var(--primary-foreground)" : "var(--muted-foreground)",
-              border: `1px solid ${filter === f.key ? "transparent" : "var(--border)"}`,
-            }}
+            onClick={onGoToGuestWeb}
+            className="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer self-start sm:self-auto"
           >
-            {f.label}
+            <span>🌐</span>
+            <span>Ver cómo lo ve el cliente en la web</span>
           </button>
-        ))}
+        )}
       </div>
 
-      {floors.map((floor) => {
-        const floorRooms = filtered.filter((r) => r.floor === floor);
-        if (floorRooms.length === 0) return null;
-        return (
-          <div key={floor}>
-            <p
-              className="mono text-xs uppercase tracking-widest mb-3"
-              style={{ color: "var(--muted-foreground)" }}
-            >
-              Planta {floor}
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {floorRooms.map((room) => (
-                <div
-                  key={room.number}
-                  className="rounded-md p-3 border transition-all cursor-pointer hover:brightness-110"
-                  onClick={() => { setEditingOriginalNumber(room.number); setEditing({ ...room }); }}
+      {/* Tabs principales */}
+      <div className="flex border-b" style={{ borderColor: "var(--border)" }}>
+        <button
+          onClick={() => setActiveTab("client_choices")}
+          className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === "client_choices"
+              ? "border-amber-400 text-amber-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <span>🧳</span>
+          <span>Lo que escogió el Cliente</span>
+          <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
+            {hotelReservations.length || clientReservations.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("offered_rooms")}
+          className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === "offered_rooms"
+              ? "border-amber-400 text-amber-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <span>🏷️</span>
+          <span>Habitaciones Ofertadas en el Portal</span>
+          <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+            {roomOffers.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("hotels_catalog")}
+          className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === "hotels_catalog"
+              ? "border-amber-400 text-amber-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <span>🏨</span>
+          <span>Solo los Hoteles de Manta</span>
+          <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+            {MANTA_HOTELS.length}
+          </span>
+        </button>
+      </div>
+
+      {/* ─── PESTAÑA 1: LO QUE EL CLIENTE ESCOGIÓ ────────────────────────────── */}
+      {activeTab === "client_choices" && (
+        <div className="space-y-5">
+          {/* KPIs resumen de reservas del cliente */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <KpiCard
+              label="Habitaciones Reservadas"
+              value={String(displayedReservations.length)}
+              sub="contratadas por turistas"
+              accent
+            />
+            <KpiCard
+              label="Noches Totales"
+              value={String(totalNights)}
+              sub="estancias en el hotel"
+            />
+            <KpiCard
+              label="Total Cobrado en Plataforma"
+              value={fmtUsd(totalRevenue)}
+              sub="vía pasarela digital"
+            />
+            <KpiCard
+              label="Próximas Llegadas"
+              value={String(displayedReservations.filter(r => r.status === "upcoming").length)}
+              sub="pendientes de arribo"
+            />
+          </div>
+
+          {/* Filtros y búsqueda */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Buscar por cliente, habitación (ej. Doble), código (ej. RES-4821)..."
+                className="w-full px-3 py-2 pl-9 rounded-lg border text-xs outline-none"
+                style={{
+                  background: "var(--card)",
+                  borderColor: "var(--border)",
+                  color: "var(--foreground)",
+                }}
+              />
+              <span className="absolute left-3 top-2.5 text-xs text-slate-400">🔍</span>
+            </div>
+
+            <div className="flex gap-1.5">
+              {[
+                { key: "all", label: "Todas" },
+                { key: "upcoming", label: "Próximas" },
+                { key: "completed", label: "Pagadas / En estancia" },
+                { key: "cancelled", label: "Canceladas" },
+              ].map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilterStatus(f.key as any)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer"
                   style={{
-                    background: statusColor[room.status],
-                    borderColor: statusBorder[room.status] + "44",
+                    background: filterStatus === f.key ? "var(--primary)" : "var(--card)",
+                    color: filterStatus === f.key ? "var(--primary-foreground)" : "var(--muted-foreground)",
+                    border: `1px solid ${filterStatus === f.key ? "transparent" : "var(--border)"}`,
                   }}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <span
-                      className="mono text-lg font-semibold leading-none"
-                      style={{ color: statusBorder[room.status] }}
-                    >
-                      {room.number}
-                    </span>
-                    <StatusBadge status={room.status} type="room" />
-                  </div>
-                  <p className="text-xs font-medium mb-1" style={{ color: "#e8edf5" }}>
-                    {room.type}
-                  </p>
-                  <p className="mono text-xs" style={{ color: statusBorder[room.status] }}>
-                    {fmt(room.pricePerNight)}/noche · {room.capacity}
-                    {room.capacity === 1 ? " pers" : " pers"}
-                  </p>
-                  {room.guestName && (
-                    <p
-                      className="text-xs mt-1.5 truncate"
-                      style={{ color: "#e8edf5aa" }}
-                    >
-                      {room.guestName}
-                    </p>
-                  )}
-                  {room.checkOut && (
-                    <p className="mono text-[10px] mt-0.5" style={{ color: statusBorder[room.status] + "99" }}>
-                      Sale: {fmtDate(room.checkOut)}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {room.amenities.slice(0, 3).map((a) => (
-                      <span
-                        key={a}
-                        className="text-[9px] px-1.5 py-0.5 rounded-sm"
-                        style={{ background: "rgba(0,0,0,0.3)", color: "#e8edf5aa" }}
-                      >
-                        {a}
-                      </span>
-                    ))}
-                    {room.amenities.length > 3 && (
-                      <span
-                        className="text-[9px] px-1.5 py-0.5 rounded-sm"
-                        style={{ background: "rgba(0,0,0,0.3)", color: "#e8edf5aa" }}
-                      >
-                        +{room.amenities.length - 3}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[9px] mt-2 uppercase tracking-widest" style={{ color: statusBorder[room.status] }}>Clic para editar</p>
-                </div>
+                  {f.label}
+                </button>
               ))}
             </div>
           </div>
-        );
-      })}
-      {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3,7,18,.78)" }}>
-          <form onSubmit={event => {
-            event.preventDefault();
-            setRooms(items => editingOriginalNumber ? items.map(room => room.number === editingOriginalNumber ? editing : room) : [...items, editing]);
-            setEditing(null);
-          }} className="w-full max-w-xl rounded-xl border p-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <div className="flex justify-between mb-5"><div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Inventario</p><h2 className="text-xl">{rooms.some(room => room.number === editing.number) ? `Habitación ${editing.number}` : "Nueva habitación"}</h2></div><button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }}>×</button></div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Número" value={editing.number} onChange={number => setEditing({ ...editing, number })} required />
-              <Field label="Tipo" value={editing.type} onChange={type => setEditing({ ...editing, type })} required />
-              <Field label="Planta" type="number" value={String(editing.floor)} onChange={floor => setEditing({ ...editing, floor: Number(floor) })} />
-              <Field label="Precio por noche" type="number" value={String(editing.pricePerNight)} onChange={pricePerNight => setEditing({ ...editing, pricePerNight: Number(pricePerNight) })} />
-              <Field label="Capacidad" type="number" value={String(editing.capacity)} onChange={capacity => setEditing({ ...editing, capacity: Number(capacity) })} />
-              <Field label="Servicios (separados por comas)" value={editing.amenities.join(", ")} onChange={value => setEditing({ ...editing, amenities: value.split(",").map(item => item.trim()).filter(Boolean) })} />
-              <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Estado</label><select value={editing.status} onChange={event => setEditing({ ...editing, status: event.target.value as RoomStatus })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>{Object.entries(roomStatusLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-              <Field label="Huésped actual" value={editing.guestName ?? ""} onChange={guestName => setEditing({ ...editing, guestName })} />
+
+          {/* Listado de tarjetas de habitaciones que los clientes escogieron */}
+          {displayedReservations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {displayedReservations.map(res => {
+                const badge = statusBadges[res.status] || statusBadges.upcoming;
+                return (
+                  <div
+                    key={res.id}
+                    className="rounded-xl border p-4 transition-all hover:border-amber-500/50 flex flex-col justify-between"
+                    style={{ background: "var(--card)", borderColor: "var(--border)" }}
+                  >
+                    <div>
+                      {/* Top: Habitación y código */}
+                      <div className="flex items-start justify-between gap-3 pb-3 border-b" style={{ borderColor: "var(--border)" }}>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={res.image || "https://images.unsplash.com/photo-1781004672179-9790a9623a77?w=120&h=90&fit=crop"}
+                            alt={res.room}
+                            className="w-16 h-14 rounded-lg object-cover flex-shrink-0"
+                          />
+                          <div>
+                            <span className="mono text-[10px] text-amber-400 font-bold tracking-wider">
+                              {res.id}
+                            </span>
+                            <h3 className="font-bold text-sm text-slate-100 leading-snug">
+                              {res.room}
+                            </h3>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              {res.hotel} · {res.city}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className="mono text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide flex-shrink-0"
+                          style={{ background: badge.bg, color: badge.color }}
+                        >
+                          {badge.label}
+                        </span>
+                      </div>
+
+                      {/* Info del Cliente y Estancia */}
+                      <div className="grid grid-cols-2 gap-3 py-3 text-xs">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+                            Cliente / Huésped
+                          </p>
+                          <p className="font-semibold text-slate-200 mt-0.5 truncate">
+                            👤 {res.guestName}
+                          </p>
+                          <p className="text-[11px] text-slate-400 truncate">
+                            ✉️ {res.guestEmail}
+                          </p>
+                          {res.guestPhone && (
+                            <p className="text-[11px] text-slate-400 truncate">
+                              📞 {res.guestPhone}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+                            Fechas Seleccionadas
+                          </p>
+                          <p className="font-semibold text-slate-200 mt-0.5">
+                            📅 {fmtDate(res.checkIn)} → {fmtDate(res.checkOut)}
+                          </p>
+                          <p className="text-[11px] text-amber-400">
+                            ⏳ {res.nights} noche{res.nights > 1 ? "s" : ""} reservada{res.nights > 1 ? "s" : ""}
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            💳 {res.payMethod || "Cobro digital liquidado"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom: Total cobrado y acciones */}
+                    <div
+                      className="pt-3 border-t flex flex-wrap items-center justify-between gap-2"
+                      style={{ borderColor: "var(--border)" }}
+                    >
+                      <div>
+                        <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                          Total cobrado por el portal
+                        </p>
+                        <p className="mono font-bold text-base text-amber-400">
+                          {fmtUsd(res.total)}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setVoucherRes(res)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>🧾</span>
+                          <span>Ver Voucher</span>
+                        </button>
+
+                        {res.status === "upcoming" ? (
+                          <button
+                            onClick={() => handleUpdateStatus(res.id, "completed")}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium border text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                            style={{ borderColor: "rgba(16, 185, 129, 0.4)" }}
+                          >
+                            ✓ Llegada
+                          </button>
+                        ) : res.status === "completed" ? (
+                          <button
+                            onClick={() => handleUpdateStatus(res.id, "upcoming")}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium border text-slate-400 hover:bg-slate-800 cursor-pointer"
+                            style={{ borderColor: "var(--border)" }}
+                          >
+                            ↺ Revertir
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex items-center justify-between mt-6">
-              {editingOriginalNumber ? <button type="button" onClick={() => { if (confirm(`¿Eliminar la habitación ${editing.number}?`)) { setRooms(items => items.filter(room => room.number !== editingOriginalNumber)); setEditing(null); } }} className="px-4 py-2 rounded text-sm border" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button> : <span />}
-              <div className="flex gap-2"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Guardar habitación</button></div>
+          ) : (
+            <div className="text-center py-12 rounded-xl border" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+              <span className="text-3xl block mb-2">🔍</span>
+              <p className="font-semibold text-slate-300">No hay reservas con ese criterio para este hotel</p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                Puedes probar con el buscador web o consultar las reservas precargadas de Manta.
+              </p>
             </div>
-          </form>
+          )}
         </div>
+      )}
+
+      {/* ─── PESTAÑA 2: HABITACIONES OFERTADAS EN EL PORTAL ────────────────────── */}
+      {activeTab === "offered_rooms" && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
+                Tipos de Habitación en Oferta Web
+              </h2>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                Estas son las opciones y cupos disponibles que los turistas pueden seleccionar en la web de <strong>{currentMantaHotel.name}</strong>.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                const newId = `room-${Date.now().toString().slice(-4)}`;
+                const newOffer: RoomOffer = {
+                  id: newId,
+                  type: "Nueva Habitación Manta",
+                  beds: "1 cama queen",
+                  capacity: 2,
+                  size: 24,
+                  pricePerNight: 55,
+                  image: "https://images.unsplash.com/photo-1780126752257-cae35f118114?w=600&h=380&fit=crop",
+                  amenities: ["WiFi gratis", "A/C silencioso", "Baño privado"],
+                  available: 4,
+                };
+                setRoomOffers(prev => [newOffer, ...prev]);
+              }}
+              className="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+            >
+              <span>+</span>
+              <span>Ofertar nuevo tipo de habitación</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {roomOffers.map(offer => (
+              <div
+                key={offer.id}
+                className="rounded-xl border overflow-hidden flex flex-col justify-between"
+                style={{ background: "var(--card)", borderColor: "var(--border)" }}
+              >
+                <div>
+                  <div className="relative h-44 w-full">
+                    <img src={offer.image} alt={offer.type} className="w-full h-full object-cover" />
+                    <div className="absolute top-2.5 right-2.5 px-2 py-1 rounded bg-slate-900/85 text-amber-400 font-mono text-xs font-bold">
+                      {fmtUsd(offer.pricePerNight)} / noche
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-2.5">
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-100">{offer.type}</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        🛏️ {offer.beds} · 👥 Máx. {offer.capacity} persona{offer.capacity > 1 ? "s" : ""} · 📐 {offer.size} m²
+                      </p>
+                    </div>
+
+                    {/* Amenidades */}
+                    <div className="flex flex-wrap gap-1">
+                      {offer.amenities.map(a => (
+                        <span
+                          key={a}
+                          className="text-[10px] px-2 py-0.5 rounded"
+                          style={{ background: "var(--secondary)", color: "var(--muted-foreground)" }}
+                        >
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Gestión de Cupo disponible en la web */}
+                    <div className="pt-2 border-t flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold" style={{ color: "var(--muted-foreground)" }}>
+                          Cupos para venta web
+                        </p>
+                        <p className="font-mono text-xs font-semibold text-slate-200">
+                          {offer.available > 0 ? `${offer.available} disponibles` : "Agotado en la web"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleAdjustQuota(offer.id, -1)}
+                          className="w-7 h-7 rounded border flex items-center justify-center text-xs font-bold hover:bg-slate-800 cursor-pointer"
+                          style={{ borderColor: "var(--border)" }}
+                        >
+                          -
+                        </button>
+                        <span className="mono text-xs px-2 font-bold text-amber-400">
+                          {offer.available}
+                        </span>
+                        <button
+                          onClick={() => handleAdjustQuota(offer.id, 1)}
+                          className="w-7 h-7 rounded border flex items-center justify-center text-xs font-bold hover:bg-slate-800 cursor-pointer"
+                          style={{ borderColor: "var(--border)" }}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 pt-0">
+                  <button
+                    onClick={() => setEditingOffer(offer)}
+                    className="w-full py-1.5 rounded-lg border text-xs font-medium hover:bg-slate-800 transition-colors cursor-pointer text-slate-300"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    Editar tarifa y detalles
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── PESTAÑA 3: SOLO LOS HOTELES DE MANTA ──────────────────────────────── */}
+      {activeTab === "hotels_catalog" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
+                Catálogo de los 22 Hoteles de Manta
+              </h2>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                Selecciona cualquier hotel para ver sus habitaciones ofertadas y reservas de clientes.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {MANTA_HOTELS.map(h => {
+              const isSelected = h.id === hotelId;
+              return (
+                <div
+                  key={h.id}
+                  className={`rounded-xl border p-3.5 flex flex-col justify-between transition-all ${
+                    isSelected ? "border-amber-400 ring-1 ring-amber-400" : "hover:border-slate-500"
+                  }`}
+                  style={{ background: "var(--card)", borderColor: isSelected ? undefined : "var(--border)" }}
+                >
+                  <div>
+                    <img
+                      src={h.image}
+                      alt={h.name}
+                      className="w-full h-32 rounded-lg object-cover mb-2.5"
+                    />
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] text-amber-400 font-bold">
+                        {"★".repeat(h.stars)} ({h.stars === 1 ? "Pensión" : h.stars === 2 ? "Hostal" : "Hotel"})
+                      </span>
+                      <span className="mono text-[10px] text-slate-400">
+                        ⭐ {h.rating} ({h.reviews})
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-slate-100 mt-1 leading-tight">
+                      {h.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">{h.city}</p>
+
+                    <div className="mt-2 text-xs flex items-center justify-between text-slate-300">
+                      <span>Habitaciones: <strong>{h.rooms.length} tipos</strong></span>
+                      <span className="font-mono text-amber-400 font-bold">Desde ${h.priceFrom}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t" style={{ borderColor: "var(--border)" }}>
+                    {isSelected ? (
+                      <span className="block text-center text-xs font-bold text-amber-400 py-1">
+                        ● Hotel Activo
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          onSelectHotel?.(h.id);
+                          setActiveTab("client_choices");
+                        }}
+                        className="w-full py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
+                      >
+                        Gestionar este hotel →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de edición de oferta de habitación */}
+      {editingOffer && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border p-6 space-y-4"
+            style={{ background: "var(--card)", borderColor: "var(--border)" }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="mono text-[10px] text-amber-400 uppercase tracking-widest font-bold">
+                  Configuración Web
+                </span>
+                <h3 className="text-lg font-bold text-slate-100">{editingOffer.type}</h3>
+              </div>
+              <button
+                onClick={() => setEditingOffer(null)}
+                className="text-2xl text-slate-400 hover:text-white cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                setRoomOffers(prev => prev.map(o => (o.id === editingOffer.id ? editingOffer : o)));
+                setEditingOffer(null);
+              }}
+              className="space-y-3"
+            >
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Nombre del Tipo de Habitación</label>
+                <input
+                  type="text"
+                  value={editingOffer.type}
+                  onChange={e => setEditingOffer({ ...editingOffer, type: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border text-xs outline-none"
+                  style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Tarifa por Noche ($ USD)</label>
+                  <input
+                    type="number"
+                    min="10"
+                    value={editingOffer.pricePerNight}
+                    onChange={e => setEditingOffer({ ...editingOffer, pricePerNight: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border text-xs font-mono font-bold outline-none"
+                    style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Cupos Web Asignados</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editingOffer.available}
+                    onChange={e => setEditingOffer({ ...editingOffer, available: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-lg border text-xs font-mono font-bold outline-none"
+                    style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Configuración de Camas</label>
+                <input
+                  type="text"
+                  value={editingOffer.beds}
+                  onChange={e => setEditingOffer({ ...editingOffer, beds: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border text-xs outline-none"
+                  style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingOffer(null)}
+                  className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors cursor-pointer"
+                >
+                  Guardar cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Voucher / Comprobante de Cobro */}
+      {voucherRes && (
+        <InvoiceModal res={voucherRes} onClose={() => setVoucherRes(null)} />
       )}
     </div>
   );
@@ -2465,16 +2967,16 @@ const ALL_ROLES: AdminRole[] = ["superadmin", "admin", "manager", "receptionist"
 const MANAGEMENT_ROLES: AdminRole[] = ["superadmin", "admin", "manager"];
 
 const NAV_ITEMS: { view: View; label: string; icon: string; divider?: boolean; roles: AdminRole[] }[] = [
-  { view: "hotels", label: "Propiedades", icon: "H", roles: ["superadmin", "admin"] },
-  { view: "users", label: "Usuarios y accesos", icon: "U", roles: ["superadmin", "admin"], divider: true },
-  { view: "dashboard", label: "Dashboard", icon: "D", roles: MANAGEMENT_ROLES, divider: true },
-  { view: "reservations", label: "Reservas", icon: "R", roles: ALL_ROLES },
-  { view: "rooms", label: "Habitaciones", icon: "A", roles: ALL_ROLES },
-  { view: "guests", label: "Huéspedes", icon: "H", roles: ALL_ROLES },
-  { view: "billing", label: "Liquidaciones al Hotel", icon: "L", roles: ["superadmin", "admin", "manager"], divider: true },
-  { view: "payments", label: "Pagos", icon: "P", roles: ALL_ROLES },
-  { view: "rates", label: "Tarifas", icon: "T", roles: ALL_ROLES },
-  { view: "revenue", label: "Analítica", icon: "N", roles: MANAGEMENT_ROLES },
+  { view: "hotels", label: "Hoteles de la Red", icon: "🏨", roles: ["superadmin", "admin"] },
+  { view: "users", label: "Usuarios y accesos", icon: "👤", roles: ["superadmin", "admin"], divider: true },
+  { view: "dashboard", label: "Dashboard Reservas", icon: "📊", roles: MANAGEMENT_ROLES, divider: true },
+  { view: "rooms", label: "Habitaciones del Cliente", icon: "🛏️", roles: ALL_ROLES },
+  { view: "reservations", label: "Listado de Reservas", icon: "📑", roles: ALL_ROLES },
+  { view: "guests", label: "Huéspedes", icon: "👥", roles: ALL_ROLES },
+  { view: "billing", label: "Liquidaciones al Hotel", icon: "💰", roles: ["superadmin", "admin", "manager"], divider: true },
+  { view: "payments", label: "Comprobantes de Pago", icon: "💳", roles: ALL_ROLES },
+  { view: "rates", label: "Tarifas por Temporada", icon: "🏷️", roles: ALL_ROLES },
+  { view: "revenue", label: "Métricas del Portal", icon: "📈", roles: MANAGEMENT_ROLES },
 ];
 
 // ─── Platform hotels data ─────────────────────────────────────────────────────
@@ -2951,10 +3453,11 @@ export default function App() {
         }}
       >
         {/* Logo */}
-        <div className="px-4 py-4 border-b" style={{ borderColor: "var(--border)" }}>
-          <h2 className="text-base leading-tight" style={{ color: "var(--primary)" }}>
-            HotelDirekt PMS
+        <div className="px-4 py-3.5 border-b" style={{ borderColor: "var(--border)" }}>
+          <h2 className="text-base font-bold leading-tight" style={{ color: "var(--primary)" }}>
+            HotelDirekt Manta
           </h2>
+          <p className="text-[10px] text-slate-400 mt-0.5">Portal de Reservas Hoteleras</p>
           {adminUser && (
             <div className="mt-1.5 flex items-center gap-1.5">
               <span className="mono text-[9px] px-1.5 py-0.5 rounded uppercase font-bold" style={{ background: ROLE_INFO[adminUser.role].bg, color: ROLE_INFO[adminUser.role].color }}>
@@ -2963,6 +3466,17 @@ export default function App() {
               <span className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>{adminUser.name.split(" ")[0]}</span>
             </div>
           )}
+        </div>
+
+        {/* Botón rápido a la web de huéspedes */}
+        <div className="px-3 pt-2.5 pb-1">
+          <button
+            onClick={() => setAppMode("guest")}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-xs"
+          >
+            <span>🌐</span>
+            <span>Ver Web de Huéspedes</span>
+          </button>
         </div>
 
         {/* Hotel selector */}
@@ -3099,7 +3613,16 @@ export default function App() {
             </div>
           )}
           {view === "reservations" && activeHotel && <ReservationsView key={activeHotel.id} hotelId={activeHotel.id} />}
-          {view === "rooms" && activeHotel && <RoomsView key={activeHotel.id} hotelId={activeHotel.id} />}
+          {view === "rooms" && activeHotel && (
+            <RoomsView
+              key={activeHotel.id}
+              hotelId={activeHotel.id}
+              hotel={activeHotel}
+              allHotels={allowedHotels}
+              onSelectHotel={id => setActiveHotelId(id)}
+              onGoToGuestWeb={() => setAppMode("guest")}
+            />
+          )}
           {view === "revenue" && <RevenueView />}
           {view === "guests" && activeHotel && <GuestsView key={activeHotel.id} hotelId={activeHotel.id} />}
           {view === "billing" && activeHotel && <BillingView key={activeHotel.id} hotelId={activeHotel.id} hotel={activeHotel} />}
