@@ -519,13 +519,13 @@ function BarChart() {
             >
               {fmt(m.revenue / 1000)}k
             </span>
-            <div className="w-full relative rounded-sm overflow-hidden" style={{ height: `${h}%`, minHeight: 4 }}>
+            <div className="w-full relative rounded-sm overflow-hidden" style={{ height: `${h}%`, minHeight: 4, background: "var(--muted)" }}>
               <div
                 className="w-full h-full rounded-sm transition-all duration-500"
                 style={{
                   background: isLast
                     ? "var(--primary)"
-                    : "#1e3a5f",
+                    : "var(--secondary)",
                 }}
               />
             </div>
@@ -550,19 +550,19 @@ function OccupancyRing({ pct }: { pct: number }) {
   const dash = (pct / 100) * c;
   return (
     <svg width="96" height="96" viewBox="0 0 96 96">
-      <circle cx="48" cy="48" r={r} fill="none" stroke="#1e2d47" strokeWidth="10" />
+      <circle cx="48" cy="48" r={r} fill="none" stroke="var(--border)" strokeWidth="10" />
       <circle
         cx="48"
         cy="48"
         r={r}
         fill="none"
-        stroke="#f59e0b"
+        stroke="var(--primary)"
         strokeWidth="10"
         strokeDasharray={`${dash} ${c - dash}`}
         strokeDashoffset={c / 4}
         strokeLinecap="round"
       />
-      <text x="48" y="52" textAnchor="middle" fill="#e8edf5" fontSize="14" fontFamily="JetBrains Mono" fontWeight="600">
+      <text x="48" y="52" textAnchor="middle" fill="var(--foreground)" fontSize="14" fontFamily="JetBrains Mono" fontWeight="600">
         {pct}%
       </text>
     </svg>
@@ -1161,7 +1161,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
               {filtered.map((r, i) => (
                 <tr
                   key={r.id}
-                  className="transition-colors hover:bg-[#1a2540]"
+                  className="transition-colors hover:bg-[var(--secondary)]"
                   style={{
                     borderBottom:
                       i < filtered.length - 1 ? "1px solid var(--border)" : "none",
@@ -2007,13 +2007,13 @@ function RevenueView() {
                   return (
                     <tr
                       key={m.month}
-                      className="transition-colors hover:bg-[#1a2540]"
+                      className="transition-colors hover:bg-[var(--secondary)]"
                       style={{
                         borderBottom:
                           i < MONTHLY_REVENUE.length - 1
                             ? "1px solid var(--border)"
                             : "none",
-                        background: isLast ? "#1a2540" : undefined,
+                        background: isLast ? "var(--secondary)" : undefined,
                       }}
                     >
                       <td className="px-4 py-3">
@@ -2022,7 +2022,7 @@ function RevenueView() {
                             className="h-1.5 rounded-full"
                             style={{
                               width: Math.round((m.revenue / maxRev) * 80) + "px",
-                              background: isLast ? "var(--primary)" : "#1e3a5f",
+                              background: isLast ? "var(--primary)" : "var(--border)",
                             }}
                           />
                           <span
@@ -2194,7 +2194,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
             {visibleGuests.map((g, i) => (
               <tr
                 key={g.email}
-                className="hover:bg-[#1a2540] transition-colors"
+                className="hover:bg-[var(--secondary)] transition-colors"
                 style={{
                     borderBottom: i < visibleGuests.length - 1 ? "1px solid var(--border)" : "none",
                 }}
@@ -2218,8 +2218,8 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                   <span
                     className="px-2 py-0.5 rounded text-xs font-semibold"
                     style={{
-                      background: g.visits > 1 ? "#451a03" : "var(--muted)",
-                      color: g.visits > 1 ? "#fcd34d" : "var(--muted-foreground)",
+                      background: g.visits > 1 ? "rgba(245, 158, 11, 0.15)" : "var(--muted)",
+                      color: g.visits > 1 ? "#d97706" : "var(--muted-foreground)",
                     }}
                   >
                     {g.visits}
@@ -2270,15 +2270,15 @@ type InvoiceDeliveryStatus = "issued" | "error" | "returned";
 type Invoice = HotelInvoice;
 
 const INVOICE_STYLE: Record<InvoiceStatus, { bg: string; color: string; label: string }> = {
-  paid:     { bg: "#064e3b", color: "#6ee7b7", label: "Pagada" },
-  pending:  { bg: "#451a03", color: "#fcd34d", label: "Pendiente" },
-  overdue:  { bg: "#450a0a", color: "#fca5a5", label: "Vencida" },
-  refunded: { bg: "#1e2d47", color: "#93c5fd", label: "Reembolsada" },
+  paid:     { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Pagada" },
+  pending:  { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Pendiente" },
+  overdue:  { bg: "rgba(239, 68, 68, 0.15)", color: "#dc2626", label: "Vencida" },
+  refunded: { bg: "rgba(59, 130, 246, 0.15)", color: "#2563eb", label: "Reembolsada" },
 };
 const DELIVERY_STYLE: Record<InvoiceDeliveryStatus, { bg: string; color: string; label: string }> = {
-  issued: { bg: "#064e3b", color: "#6ee7b7", label: "Autorizada SRI" },
-  error: { bg: "#450a0a", color: "#fca5a5", label: "Error SRI" },
-  returned: { bg: "#451a03", color: "#fcd34d", label: "Devuelta" },
+  issued: { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Autorizada SRI" },
+  error: { bg: "rgba(239, 68, 68, 0.15)", color: "#dc2626", label: "Error SRI" },
+  returned: { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Devuelta" },
 };
 
 // ─── Billing view (SRI Ecuador) ───────────────────────────────────────────────
@@ -2393,7 +2393,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
               {filtered.map((inv, i) => {
                 const st = INVOICE_STYLE[inv.status];
                 return (
-                  <tr key={inv.id} className="transition-colors hover:bg-[#1a2540]" style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none" }}>
+                  <tr key={inv.id} className="transition-colors hover:bg-[var(--secondary)]" style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none" }}>
                     <td className="px-4 py-3"><span className="mono text-xs font-semibold text-amber-400">{inv.id}</span></td>
                     <td className="px-4 py-3"><span className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>{inv.resId}</span></td>
                     <td className="px-4 py-3">
@@ -2539,9 +2539,9 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
   }, [payments]);
 
   const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-    completed: { bg: "#064e3b", color: "#6ee7b7", label: "Completado" },
-    pending:   { bg: "#451a03", color: "#fcd34d", label: "Pendiente" },
-    failed:    { bg: "#450a0a", color: "#fca5a5", label: "Fallido" },
+    completed: { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Completado" },
+    pending:   { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Pendiente" },
+    failed:    { bg: "rgba(239, 68, 68, 0.15)", color: "#dc2626", label: "Fallido" },
   };
 
   const fmtDate = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("es-EC", { day: "2-digit", month: "short" });
@@ -2597,7 +2597,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
         <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Cobros pendientes</p>
-            <span className="mono text-xs px-2 py-0.5 rounded font-bold" style={{ background: "#451a03", color: "#fcd34d" }}>
+            <span className="mono text-xs px-2 py-0.5 rounded font-bold" style={{ background: "rgba(245, 158, 11, 0.15)", color: "#d97706" }}>
               {fmtUsd(totalPending)} pendiente
             </span>
           </div>
@@ -2652,7 +2652,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
             {payments.map((p, i) => {
               const st = statusStyle[p.status];
               return (
-                <tr key={p.id} className="hover:bg-[#1a2540] transition-colors" style={{ borderBottom: i < payments.length - 1 ? "1px solid var(--border)" : "none" }}>
+                <tr key={p.id} className="hover:bg-[var(--secondary)] transition-colors" style={{ borderBottom: i < payments.length - 1 ? "1px solid var(--border)" : "none" }}>
                   <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>{p.id}</td>
                   <td className="px-4 py-3 font-medium" style={{ color: "var(--foreground)" }}>
                     <p>{p.guest}</p>
@@ -3039,10 +3039,10 @@ const DEFAULT_STAFF: StaffUser[] = [
 ];
 
 const ROLE_INFO: Record<AdminRole, { label: string; color: string; bg: string }> = {
-  superadmin: { label: "Superadministrador", color: "#fcd34d", bg: "#451a03" },
-  admin: { label: "Administrador", color: "#d8b4fe", bg: "#3b1f5e" },
-  manager: { label: "Gerente", color: "#93c5fd", bg: "#1e3a5f" },
-  receptionist: { label: "Recepcionista", color: "#6ee7b7", bg: "#064e3b" },
+  superadmin: { label: "Superadministrador", color: "#d97706", bg: "rgba(245, 158, 11, 0.15)" },
+  admin: { label: "Administrador", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.15)" },
+  manager: { label: "Gerente", color: "#2563eb", bg: "rgba(37, 99, 235, 0.15)" },
+  receptionist: { label: "Recepcionista", color: "#059669", bg: "rgba(16, 185, 129, 0.15)" },
 };
 
 function usePersistentState<T>(key: string, initialValue: T) {
@@ -3099,9 +3099,9 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
 
   const starLabel = (s: 1 | 2 | 3) => s === 1 ? "Pensión" : s === 2 ? "Hostal" : "Hotel";
   const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-    active: { bg: "#064e3b", color: "#6ee7b7", label: "Activo" },
-    paused: { bg: "#451a03", color: "#fcd34d", label: "Pausado" },
-    pending: { bg: "#1e2d47", color: "#93c5fd", label: "Pendiente" },
+    active: { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Activo" },
+    paused: { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Pausado" },
+    pending: { bg: "rgba(59, 130, 246, 0.15)", color: "#2563eb", label: "Pendiente" },
   };
 
   return (
@@ -3140,7 +3140,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
                 const ss = statusStyle[h.status];
                 const hasServ10 = h.gravaServicio10 ?? true;
                 return (
-                  <tr key={h.id} className="transition-colors hover:bg-[#1a2540]" style={{ borderBottom: i < hotels.length - 1 ? "1px solid var(--border)" : "none" }}>
+                  <tr key={h.id} className="transition-colors hover:bg-[var(--secondary)]" style={{ borderBottom: i < hotels.length - 1 ? "1px solid var(--border)" : "none" }}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {h.gallery?.[0] && <img src={h.gallery[0]} alt="" className="w-12 h-10 rounded object-cover" />}
@@ -3386,6 +3386,7 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
 // ─── App root ─────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [theme, setTheme] = usePersistentState<"light" | "dark">("hoteldirekt.theme", "light");
   const [appMode, setAppMode] = useState<"auth" | "guest" | "admin">("guest");
   const [authDefaultTab, setAuthDefaultTab] = useState<"guest" | "admin">("guest");
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
@@ -3396,6 +3397,10 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hotels, setHotels] = usePersistentState<PlatformHotel[]>("hoteldirekt.hotels", DEFAULT_HOTELS);
   const [staffUsers, setStaffUsers] = usePersistentState<StaffUser[]>("hoteldirekt.staff", DEFAULT_STAFF);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   // Auth page (only for admin access or when guest needs to log in)
   if (appMode === "auth") {
@@ -3523,18 +3528,34 @@ export default function App() {
           ))}
         </nav>
 
-        {/* Ver web + logout */}
-        <div className="px-2 pb-1 space-y-1">
+        {/* Ver web + tema + logout */}
+        <div className="px-2 pb-1 space-y-1.5">
+          {/* Botón de cambio de tema Claro / Oscuro */}
+          <button
+            onClick={() => setTheme(t => (t === "light" ? "dark" : "light"))}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer hover:border-amber-500/50 shadow-xs"
+            style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            title="Alternar entre modo claro y modo oscuro"
+          >
+            <span className="flex items-center gap-1.5">
+              <span>{theme === "light" ? "☀️" : "🌙"}</span>
+              <span>{theme === "light" ? "Modo Claro" : "Modo Oscuro"}</span>
+            </span>
+            <span className="mono text-[10px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: "var(--secondary)", color: "var(--primary)" }}>
+              {theme === "light" ? "Claro" : "Oscuro"}
+            </span>
+          </button>
+
           <button
             onClick={() => setAppMode("guest")}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded text-xs font-medium transition-all"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer"
             style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
           >
             Ver web cliente
           </button>
           <button
             onClick={() => { setAdminUser(null); setAppMode("auth"); }}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded text-xs font-medium transition-all"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer"
             style={{ background: "var(--muted)", color: "#fca5a5" }}
           >
             ← Cerrar sesión
@@ -3566,19 +3587,29 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar (mobile) */}
         <div
-          className="lg:hidden flex items-center gap-3 px-4 py-3 border-b"
+          className="lg:hidden flex items-center justify-between px-4 py-3 border-b"
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
         >
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="text-lg"
+              style={{ color: "var(--foreground)" }}
+            >
+              ☰
+            </button>
+            <span className="font-bold text-sm" style={{ color: "var(--primary)" }}>
+              HotelDirekt Manta
+            </span>
+          </div>
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-lg"
-            style={{ color: "var(--foreground)" }}
+            onClick={() => setTheme(t => (t === "light" ? "dark" : "light"))}
+            className="text-sm px-2 py-1 rounded border cursor-pointer"
+            style={{ background: "var(--muted)", borderColor: "var(--border)" }}
+            title="Cambiar tema"
           >
-            ☰
+            {theme === "light" ? "☀️" : "🌙"}
           </button>
-          <span className="font-medium text-sm" style={{ color: "var(--primary)" }}>
-            HotelPMS
-          </span>
         </div>
 
         {/* Content */}
