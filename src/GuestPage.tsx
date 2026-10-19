@@ -623,10 +623,12 @@ function LoginModal({
   onClose,
   onGuestLogin,
   onAdminAccess,
+  onOpenConsult,
 }: {
   onClose: () => void;
   onGuestLogin: (u: GuestUser) => void;
   onAdminAccess?: () => void;
+  onOpenConsult?: () => void;
 }) {
   const [tab, setTab] = useState<"guest" | "admin">("guest");
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -749,6 +751,21 @@ function LoginModal({
                   {mode === "login" ? "¿No tienes cuenta? Regístrate gratis" : "¿Ya tienes cuenta? Inicia sesión"}
                 </button>
               </div>
+
+              {onOpenConsult && (
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenConsult();
+                    }}
+                    className="text-xs text-slate-500 hover:text-amber-700 transition-colors cursor-pointer"
+                  >
+                    ¿Buscas una reserva con tu código? <span className="font-semibold underline text-amber-600">Consultar aquí</span>
+                  </button>
+                </div>
+              )}
 
               {/* Acceso Rápido Demo */}
               <div className="pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
@@ -1654,6 +1671,7 @@ function HomePage({
   theme,
   onToggleTheme,
   onAdminAccess,
+  onOpenConsult,
 }: {
   params: SearchParams;
   onChange: (p: SearchParams) => void;
@@ -1661,6 +1679,7 @@ function HomePage({
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
   onAdminAccess?: () => void;
+  onOpenConsult?: () => void;
 }) {
   return (
     <div style={{ background: "#f8fafc" }}>
@@ -1728,7 +1747,22 @@ function HomePage({
           </div>
           <div className="flex gap-10 text-xs text-slate-400">
             <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Sectores</p><p>Barbasquillo & El Murciélago</p><p>Tarqui & Los Esteros</p><p>San Mateo & Santa Marianita</p></div>
-            <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Ayuda & Soporte</p><p>Consultar Reserva</p><p>Contacto directo hotel</p><p>Términos de servicio</p></div>
+            <div className="space-y-1.5">
+              <p className="font-semibold text-slate-300 mb-2">Ayuda & Soporte</p>
+              {onOpenConsult ? (
+                <button
+                  type="button"
+                  onClick={onOpenConsult}
+                  className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                >
+                  Consultar mi reserva
+                </button>
+              ) : (
+                <p>Consultar Reserva</p>
+              )}
+              <p>Contacto directo hotel</p>
+              <p>Términos de servicio</p>
+            </div>
           </div>
         </div>
         <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400" style={{ borderColor: "#334155" }}>
@@ -1866,18 +1900,6 @@ export default function GuestPage({
           </button>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Botón Consultar Reserva */}
-            <button
-              onClick={() => setShowConsultModal(true)}
-              className="text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all hover:bg-amber-50 hover:border-amber-300 text-slate-800 cursor-pointer shadow-2xs shrink-0"
-              style={{ borderColor: "#cbd5e1" }}
-              title="Consultar mi reserva"
-            >
-              <span>🔍</span>
-              <span className="hidden sm:inline">Consultar mi reserva</span>
-              <span className="sm:hidden text-xs">Reservas</span>
-            </button>
-
             {user ? (
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
@@ -1902,11 +1924,11 @@ export default function GuestPage({
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="text-xs sm:text-sm font-bold px-3 sm:px-3.5 py-1.5 rounded-lg hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm text-slate-950 bg-amber-500 hover:bg-amber-400 shrink-0"
+                className="text-xs sm:text-sm font-bold px-3.5 sm:px-4 py-1.5 rounded-lg hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm text-slate-950 bg-amber-500 hover:bg-amber-400 shrink-0"
               >
                 <span>👤</span>
                 <span className="hidden sm:inline">Iniciar sesión</span>
-                <span className="sm:hidden text-xs">Entrar</span>
+                <span className="sm:hidden text-xs font-semibold">Iniciar sesión</span>
               </button>
             )}
           </div>
@@ -1921,6 +1943,7 @@ export default function GuestPage({
           theme={theme}
           onToggleTheme={onToggleTheme}
           onAdminAccess={onAdminAccess}
+          onOpenConsult={() => setShowConsultModal(true)}
         />
       )}
       {view === "results" && <ResultsView params={params} onChange={setParams} onSearch={handleSearch} onSelect={handleSelectHotel} />}
@@ -1960,6 +1983,7 @@ export default function GuestPage({
             setShowLoginModal(false);
             onAdminAccess?.();
           }}
+          onOpenConsult={() => setShowConsultModal(true)}
         />
       )}
 
