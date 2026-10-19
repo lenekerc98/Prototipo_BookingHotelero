@@ -183,27 +183,31 @@ function PriceBreakdownBox({
 
 function SearchBar({ params, onChange, onSearch, variant = "hero" }: { params: SearchParams; onChange: (p: SearchParams) => void; onSearch: () => void; variant?: "hero" | "sticky" }) {
   return (
-    <div className={`flex flex-wrap gap-2 items-end ${variant === "hero" ? "p-3 rounded-2xl shadow-2xl" : "p-2 rounded-xl border"}`} style={{ background: "#fff", borderColor: variant === "sticky" ? "#e2e8f0" : undefined }}>
-      <div className="flex-1 min-w-[140px]">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#94a3b8" }}>¿A dónde vas?</label>
-        <input className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={params.destination} onChange={e => onChange({ ...params, destination: e.target.value })} placeholder="Ciudad..." list="dest-list" />
+    <div className={`w-full max-w-full flex flex-col md:flex-row gap-2.5 md:items-end ${variant === "hero" ? "p-3 sm:p-4 rounded-2xl shadow-2xl" : "p-2.5 rounded-xl border"}`} style={{ background: "#fff", borderColor: variant === "sticky" ? "#e2e8f0" : undefined }}>
+      <div className="flex-1 min-w-0">
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">¿A dónde vas?</label>
+        <input className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none text-slate-800" style={{ borderColor: "#cbd5e1" }} value={params.destination} onChange={e => onChange({ ...params, destination: e.target.value })} placeholder="Ciudad, parroquia o playa..." list="dest-list" />
         <datalist id="dest-list">{DESTINATIONS.map(d => <option key={d.city} value={d.city} />)}</datalist>
       </div>
-      <div className="min-w-[120px]">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#94a3b8" }}>Llegada</label>
-        <input type="date" className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b", colorScheme: "light" }} value={params.checkIn} min={todayStr()} onChange={e => onChange({ ...params, checkIn: e.target.value, checkOut: params.checkOut && e.target.value >= params.checkOut ? addDays(e.target.value, 1) : params.checkOut })} />
+      <div className="grid grid-cols-2 gap-2 md:flex md:gap-2">
+        <div className="min-w-0 sm:w-32">
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">Llegada</label>
+          <input type="date" className="w-full px-2.5 py-2 rounded-lg border text-xs sm:text-sm font-medium outline-none text-slate-800" style={{ borderColor: "#cbd5e1", colorScheme: "light" }} value={params.checkIn} min={todayStr()} onChange={e => onChange({ ...params, checkIn: e.target.value, checkOut: params.checkOut && e.target.value >= params.checkOut ? addDays(e.target.value, 1) : params.checkOut })} />
+        </div>
+        <div className="min-w-0 sm:w-32">
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">Salida</label>
+          <input type="date" className="w-full px-2.5 py-2 rounded-lg border text-xs sm:text-sm font-medium outline-none text-slate-800" style={{ borderColor: "#cbd5e1", colorScheme: "light" }} value={params.checkOut} min={params.checkIn ? addDays(params.checkIn, 1) : addDays(todayStr(), 1)} onChange={e => onChange({ ...params, checkOut: e.target.value })} />
+        </div>
       </div>
-      <div className="min-w-[120px]">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#94a3b8" }}>Salida</label>
-        <input type="date" className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b", colorScheme: "light" }} value={params.checkOut} min={params.checkIn ? addDays(params.checkIn, 1) : addDays(todayStr(), 1)} onChange={e => onChange({ ...params, checkOut: e.target.value })} />
-      </div>
-      <div className="min-w-[100px]">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#94a3b8" }}>Huéspedes</label>
-        <select className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={params.adults} onChange={e => onChange({ ...params, adults: Number(e.target.value) })}>
-          {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n} adulto{n > 1 ? "s" : ""}</option>)}
+      <div className="min-w-0 md:w-28">
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">Huéspedes</label>
+        <select className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none text-slate-800 bg-white" style={{ borderColor: "#cbd5e1" }} value={params.adults} onChange={e => onChange({ ...params, adults: Number(e.target.value) })}>
+          {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n} adulto{n > 1 ? "s" : ""}</option>)}
         </select>
       </div>
-      <button onClick={onSearch} className="px-5 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all whitespace-nowrap" style={{ background: "#f59e0b", color: "#0c1220" }}>🔍 Buscar</button>
+      <button onClick={onSearch} className="w-full md:w-auto px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all whitespace-nowrap cursor-pointer shadow-sm text-center" style={{ background: "#f59e0b", color: "#0c1220" }}>
+        🔍 Buscar
+      </button>
     </div>
   );
 }
@@ -1643,25 +1647,38 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
-function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChange: (p: SearchParams) => void; onSearch: () => void }) {
+function HomePage({
+  params,
+  onChange,
+  onSearch,
+  theme,
+  onToggleTheme,
+  onAdminAccess,
+}: {
+  params: SearchParams;
+  onChange: (p: SearchParams) => void;
+  onSearch: () => void;
+  theme?: "light" | "dark";
+  onToggleTheme?: () => void;
+  onAdminAccess?: () => void;
+}) {
   return (
     <div style={{ background: "#f8fafc" }}>
-      <div className="relative" style={{ minHeight: 420 }}>
+      <div className="relative" style={{ minHeight: 400 }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #0c1220 0%, #1e3a5f 50%, #0f2744 100%)" }}>
           <img src="https://images.unsplash.com/photo-1722191847760-8426e74d4b3d?w=1400&h=600&fit=crop&auto=format" alt="" className="w-full h-full object-cover opacity-25" />
         </div>
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(12,18,32,0.3) 0%, rgba(12,18,32,0.75) 100%)" }} />
-        <div className="relative max-w-5xl mx-auto px-4 pt-20 pb-10 text-center">
-          <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">116 Alojamientos · Catastro Oficial Cantón Manta 2026 · Manabí, Ecuador</p>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel en Manta</h1>
-          <p className="text-white/70 text-base mb-8 max-w-lg mx-auto">Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.</p>
+        <div className="relative max-w-5xl mx-auto px-4 pt-12 sm:pt-20 pb-8 sm:pb-12 text-center">
+          <h1 className="text-3xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel en Manta</h1>
+          <p className="text-white/80 text-sm sm:text-base mb-6 sm:mb-8 max-w-lg mx-auto">Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.</p>
           <div className="max-w-4xl mx-auto"><SearchBar params={params} onChange={onChange} onSearch={onSearch} /></div>
         </div>
       </div>
-      <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
-        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap gap-5 justify-center sm:justify-between">
+      <div className="border-b" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
           {[["🛡️", "Cobro digital seguro (PayPhone/DeUna)"], ["✅", "Confirmación instantánea"], ["🔄", "Cancelación flexible"], ["🏆", "Tarifa directa sin sobreprecio OTA"], ["💬", "Atención local en Manta"]].map(([icon, text]) => (
-            <div key={text as string} className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><span>{icon}</span>{text}</div>
+            <div key={text as string} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 shrink-0"><span>{icon}</span>{text}</div>
           ))}
         </div>
       </div>
@@ -1694,7 +1711,7 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
           ))}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales."], ["⭐", "Catastro Oficial de Manta", "Establecimientos verificados: hostales, hoteles y hosterías del cantón."], ["🏛️", "Facturación Directa", "El hotel emite tu factura fiscal en recepción. La plataforma liquida y transfiere el cobro al alojamiento."]].map(([icon, title, desc]) => (
+          {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales."], ["⭐", "Alojamientos Verificados", "Establecimientos registrados y validados: hostales, hoteles y hosterías del cantón Manta."], ["🏛️", "Facturación Directa", "El hotel emite tu factura fiscal en recepción. La plataforma liquida y transfiere el cobro al alojamiento."]].map(([icon, title, desc]) => (
             <div key={title as string} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
               <span className="text-2xl">{icon}</span>
               <h4 className="font-bold text-slate-800 mt-2 mb-1 text-sm">{title}</h4>
@@ -1714,7 +1731,32 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
             <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Ayuda & Soporte</p><p>Consultar Reserva</p><p>Contacto directo hotel</p><p>Términos de servicio</p></div>
           </div>
         </div>
-        <div className="border-t text-center py-3 text-[11px] text-slate-500" style={{ borderColor: "#334155" }}>© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta</div>
+        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400" style={{ borderColor: "#334155" }}>
+          <span>© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta</span>
+          <div className="flex items-center gap-4">
+            {onToggleTheme && (
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition-colors text-xs py-1 px-2.5 rounded hover:bg-slate-800 cursor-pointer"
+                title="Cambiar tema claro / oscuro"
+              >
+                <span>{theme === "dark" ? "☀️" : "🌙"}</span>
+                <span>{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+              </button>
+            )}
+            {onAdminAccess && (
+              <button
+                type="button"
+                onClick={onAdminAccess}
+                className="text-slate-500 hover:text-slate-300 transition-colors text-xs py-1 px-2 cursor-pointer"
+                title="Acceso para administradores y recepción hotelera"
+              >
+                Acceso Establecimientos
+              </button>
+            )}
+          </div>
+        </div>
       </footer>
     </div>
   );
@@ -1810,68 +1852,44 @@ export default function GuestPage({
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#f8fafc" }}>
+    <div className="min-h-screen overflow-x-hidden w-full max-w-full" style={{ background: "#f8fafc" }}>
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b shadow-xs" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer">
-            <span className="font-bold text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          <button onClick={handleLogoClick} className="flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0">
+            <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>
               AlojaManta
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+            <span className="hidden sm:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
               MANTA 2026
             </span>
           </button>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            {onToggleTheme && (
-              <button
-                type="button"
-                onClick={onToggleTheme}
-                className="text-xs sm:text-sm font-semibold px-2.5 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all hover:bg-slate-100 text-slate-800 cursor-pointer shadow-2xs"
-                style={{ borderColor: "#cbd5e1", background: "#ffffff" }}
-                title="Cambiar tema claro / oscuro"
-              >
-                <span>{theme === "dark" ? "☀️" : "🌙"}</span>
-                <span className="hidden lg:inline">{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
-              </button>
-            )}
-
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Botón Consultar Reserva */}
             <button
               onClick={() => setShowConsultModal(true)}
-              className="text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all hover:bg-amber-50 hover:border-amber-300 text-slate-800 cursor-pointer shadow-2xs"
+              className="text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all hover:bg-amber-50 hover:border-amber-300 text-slate-800 cursor-pointer shadow-2xs shrink-0"
               style={{ borderColor: "#cbd5e1" }}
+              title="Consultar mi reserva"
             >
               <span>🔍</span>
               <span className="hidden sm:inline">Consultar mi reserva</span>
-              <span className="sm:hidden">Buscar Reserva</span>
-            </button>
-
-            {/* Acceso Hotel / PMS */}
-            <button
-              onClick={() => {
-                if (onAdminAccess) onAdminAccess();
-                else setShowLoginModal(true);
-              }}
-              className="text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer hidden md:flex items-center gap-1"
-            >
-              <span>🏨</span>
-              <span>Acceso Hotel / PMS</span>
+              <span className="sm:hidden text-xs">Reservas</span>
             </button>
 
             {user ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => setView("account")}
-                  className={`text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                     view === "account" ? "text-amber-800 bg-amber-100" : "text-slate-700 bg-slate-100 hover:bg-slate-200"
                   }`}
                 >
                   <span className="w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-xs flex items-center justify-center font-bold">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
-                  <span>{user.name.split(" ")[0]}</span>
+                  <span className="max-w-[70px] sm:max-w-none truncate">{user.name.split(" ")[0]}</span>
                 </button>
                 <button
                   onClick={onLogout}
@@ -1884,17 +1902,27 @@ export default function GuestPage({
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-lg hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm text-slate-950 bg-amber-500 hover:bg-amber-400"
+                className="text-xs sm:text-sm font-bold px-3 sm:px-3.5 py-1.5 rounded-lg hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm text-slate-950 bg-amber-500 hover:bg-amber-400 shrink-0"
               >
                 <span>👤</span>
-                <span>Iniciar sesión</span>
+                <span className="hidden sm:inline">Iniciar sesión</span>
+                <span className="sm:hidden text-xs">Entrar</span>
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {view === "home" && <HomePage params={params} onChange={setParams} onSearch={handleSearch} />}
+      {view === "home" && (
+        <HomePage
+          params={params}
+          onChange={setParams}
+          onSearch={handleSearch}
+          theme={theme}
+          onToggleTheme={onToggleTheme}
+          onAdminAccess={onAdminAccess}
+        />
+      )}
       {view === "results" && <ResultsView params={params} onChange={setParams} onSearch={handleSearch} onSelect={handleSelectHotel} />}
       {view === "hotel" && selectedHotel && <HotelDetail hotel={selectedHotel} params={params} onBack={() => setView("results")} onBook={r => setBookingRoom(r)} />}
       {view === "account" && user && (
@@ -1950,6 +1978,22 @@ export default function GuestPage({
       {/* Modal de Voucher / Comprobante de Cobro */}
       {voucherRes && (
         <InvoiceModal res={voucherRes} onClose={() => setVoucherRes(null)} />
+      )}
+
+      {/* Botón flotante para cambiar tema (Modo Claro / Modo Oscuro) */}
+      {onToggleTheme && (
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full shadow-xl border flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-90 cursor-pointer bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
+          style={{
+            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)",
+          }}
+          title={theme === "dark" ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
+          aria-label="Alternar tema claro / oscuro"
+        >
+          <span>{theme === "dark" ? "☀️" : "🌙"}</span>
+        </button>
       )}
     </div>
   );
