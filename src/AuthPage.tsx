@@ -24,18 +24,18 @@ interface Props {
   onToggleTheme?: () => void;
 }
 
-const ADMIN_ACCOUNTS: (AdminUser & { password: string })[] = [
-  { name: "Carlos Admin", email: "admin@hoteldirekt.com", password: "admin123", role: "superadmin", hotelIds: [] },
-  { name: "Ana Administradora", email: "direccion@laspalmeras.com", password: "hotel123", role: "admin", hotel: "Hotel Las Palmeras", hotelIds: ["las-palmeras"] },
-  { name: "María Gerente", email: "gerente@laspalmeras.com", password: "hotel123", role: "manager", hotel: "Hotel Las Palmeras", hotelIds: ["las-palmeras"] },
-  { name: "Juan Recepción", email: "recepcion@laspalmeras.com", password: "recep123", role: "receptionist", hotel: "Hotel Las Palmeras", hotelIds: ["las-palmeras"] },
+const ADMIN_ACCOUNTS: (AdminUser & { password: string; legacyEmails?: string[] })[] = [
+  { name: "Carlos Admin", email: "admin@alojamanta.ec", password: "admin123", role: "superadmin", hotelIds: [], legacyEmails: ["admin@hoteldirekt.com"] },
+  { name: "Ana Administradora", email: "direccion@mantahost.ec", password: "hotel123", role: "admin", hotel: "MantaHost Hotel", hotelIds: ["mantahost-hotel", "las-palmeras"], legacyEmails: ["direccion@laspalmeras.com"] },
+  { name: "María Revenue", email: "revenue@mantahost.ec", password: "hotel123", role: "manager", hotel: "MantaHost Hotel", hotelIds: ["mantahost-hotel", "las-palmeras"], legacyEmails: ["gerente@laspalmeras.com"] },
+  { name: "Juan Recepción", email: "recepcion@mantahost.ec", password: "recep123", role: "receptionist", hotel: "MantaHost Hotel", hotelIds: ["mantahost-hotel", "las-palmeras"], legacyEmails: ["recepcion@laspalmeras.com"] },
 ];
 
 const ROLE_LABELS: Record<AdminRole, { label: string; color: string; bg: string; border: string; desc: string }> = {
-  superadmin: { label: "Superadmin", color: "#b45309", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.35)", desc: "Toda la plataforma" },
-  admin: { label: "Administrador", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.35)", desc: "Todo su hotel" },
-  manager: { label: "Gerente", color: "#2563eb", bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.35)", desc: "Gestión limitada" },
-  receptionist: { label: "Recepcionista", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc: "Operación diaria" },
+  superadmin: { label: "Superadmin Cantonal", color: "#b45309", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.35)", desc: "116 hoteles de Manta" },
+  admin: { label: "Administrador de Hotel", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.35)", desc: "Gestión y equipo de su hotel" },
+  manager: { label: "Revenue Manager", color: "#2563eb", bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.35)", desc: "Tarifas y tipos de habitación" },
+  receptionist: { label: "Recepcionista Front Desk", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc: "Reservas y Facturas SRI" },
 };
 
 export default function AuthPage({
@@ -70,8 +70,11 @@ export default function AuthPage({
 
   function handleAdminSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const account = ADMIN_ACCOUNTS.find(a => a.email === adminEmail && a.password === adminPass);
-    if (!account) { setAdminError("Credenciales incorrectas. Prueba con admin@hoteldirekt.com / admin123"); return; }
+    const account = ADMIN_ACCOUNTS.find(
+      a => (a.email.toLowerCase() === adminEmail.toLowerCase() || a.legacyEmails?.includes(adminEmail.toLowerCase())) &&
+      a.password === adminPass
+    );
+    if (!account) { setAdminError("Credenciales incorrectas. Prueba con admin@alojamanta.ec / admin123 o clic en las cuentas demo"); return; }
     setAdminError("");
     onAdminLogin({ name: account.name, email: account.email, role: account.role, hotel: account.hotel, hotelIds: account.hotelIds });
   }
@@ -82,7 +85,7 @@ export default function AuthPage({
       <header className="flex items-center justify-between px-6 py-4 border-b transition-colors shadow-2xs" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="flex items-center gap-3">
           <span className="font-bold text-2xl tracking-tight" style={{ fontFamily: "DM Serif Display, serif", color: "var(--primary)" }}>
-            HotelDirekt
+            AlojaManta
           </span>
           <span className="mono text-[11px] px-2 py-0.5 rounded border font-semibold" style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--muted-foreground)" }}>
             v1.0 beta

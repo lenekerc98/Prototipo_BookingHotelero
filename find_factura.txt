@@ -1,0 +1,165 @@
+src\App.tsx:4: import SriInvoiceModal from "./SriInvoiceModal";
+src\App.tsx:144: notes: "Factura a nombre de empresa",
+src\App.tsx:1923: {/* Modal de Voucher / Comprobante de Cobro */}
+src\App.tsx:2351: <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Facturación Electrónica</h1>
+src\App.tsx:2362: <span>+</span> Emitir Factura SRI
+src\App.tsx:2367: <KpiCard label="Cobrado SRI (Ago)" value={fmtUsd(totalPaid)} sub={`${invoices.filter(i => i.status === "paid").length} facturas autorizadas`
+src\App.tsx:2368: <KpiCard label="Pendiente de cobro" value={fmtUsd(totalPending)} sub={`${invoices.filter(i => i.status === "pending" || i.status === "overdu
+src\App.tsx:2370: <KpiCard label="Comprobantes SRI" value={String(invoices.length)} sub={`${invoices.filter(i => i.deliveryStatus === "issued").length} autori
+src\App.tsx:2387: {["Nº Factura SRI", "Reserva", "Huésped", "Fecha", "Subtotal", "IVA 15%", "Total USD", "Método", "Cobro", "Estado SRI", ""].map(h => (
+src\App.tsx:2425: <SriInvoiceModal
+src\App.tsx:2448: <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Nueva Factura Electrónica SRI</h3>
+src\App.tsx:2975: { view: "billing", label: "Liquidaciones al Hotel", icon: "💰", roles: ["superadmin", "admin"], divider: true },
+src\App.tsx:2976: { view: "payments", label: "Comprobantes de Pago", icon: "💳", roles: ["superadmin", "admin", "receptionist"] },
+src\App.tsx:3127: <KpiCard label="Revenue plataforma (Ago)" value={fmtUsd(totalRevenue)} sub="facturado en USD Manta" accent />
+src\App.tsx:3365: ["Administrador de Hotel", "Control de su establecimiento, configuración del 10% de servicio, liquidaciones bancarias y su equipo."],
+src\App.tsx:3367: ["Recepcionista Front Desk", "Bandeja de reservas en tiempo real, registro de check-in/out, pagos y facturas electrónicas SRI."],
+src\AuthPage.tsx:38: receptionist: { label: "Recepcionista Front Desk", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc:
+src\GuestPage.tsx:173: <strong>Facturación electrónica directa:</strong> Este comprobante es emitido y autorizado ante el <strong>SRI</strong> directamente por {ho
+src\GuestPage.tsx:251: <span><strong>Facturación Directa por el Hotel:</strong> Este documento certifica su pago online transferido al hotel. Su factura fiscal ofi
+src\GuestPage.tsx:277: <td className="px-4 py-2 text-xs text-slate-500">IVA (15% base para factura hotel)</td>
+src\GuestPage.tsx:586: <span>Ver Voucher & Comprobante</span>
+src\GuestPage.tsx:777: { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@mantahost.ec", desc: "Operación de reservas y facturas SRI" },
+src\GuestPage.tsx:875: ? [{ k: "details", l: "1. Datos" }, { k: "payment", l: "2. Pago" }, { k: "invoice", l: "3. Factura" }]
+src\GuestPage.tsx:876: : [{ k: "auth", l: "1. Acceso" }, { k: "details", l: "2. Datos" }, { k: "payment", l: "3. Pago" }, { k: "invoice", l: "4. Factura" }];
+src\GuestPage.tsx:968: <p className="text-xs text-slate-400 mt-1">Necesitas cuenta para completar la reserva y recibir tu factura</p>
+src\GuestPage.tsx:1140: Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la <strong>Ley Orgánica de Protección de Datos Personales (L
+src\GuestPage.tsx:1169: <p className="text-xs text-slate-500 mt-0.5">Voucher oficial con QR y Facturación Directa del Hotel</p>
+src\GuestPage.tsx:1179: <span className="text-[9px] bg-amber-500/20 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-500/30">FACTURA DIRECTA</span>
+src\GuestPage.tsx:1192: {/* Banner de Facturación Directa SRI */}
+src\GuestPage.tsx:1195: <span><strong>Facturación Electrónica Directa SRI:</strong> Comprobante emitido sin intermediación por el establecimiento hotelero bajo norm
+src\GuestPage.tsx:1309: <span>Descargar Comprobante & Voucher PDF</span>
+src\GuestPage.tsx:1312: <p className="text-center text-xs text-slate-400 pt-1">Comprobante enviado a <strong>{form.email || user?.email}</strong></p>
+src\GuestPage.tsx:1371: ✓ Factura SRI directa
+src\GuestPage.tsx:1692: {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales.
+src\GuestPage.tsx:1945: {/* Modal de Voucher / Comprobante de Cobro */}
+src\hotelData.ts:68: email: "facturacion@hotelcostasol.ec",
+src\mantaHotels.ts:90: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:173: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:251: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:333: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:414: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:491: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:568: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:645: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:722: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:799: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:876: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:958: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíeíríííaí - 3 Estrellas). Ubicado en M
+src\mantaHotels.ts:1043: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:1128: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:1210: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:1291: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:1378: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:1464: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:1558: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:1641: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:1732: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:1820: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:1902: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:1984: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:2067: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:2146: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:2223: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:2300: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:2379: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:2456: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:2534: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:2620: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:2708: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:2791: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:2869: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:2950: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:3033: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:3112: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:3190: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:3268: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:3345: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:3424: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:3502: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:3579: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:3662: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:3747: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:3828: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:3906: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:3983: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:4060: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:4138: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:4215: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:4298: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:4379: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:4456: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:4534: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:4613: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:4692: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:4770: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:4848: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:4927: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:5004: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:5081: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:5162: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:5245: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:5322: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:5399: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:5476: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:5559: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:5640: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:5718: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:5800: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:5881: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:5959: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:6036: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:6117: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:6198: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:6275: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:6353: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:6435: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:6530: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:6622: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:6713: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:6800: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:6889: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:6985: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7076: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7163: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7246: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7323: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:7401: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7479: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:7558: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7641: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7727: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:7813: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:7900: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:7991: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:8078: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:8159: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:8238: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:8317: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:8395: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:8473: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:8550: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:8629: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:8707: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:8785: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:8864: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:8942: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta 
+src\mantaHotels.ts:9024: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\mantaHotels.ts:9110: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:9205: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:9289: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:9366: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta -
+src\mantaHotels.ts:9448: "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta
+src\PaymentLinkModal.tsx:231: Email para recibo / factura
+src\SriInvoiceModal.tsx:27: interface SriInvoiceModalProps {
+src\SriInvoiceModal.tsx:63: export default function SriInvoiceModal({
+src\SriInvoiceModal.tsx:69: }: SriInvoiceModalProps) {
+src\SriInvoiceModal.tsx:120: <factura id="comprobante" version="1.1.0">
+src\SriInvoiceModal.tsx:135: <infoFactura>
+src\SriInvoiceModal.tsx:164: </infoFactura>
+src\SriInvoiceModal.tsx:175: </factura>`;
+src\SriInvoiceModal.tsx:181: a.download = `FACTURA_SRI_${sriSecuencial}.xml`;
+src\SriInvoiceModal.tsx:219: <span className="font-mono text-slate-300">RIDE Factura Electrónica</span>
+src\SriInvoiceModal.tsx:337: <span className="font-bold text-lg tracking-wider">FACTURA</span>
+src\SriInvoiceModal.tsx:506: Comprobante electrónico generado conforme a la ficha técnica del Servicio de Rentas Internas del Ecuador.
+src\SriInvoiceModal.tsx:635: 🔄 Reemitir Comprobante

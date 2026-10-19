@@ -62,7 +62,7 @@ export default function PaymentLinkModal({
     e.preventDefault();
     const id = `PAY-${Math.floor(1000 + Math.random() * 9000)}`;
     const randomHash = Math.random().toString(36).substring(2, 9);
-    const link = `https://pago.hoteldirekt.ec/pay/${randomHash}`;
+    const link = `https://pago.alojamanta.ec/pay/${randomHash}`;
     
     setPaymentId(id);
     setGeneratedLink(link);

@@ -26,12 +26,12 @@ interface SearchParams {
 const HOTELS: Hotel[] = MANTA_HOTELS;
 
 const DESTINATIONS = [
-  { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 6 },
-  { city: "Manta - El Murciélago", img: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=400&h=300&fit=crop&auto=format", hotels: 5 },
-  { city: "Manta - Tarqui", img: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=400&h=300&fit=crop&auto=format", hotels: 4 },
-  { city: "Manta - Santa Marianita", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop&auto=format", hotels: 2 },
-  { city: "Manta - San Mateo", img: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&h=300&fit=crop&auto=format", hotels: 3 },
-  { city: "Manta - Los Esteros", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=300&fit=crop&auto=format", hotels: 2 },
+  { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 18 },
+  { city: "Manta - El Murciélago", img: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=400&h=300&fit=crop&auto=format", hotels: 22 },
+  { city: "Manta - Tarqui", img: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=400&h=300&fit=crop&auto=format", hotels: 38 },
+  { city: "Manta - Santa Marianita", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop&auto=format", hotels: 9 },
+  { city: "Manta - San Mateo", img: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&h=300&fit=crop&auto=format", hotels: 8 },
+  { city: "Manta - Los Esteros", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=300&fit=crop&auto=format", hotels: 15 },
 ];
 
 const DEMO_RESERVATIONS: MyReservation[] = INITIAL_DEMO_RESERVATIONS;
@@ -53,8 +53,14 @@ function addDays(date: string, n: number) {
 function fmtDateShort(d: string) {
   return new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
 }
-function StarsRow({ n }: { n: 1 | 2 | 3 }) {
-  return <span className="flex gap-0.5">{Array.from({ length: 3 }).map((_, i) => <span key={i} style={{ color: i < n ? "#f59e0b" : "#d1d5db", fontSize: 11 }}>★</span>)}</span>;
+function StarsRow({ n }: { n: number }) {
+  return (
+    <span className="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span key={i} style={{ color: i < n ? "#f59e0b" : "#e2e8f0", fontSize: 11 }}>★</span>
+      ))}
+    </span>
+  );
 }
 
 // ─── Price breakdown component (Booking.com style) ───────────────────────────
@@ -164,7 +170,7 @@ function PriceBreakdownBox({
           <div className="p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 flex items-start gap-1.5 text-[11px] text-amber-900 leading-tight">
             <span className="text-sm">🏛️</span>
             <div>
-              <strong>Facturación electrónica directa:</strong> Este comprobante es emitido y autorizado ante el <strong>SRI</strong> directamente por {hotelName ? <strong>{hotelName}</strong> : "el hotel prestador"} en Manta.
+              <strong>Comprobante de Pago Digital:</strong> Certificado emitido por la pasarela turística. La Factura Electrónica fiscal (SRI) correspondiente al hospedaje es emitida y entregada directamente por {hotelName ? <strong>{hotelName}</strong> : "el hotel prestador"} en recepción.
             </div>
           </div>
         </div>
@@ -540,7 +546,7 @@ function ConsultReservationModal({
                       <p className="font-medium truncate">{res.guestName}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">Habitación</p>
+                      <p className="text-slate-400 text-[10px]">Tipo de Habitación</p>
                       <p className="font-medium truncate">{res.room}</p>
                     </div>
                     <div>
@@ -651,7 +657,7 @@ function LoginModal({
         <div className="px-6 py-4 flex items-center justify-between border-b" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
           <div>
             <span className="font-bold text-amber-600 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-              HotelDirekt Manta
+              AlojaManta
             </span>
             <p className="text-xs text-slate-500">Acceso al sistema y consulta de reservas</p>
           </div>
@@ -757,17 +763,18 @@ function LoginModal({
           ) : (
             <div className="space-y-4">
               <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-                <p className="font-bold">Panel Multi-Hotel Cantón Manta</p>
+                <p className="font-bold">Panel Multi-Hotel Cantón Manta (116 Alojamientos)</p>
                 <p className="text-[11px] text-amber-800 mt-0.5">
-                  Acceso directo con roles RBAC para los 22 establecimientos de Manta.
+                  Acceso directo con roles RBAC para los 116 establecimientos oficiales del Catastro de Manta.
                 </p>
               </div>
 
               <div className="space-y-2">
                 {[
-                  { role: "Superadmin Cantonal", name: "Carlos Admin", email: "admin@hoteldirekt.com", desc: "Supervisión de los 22 hoteles de Manta" },
-                  { role: "Administrador de Hotel", name: "Ana Administradora", email: "direccion@laspalmeras.com", desc: "Hotel Las Palmeras Manta" },
-                  { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@laspalmeras.com", desc: "Operación de reservas y cobros" },
+                  { role: "Superadmin Cantonal", name: "Carlos Admin", email: "admin@alojamanta.ec", desc: "Supervisión de los 116 hoteles de Manta" },
+                  { role: "Administrador de Hotel", name: "Ana Administradora", email: "direccion@mantahost.ec", desc: "MantaHost Hotel (Gestión integral)" },
+                  { role: "Revenue Manager", name: "María Revenue", email: "revenue@mantahost.ec", desc: "Tarifas, temporadas y tipos de habitación" },
+                  { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@mantahost.ec", desc: "Operación de reservas y facturas SRI" },
                 ].map(acc => (
                   <button
                     key={acc.email}
@@ -865,8 +872,8 @@ function BookingModal({
   const last4 = cardNum.replace(/\s/g, "").slice(-4) || "****";
 
   const STEPS: { k: BookingStep; l: string }[] = user
-    ? [{ k: "details", l: "1. Datos" }, { k: "payment", l: "2. Pago" }, { k: "invoice", l: "3. Factura" }]
-    : [{ k: "auth", l: "1. Acceso" }, { k: "details", l: "2. Datos" }, { k: "payment", l: "3. Pago" }, { k: "invoice", l: "4. Factura" }];
+    ? [{ k: "details", l: "1. Datos" }, { k: "payment", l: "2. Pago" }, { k: "invoice", l: "3. Comprobante" }]
+    : [{ k: "auth", l: "1. Acceso" }, { k: "details", l: "2. Datos" }, { k: "payment", l: "3. Pago" }, { k: "invoice", l: "4. Comprobante" }];
 
   const stepIndex = STEPS.findIndex(s => s.k === step);
 
@@ -1158,34 +1165,39 @@ function BookingModal({
               {/* Success banner */}
               <div className="text-center py-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mx-auto mb-2" style={{ background: "#d1fae5" }}>✓</div>
-                <h3 className="font-bold text-slate-800 text-base">¡Reserva confirmada con éxito!</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Voucher oficial con QR y Facturación Directa del Hotel</p>
+                <h3 className="font-bold text-slate-800 text-base">¡Pago procesado y reserva confirmada!</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Comprobante de pago oficial de la pasarela y voucher de reserva</p>
               </div>
 
-              {/* Electronic invoice & Voucher */}
+              {/* Electronic payment receipt & Voucher */}
               <div className="rounded-2xl border overflow-hidden shadow-lg" style={{ borderColor: "#e2e8f0" }}>
-                {/* Invoice header: Hotel Direct Fiscal Entity */}
+                {/* Header: Payment gateway receipt */}
                 <div className="px-5 py-4 flex items-start justify-between" style={{ background: "#0c1220" }}>
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-lg text-amber-400" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelSri.nombreComercial}</p>
-                      <span className="text-[9px] bg-amber-500/20 text-amber-300 font-mono px-2 py-0.5 rounded border border-amber-500/30">FACTURA DIRECTA</span>
+                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">PAGO APROBADO</span>
                     </div>
                     <p className="text-xs text-slate-300 font-medium">{hotelSri.razonSocial}</p>
-                    <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelSri.ruc} · {hotelSri.regimen}</p>
-                    <p className="text-[10px] text-slate-400">{hotelSri.dirMatriz} · Manta - Manabí</p>
+                    <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelSri.ruc} · {hotelSri.city}</p>
+                    <p className="text-[10px] text-slate-400">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
                   </div>
                   <div className="text-right">
-                    <span className="mono text-xs font-bold px-2 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">AUTORIZADA SRI</span>
+                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">COMPROBANTE DIGITAL</span>
                     <p className="font-bold mt-1 text-slate-100 font-mono text-xs">{invoiceId}</p>
                     <p className="mono text-[10px] text-slate-400">{issueDate}</p>
                   </div>
                 </div>
 
-                {/* Banner de Facturación Directa SRI */}
-                <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-2 text-[11px] text-amber-900 leading-tight">
-                  <span className="text-sm">🏛️</span>
-                  <span><strong>Facturación Electrónica Directa SRI:</strong> Comprobante emitido sin intermediación por el establecimiento hotelero bajo normativa del SRI Ecuador.</span>
+                {/* Banner de Facturación por el Hotel */}
+                <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 flex items-start gap-2 text-[11px] text-amber-900 leading-tight">
+                  <span className="text-base flex-shrink-0">🏨</span>
+                  <div>
+                    <p className="font-bold">Facturación Fiscal a cargo de {hotel.name}:</p>
+                    <p className="text-amber-800 text-[10px] mt-0.5">
+                      Este comprobante certifica su pago en línea. Su Factura Electrónica fiscal (SRI) será emitida y entregada por el hotel a su llegada o al realizar el check-out en recepción con los datos registrados.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Client + hotel */}
@@ -1361,7 +1373,7 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
                   {hotel.gravaServicio10 ? "15% IVA + Tasa GAD Manta + 10% Propina" : "15% IVA + Tasa GAD Manta"}
                 </span>
                 <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                  ✓ Factura SRI directa
+                  ✓ Comprobante Digital · Factura en Hotel
                 </span>
               </div>
             </div>
@@ -1429,7 +1441,7 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
         </div>
         <p className="text-xs text-amber-700">✓ Cancelación gratuita hasta 24h antes</p>
       </div>
-      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Habitaciones disponibles</h2>
+      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Tipos de Habitación Disponibles</h2>
       <div className="space-y-4">
         {hotel.rooms.filter(r => r.capacity >= params.adults).map(room => (
           <div key={room.id} className="rounded-2xl overflow-hidden border bg-white hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
@@ -1488,15 +1500,19 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
 
 function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchParams; onChange: (p: SearchParams) => void; onSearch: () => void; onSelect: (h: Hotel) => void }) {
   const [stars, setStars] = useState<number[]>([]);
-  const [maxPrice, setMaxPrice] = useState(200);
+  const [maxPrice, setMaxPrice] = useState(250);
+  const [classification, setClassification] = useState<string>("all");
+  const [parish, setParish] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"price" | "rating">("rating");
   const nights = nightsBetween(params.checkIn, params.checkOut);
   let results = HOTELS.filter(h => {
-    const d = !params.destination || h.city.toLowerCase().includes(params.destination.toLowerCase());
+    const d = !params.destination || h.city.toLowerCase().includes(params.destination.toLowerCase()) || (h.parish && h.parish.toLowerCase().includes(params.destination.toLowerCase()));
     const s = stars.length === 0 || stars.includes(h.stars);
     const p = h.priceFrom <= maxPrice;
     const c = h.rooms.some(r => r.capacity >= params.adults);
-    return d && s && p && c;
+    const cl = classification === "all" || (h.classification && h.classification.toLowerCase() === classification.toLowerCase());
+    const pa = parish === "all" || (h.parish && h.parish.toLowerCase() === parish.toLowerCase());
+    return d && s && p && c && cl && pa;
   });
   if (sortBy === "price") results = [...results].sort((a, b) => a.priceFrom - b.priceFrom);
   if (sortBy === "rating") results = [...results].sort((a, b) => b.rating - a.rating);
@@ -1509,21 +1525,92 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-4 py-6 flex gap-5">
-        <aside className="w-52 flex-shrink-0 hidden lg:block space-y-4">
+        <aside className="w-56 flex-shrink-0 hidden lg:block space-y-4">
           <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-            <h4 className="font-bold text-slate-700 text-sm mb-3">Categoría</h4>
-            {[3, 2, 1].map(s => (
-              <label key={s} className="flex items-center gap-2 mb-2 cursor-pointer">
-                <input type="checkbox" className="accent-amber-400" checked={stars.includes(s)} onChange={() => setStars(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])} />
-                <div className="flex gap-0.5">{Array.from({ length: s }).map((_, i) => <span key={i} style={{ color: "#f59e0b", fontSize: 12 }}>★</span>)}{Array.from({ length: 3 - s }).map((_, i) => <span key={i} style={{ color: "#d1d5db", fontSize: 12 }}>★</span>)}</div>
-                <span className="text-xs text-slate-500">{s === 1 ? "Pensión" : s === 2 ? "Hostal" : "Hotel"}</span>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-bold text-slate-700 text-sm">Categoría</h4>
+              {stars.length > 0 && (
+                <button onClick={() => setStars([])} className="text-[11px] text-amber-600 hover:underline">Limpiar</button>
+              )}
+            </div>
+            {[5, 4, 3, 2, 1].map(s => (
+              <label key={s} className="flex items-center justify-between gap-1 mb-2 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors">
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    className="accent-amber-400"
+                    checked={stars.includes(s)}
+                    onChange={() => setStars(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+                  />
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: s }).map((_, i) => <span key={i} style={{ color: "#f59e0b", fontSize: 11 }}>★</span>)}
+                    {Array.from({ length: 5 - s }).map((_, i) => <span key={i} style={{ color: "#d1d5db", fontSize: 11 }}>★</span>)}
+                  </div>
+                  <span className="text-[11px] text-slate-600 font-medium">
+                    {s === 5 ? "5★ Lujo" : s === 4 ? "4★ Primera" : s === 3 ? "3★ Superior" : s === 2 ? "2★ Turista" : "1★ Económico"}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">({HOTELS.filter(h => h.stars === s).length})</span>
               </label>
             ))}
           </div>
+
           <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-            <h4 className="font-bold text-slate-700 text-sm mb-3">Precio máx./noche</h4>
-            <input type="range" min={30} max={200} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} className="w-full accent-amber-400" />
-            <div className="flex justify-between text-xs text-slate-400 mt-1"><span>$30</span><span className="font-semibold text-slate-600">${maxPrice}</span><span>$200</span></div>
+            <h4 className="font-bold text-slate-700 text-sm mb-2">Clasificación</h4>
+            <div className="space-y-1">
+              {[
+                { id: "all", label: "Todos los tipos", count: HOTELS.length },
+                { id: "Hotel", label: "Hotel", count: HOTELS.filter(h => h.classification === "Hotel").length },
+                { id: "Hostal", label: "Hostal", count: HOTELS.filter(h => h.classification === "Hostal").length },
+                { id: "Hostería", label: "Hostería", count: HOTELS.filter(h => h.classification === "Hostería").length },
+              ].map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setClassification(item.id)}
+                  className={`w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg text-left transition-all ${
+                    classification === item.id ? "bg-amber-100 text-amber-900 font-bold" : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  <span className="font-mono text-[10px] text-slate-400">({item.count})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
+            <h4 className="font-bold text-slate-700 text-sm mb-2">Parroquia</h4>
+            <select
+              value={parish}
+              onChange={e => setParish(e.target.value)}
+              className="w-full text-xs rounded-lg border p-2 bg-slate-50 border-slate-200 text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            >
+              <option value="all">Todas las parroquias (116)</option>
+              {Array.from(new Set(HOTELS.map(h => h.parish).filter(Boolean))).sort().map(p => (
+                <option key={p} value={p}>{p} ({HOTELS.filter(h => h.parish === p).length})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-bold text-slate-700 text-sm">Precio máx./noche</h4>
+              <span className="font-bold text-amber-600 text-sm font-mono">${maxPrice}</span>
+            </div>
+            <input
+              type="range"
+              min={25}
+              max={300}
+              step={5}
+              value={maxPrice}
+              onChange={e => setMaxPrice(Number(e.target.value))}
+              className="w-full accent-amber-500 cursor-pointer"
+            />
+            <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>$25</span>
+              <span>$150</span>
+              <span>$300+</span>
+            </div>
           </div>
         </aside>
         <div className="flex-1 min-w-0">
@@ -1565,7 +1652,7 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
         </div>
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(12,18,32,0.3) 0%, rgba(12,18,32,0.75) 100%)" }} />
         <div className="relative max-w-5xl mx-auto px-4 pt-20 pb-10 text-center">
-          <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">22 Alojamientos · Catastro Oficial Cantón Manta 2026 · Manabí, Ecuador</p>
+          <p className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">116 Alojamientos · Catastro Oficial Cantón Manta 2026 · Manabí, Ecuador</p>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel en Manta</h1>
           <p className="text-white/70 text-base mb-8 max-w-lg mx-auto">Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.</p>
           <div className="max-w-4xl mx-auto"><SearchBar params={params} onChange={onChange} onSearch={onSearch} /></div>
@@ -1619,15 +1706,15 @@ function HomePage({ params, onChange, onSearch }: { params: SearchParams; onChan
       <footer className="border-t mt-10" style={{ background: "#1e293b", borderColor: "#334155" }}>
         <div className="max-w-5xl mx-auto px-4 py-8 flex flex-wrap gap-8 justify-between">
           <div>
-            <p className="font-bold text-white text-lg mb-1" style={{ fontFamily: "DM Serif Display, serif" }}>HotelDirekt Manta</p>
-            <p className="text-xs text-slate-400 max-w-xs">Plataforma de comercialización directa y gestión de reservas hoteleras para el cantón Manta, Ecuador.</p>
+            <p className="font-bold text-white text-lg mb-1" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
+            <p className="text-xs text-slate-400 max-w-xs">Plataforma oficial de reservas y comercialización directa hotelera para el cantón Manta, Manabí.</p>
           </div>
           <div className="flex gap-10 text-xs text-slate-400">
             <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Sectores</p><p>Barbasquillo & El Murciélago</p><p>Tarqui & Los Esteros</p><p>San Mateo & Santa Marianita</p></div>
             <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Ayuda & Soporte</p><p>Consultar Reserva</p><p>Contacto directo hotel</p><p>Términos de servicio</p></div>
           </div>
         </div>
-        <div className="border-t text-center py-3 text-[11px] text-slate-500" style={{ borderColor: "#334155" }}>© 2026 HotelDirekt · Prototipo del Sistema de Reservas Hoteleras Cantón Manta</div>
+        <div className="border-t text-center py-3 text-[11px] text-slate-500" style={{ borderColor: "#334155" }}>© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta</div>
       </footer>
     </div>
   );
@@ -1669,7 +1756,7 @@ export default function GuestPage({
   // Reservas persistentes
   const [reservations, setReservations] = useState<MyReservation[]>(() => {
     try {
-      const saved = localStorage.getItem("hoteldirekt_guest_reservations");
+      const saved = localStorage.getItem("alojamanta_guest_reservations") || localStorage.getItem("hoteldirekt_guest_reservations");
       return saved ? JSON.parse(saved) : INITIAL_DEMO_RESERVATIONS;
     } catch {
       return INITIAL_DEMO_RESERVATIONS;
@@ -1678,7 +1765,7 @@ export default function GuestPage({
 
   useEffect(() => {
     try {
-      localStorage.setItem("hoteldirekt_guest_reservations", JSON.stringify(reservations));
+      localStorage.setItem("alojamanta_guest_reservations", JSON.stringify(reservations));
     } catch {
       // Ignorar si no hay storage
     }
@@ -1729,7 +1816,7 @@ export default function GuestPage({
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <button onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer">
             <span className="font-bold text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>
-              HotelDirekt
+              AlojaManta
             </span>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
               MANTA 2026

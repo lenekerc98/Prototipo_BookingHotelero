@@ -51,7 +51,7 @@ export interface HotelSriMeta {
   gravaServicio10: boolean; // Art. 41 Ley de Turismo: TRUE si grava 10% propina, FALSE si exento
 }
 
-export const HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
+const BASE_HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
   "costa-sol": {
     ruc: "1391789456001",
     razonSocial: "OPERADORA HOTELERA COSTA SOL S.A.S.",
@@ -180,28 +180,33 @@ export const HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
   },
 };
 
-// Asegurar que todos los 22 alojamientos de Manta tengan su ficha fiscal registrada
-MANTA_HOTELS.forEach(h => {
-  if (!HOTEL_SRI_INFO[h.id]) {
-    HOTEL_SRI_INFO[h.id] = {
-      ruc: h.taxId || "1391789456001",
-      razonSocial: `${h.name.toUpperCase()} OPERADORA TURISTICA C.A.`,
-      nombreComercial: h.name,
-      dirMatriz: h.address,
-      dirSucursal: `${h.address}, Manta - Manabí`,
-      obligadoContabilidad: h.stars >= 3 ? "SÍ" : "NO",
-      regimen: h.stars >= 3 ? "CONTRIBUYENTE RÉGIMEN GENERAL" : "CONTRIBUYENTE RÉGIMEN RIMPE - EMPRENDEDOR",
-      estab: "001",
-      ptoEmi: "001",
-      phone: h.phone || "+593 5 262 0000",
-      email: `contacto@${h.id.replace(/-/g, "")}.ec`,
-      city: h.city,
-      gravaServicio10: h.gravaServicio10 ?? (h.stars >= 3),
-    };
+// Exportar ficha fiscal SRI dinámica para todos los 116 establecimientos de Manta
+export const HOTEL_SRI_INFO: Record<string, HotelSriMeta> = new Proxy(BASE_HOTEL_SRI_INFO, {
+  get(target, prop: string) {
+    if (prop in target) return target[prop];
+    const h = MANTA_HOTELS.find(item => item.id === prop);
+    if (h) {
+      return {
+        ruc: h.taxId || "1391789456001",
+        razonSocial: `${h.name.toUpperCase()} OPERADORA TURISTICA C.A.`,
+        nombreComercial: h.name,
+        dirMatriz: h.address,
+        dirSucursal: `${h.address}, Manta - Manabí`,
+        obligadoContabilidad: h.stars >= 3 ? "SÍ" : "NO",
+        regimen: h.stars >= 3 ? "CONTRIBUYENTE RÉGIMEN GENERAL" : "CONTRIBUYENTE RÉGIMEN RIMPE - EMPRENDEDOR",
+        estab: "001",
+        ptoEmi: "001",
+        phone: h.phone || "+593 5 262 0000",
+        email: `contacto@${h.id.replace(/-/g, "")}.ec`,
+        city: h.city,
+        gravaServicio10: h.gravaServicio10 ?? (h.stars >= 3),
+      };
+    }
+    return target["costa-sol"];
   }
 });
 
-export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
+const BASE_HOTEL_RATES: Record<string, HotelRatesConfig> = {
   "costa-sol": {
     hotelId: "costa-sol",
     currency: "USD",
@@ -212,11 +217,11 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
       { name: "Temporada Alta", months: "Jun – Sep, Feriados", multiplier: 1.45, color: "#451a03" },
     ],
     roomTypes: [
-      { type: "Individual Vista Mar", basePrice: 65, icon: "🛏" },
-      { type: "Doble Estándar Balcón", basePrice: 85, icon: "🛏🛏" },
-      { type: "Doble Superior Frente al Mar", basePrice: 115, icon: "⭐🛏🛏" },
+      { type: "Habitación Individual Vista Mar", basePrice: 65, icon: "🛏" },
+      { type: "Habitación Matrimonial con Balcón", basePrice: 85, icon: "🛏🛏" },
+      { type: "Habitación King Frente al Mar", basePrice: 115, icon: "⭐🛏🛏" },
       { type: "Suite Costa Sol Panorámica", basePrice: 165, icon: "👑🛏" },
-      { type: "Villa Familiar con Piscina", basePrice: 230, icon: "🏖️👑" },
+      { type: "Habitación Familiar (Queen + 2 Twin)", basePrice: 230, icon: "🏖️👑" },
     ],
     channels: [
       { name: "Directo (web/teléfono)", commission: 0, color: "#6ee7b7" },
@@ -235,11 +240,11 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
       { name: "Temporada Alta", months: "Jul – Sep", multiplier: 1.35, color: "#451a03" },
     ],
     roomTypes: [
-      { type: "Individual", basePrice: 55, icon: "🛏" },
-      { type: "Doble Estándar", basePrice: 70, icon: "🛏🛏" },
-      { type: "Doble Superior", basePrice: 85, icon: "⭐🛏🛏" },
+      { type: "1 Cama Individual", basePrice: 55, icon: "🛏" },
+      { type: "1 Cama Matrimonial (Queen)", basePrice: 70, icon: "🛏🛏" },
+      { type: "1 Cama King Superior", basePrice: 85, icon: "⭐🛏🛏" },
       { type: "Triple", basePrice: 110, icon: "🛏🛏🛏" },
-      { type: "Suite", basePrice: 150, icon: "👑🛏" },
+      { type: "1 Cama King Suite", basePrice: 150, icon: "👑🛏" },
     ],
     channels: [
       { name: "Directo (web/teléfono)", commission: 0, color: "#6ee7b7" },
@@ -258,10 +263,10 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
       { name: "Temporada Alta", months: "Jul – Oct, Diciembre", multiplier: 1.3, color: "#451a03" },
     ],
     roomTypes: [
-      { type: "Habitación Cápsula Individual", basePrice: 32, icon: "🛏" },
-      { type: "Doble Económica", basePrice: 48, icon: "🛏🛏" },
-      { type: "Doble con Baño Privado", basePrice: 58, icon: "⭐🛏🛏" },
-      { type: "Habitación Familiar 4 Camas", basePrice: 78, icon: "🛏🛏🛏" },
+      { type: "Habitación Individual Cápsula", basePrice: 32, icon: "🛏" },
+      { type: "Habitación Doble Twin", basePrice: 48, icon: "🛏🛏" },
+      { type: "Habitación Matrimonial con Baño Privado", basePrice: 58, icon: "⭐🛏🛏" },
+      { type: "Habitación Familiar 4 Personas", basePrice: 78, icon: "🛏🛏🛏" },
     ],
     channels: [
       { name: "Directo (web/teléfono)", commission: 0, color: "#6ee7b7" },
@@ -281,7 +286,7 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
     ],
     roomTypes: [
       { type: "Habitación Clásica Colonial", basePrice: 95, icon: "🛏" },
-      { type: "Deluxe Mirador Vista al Río", basePrice: 140, icon: "⭐🛏🛏" },
+      { type: "Habitación Deluxe Vista al Río", basePrice: 140, icon: "⭐🛏🛏" },
       { type: "Junior Suite Patrimonial", basePrice: 195, icon: "👑🛏" },
       { type: "Suite Imperial con Balcón", basePrice: 280, icon: "👑✨" },
     ],
@@ -324,7 +329,7 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
       { name: "Temporada Alta", months: "Jul – Ago, Dic – Ene", multiplier: 1.5, color: "#451a03" },
     ],
     roomTypes: [
-      { type: "Habitación Alpina con Calefacción", basePrice: 75, icon: "🛏" },
+      { type: "1 Cama Matrimonial Alpina", basePrice: 75, icon: "🛏" },
       { type: "Doble Superior Vista Volcán", basePrice: 110, icon: "⭐🛏🛏" },
       { type: "Cabaña Rústica con Chimenea", basePrice: 165, icon: "🪵🔥" },
       { type: "Chalet de Montaña con Hidromasaje", basePrice: 245, icon: "👑🏔️" },
@@ -346,9 +351,9 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
       { name: "Temporada Alta", months: "Fiestas de las Flores y Frutas", multiplier: 1.4, color: "#451a03" },
     ],
     roomTypes: [
-      { type: "Individual Confort", basePrice: 48, icon: "🛏" },
-      { type: "Doble Estándar", basePrice: 68, icon: "🛏🛏" },
-      { type: "Doble Superior", basePrice: 88, icon: "⭐🛏🛏" },
+      { type: "Habitación Individual Confort", basePrice: 48, icon: "🛏" },
+      { type: "Habitación Matrimonial Queen", basePrice: 68, icon: "🛏🛏" },
+      { type: "Habitación King Superior", basePrice: 88, icon: "⭐🛏🛏" },
       { type: "Suite Ejecutiva", basePrice: 125, icon: "👑🛏" },
     ],
     channels: [
@@ -368,10 +373,10 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
       { name: "Temporada Alta", months: "Jul – Ago, Carnaval & Feriados", multiplier: 1.45, color: "#451a03" },
     ],
     roomTypes: [
-      { type: "Habitación Básica Playa", basePrice: 25, icon: "🛏" },
-      { type: "Doble Económica", basePrice: 38, icon: "🛏🛏" },
-      { type: "Triple Frente al Mar", basePrice: 55, icon: "🛏🛏🛏" },
-      { type: "Familiar 5 Personas", basePrice: 85, icon: "🏖️🛏" },
+      { type: "Habitación Individual Playa", basePrice: 25, icon: "🛏" },
+      { type: "Habitación Doble Económica", basePrice: 38, icon: "🛏🛏" },
+      { type: "Habitación Triple Frente al Mar", basePrice: 55, icon: "🛏🛏🛏" },
+      { type: "Habitación Familiar 5 Personas", basePrice: 85, icon: "🏖️🛏" },
     ],
     channels: [
       { name: "Directo (Recepción/WhatsApp)", commission: 0, color: "#6ee7b7" },
@@ -381,6 +386,41 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = {
     ],
   },
 };
+
+
+export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = new Proxy(BASE_HOTEL_RATES, {
+  get(target, prop: string) {
+    if (prop in target) return target[prop];
+    const hotel = MANTA_HOTELS.find(h => h.id === prop);
+    const baseP = hotel?.priceFrom || 55;
+    return {
+      hotelId: prop,
+      currency: "USD",
+      currencySymbol: "$",
+      seasons: [
+        { name: "Temporada Baja", months: "May – Jun, Oct – Nov", multiplier: 0.8, color: "#1e3a5f" },
+        { name: "Temporada Media", months: "Ene – Abr, Sep", multiplier: 1.0, color: "#064e3b" },
+        { name: "Temporada Alta (Feriados / Verano)", months: "Jul – Ago, Dic – Feriados Manta", multiplier: 1.35, color: "#451a03" },
+      ],
+      roomTypes: hotel?.rooms?.map(r => ({
+        type: r.type,
+        basePrice: r.pricePerNight,
+        icon: r.type.includes("King") || r.type.includes("Suite") ? "👑🛏️" : r.type.includes("Doble") || r.type.includes("Twin") ? "🛏️🛏️" : "🛏️",
+        capacity: r.capacity
+      })) || [
+        { type: "Habitación Individual", basePrice: Math.round(baseP * 0.75), icon: "🛏️", capacity: 1 },
+        { type: "Habitación Matrimonial", basePrice: baseP, icon: "⭐🛏️", capacity: 2 },
+        { type: "Habitación Doble Twin", basePrice: Math.round(baseP * 0.9), icon: "🛏️🛏️", capacity: 2 },
+      ],
+      channels: [
+        { name: "Portal Oficial AlojaManta", commission: 0, color: "#6ee7b7", note: "0% intermediación directa" },
+        { name: "Booking.com", commission: 17, color: "#93c5fd" },
+        { name: "Expedia", commission: 19, color: "#d8b4fe" },
+        { name: "Airbnb", commission: 14, color: "#fcd34d" },
+      ],
+    };
+  }
+});
 
 // ─── SRI Clave de Acceso Generator ────────────────────────────────────────────
 // Format: 49 digits numeric
@@ -462,6 +502,7 @@ export interface HotelInvoice {
   clientEmail?: string;
   clientPhone?: string;
   roomType?: string;
+  hotelInvoiceNumber?: string; // Factura fiscal oficial emitida directamente por el hotel
 }
 
 export interface HotelPayment {
@@ -503,7 +544,8 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Av. Shyris y Naciones Unidas, Quito",
         clientEmail: "cmendez@gmail.com",
         clientPhone: "+593 98 421 8890",
-        roomType: "Doble Estándar Balcón",
+        roomType: "1 Cama Queen Matrimonial con Balcón",
+        hotelInvoiceNumber: "001-002-000014290",
       },
       {
         id: `${estab}-${pto}-000000002`,
@@ -525,7 +567,8 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Cdla. Urdesa Norte, Guayaquil",
         clientEmail: "lfernandez@hotmail.com",
         clientPhone: "+593 99 123 4567",
-        roomType: "Individual Vista Mar",
+        roomType: "1 Cama Individual Vista Mar",
+        hotelInvoiceNumber: "001-001-000008311",
       },
       {
         id: `${estab}-${pto}-000000003`,
@@ -547,7 +590,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Cumbayá, Sector San Juan, Quito",
         clientEmail: "jrodriguez@empresa.ec",
         clientPhone: "+593 98 765 4321",
-        roomType: "Villa Familiar con Piscina",
+        roomType: "Familiar: 1 Cama Queen + 2 Twin",
       },
       {
         id: `${estab}-${pto}-000000004`,
@@ -569,7 +612,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Av. Remigio Crespo, Cuenca",
         clientEmail: "mtorres@corp.ec",
         clientPhone: "+593 99 888 1234",
-        roomType: "Doble Superior Frente al Mar",
+        roomType: "1 Cama King Size Frente al Mar",
       },
       {
         id: `${estab}-${pto}-000000005`,
@@ -591,7 +634,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Barrio Murciélago, Manta",
         clientEmail: "anagomez.ec@gmail.com",
         clientPhone: "+593 97 111 2233",
-        roomType: "Doble Estándar Balcón",
+        roomType: "1 Cama Queen Matrimonial con Balcón",
       },
       {
         id: `${estab}-${pto}-000000006`,
@@ -613,7 +656,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Loja, Ecuador",
         clientEmail: "rsilva@loja.net",
         clientPhone: "+593 96 333 4444",
-        roomType: "Individual Vista Mar",
+        roomType: "1 Cama Individual Vista Mar",
       },
       {
         id: `${estab}-${pto}-000000007`,
@@ -657,7 +700,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
         clientAddress: "Samborondón, Guayas",
         clientEmail: "jmorales@gye.com",
         clientPhone: "+593 99 777 8899",
-        roomType: "Doble Estándar Balcón",
+        roomType: "1 Cama Queen Matrimonial con Balcón",
       },
     ];
   }
@@ -684,7 +727,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Quito, Ecuador",
       clientEmail: "cmendez@gmail.com",
       clientPhone: "+593 98 421 8890",
-      roomType: "Doble Estándar",
+      roomType: "1 Cama Matrimonial (Queen)",
     },
     {
       id: `${estab}-${pto}-000000002`,
@@ -706,7 +749,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Guayaquil, Ecuador",
       clientEmail: "lfernandez@hotmail.com",
       clientPhone: "+593 99 123 4567",
-      roomType: "Individual",
+      roomType: "1 Cama Individual",
     },
     {
       id: `${estab}-${pto}-000000003`,
@@ -750,7 +793,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Cuenca, Ecuador",
       clientEmail: "mtorres@corp.ec",
       clientPhone: "+593 99 888 1234",
-      roomType: "Doble Superior",
+      roomType: "1 Cama King Superior",
     },
     {
       id: `${estab}-${pto}-000000005`,
@@ -772,7 +815,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Manta, Ecuador",
       clientEmail: "anagomez.ec@gmail.com",
       clientPhone: "+593 97 111 2233",
-      roomType: "Doble Estándar",
+      roomType: "1 Cama Matrimonial (Queen)",
     },
     {
       id: `${estab}-${pto}-000000006`,
@@ -794,7 +837,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Loja, Ecuador",
       clientEmail: "rsilva@loja.net",
       clientPhone: "+593 96 333 4444",
-      roomType: "Individual",
+      roomType: "1 Cama Individual",
     },
     {
       id: `${estab}-${pto}-000000007`,
@@ -816,7 +859,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Quito, Ecuador",
       clientEmail: "pruiz@uio.ec",
       clientPhone: "+593 98 555 7777",
-      roomType: "Suite",
+      roomType: "1 Cama King Suite",
     },
     {
       id: `${estab}-${pto}-000000088`,
@@ -838,7 +881,7 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
       clientAddress: "Guayaquil, Ecuador",
       clientEmail: "jmorales@gye.com",
       clientPhone: "+593 99 777 8899",
-      roomType: "Doble Confort",
+      roomType: "1 Cama Matrimonial Confort",
     },
   ];
 }
@@ -846,12 +889,12 @@ export function getHotelInitialInvoices(hotelId: string, hotelName: string): Hot
 export function getHotelInitialPayments(hotelId: string): HotelPayment[] {
   if (hotelId === "costa-sol") {
     return [
-      { id: "PAY-CS-201", guest: "Carlos Méndez", amount: 219.55, method: "PayPhone Ecuador", date: "2026-08-15", status: "completed", concept: "3 noches Doble Estándar" },
-      { id: "PAY-CS-202", guest: "Laura Fernández", amount: 74.75, method: "Efectivo", date: "2026-08-16", status: "completed", concept: "1 noche Individual Vista Mar" },
-      { id: "PAY-CS-203", guest: "Familia Rodríguez", amount: 529.0, method: "Transferencia DeUna", date: "2026-08-16", status: "pending", concept: "Villa Familiar con Piscina" },
-      { id: "PAY-CS-204", guest: "Miguel Torres", amount: 195.5, method: "Kushki Tarjeta", date: "2026-08-17", status: "pending", concept: "Doble Superior Frente al Mar" },
-      { id: "PAY-CS-205", guest: "Ana Gómez", amount: 293.25, method: "Booking.com Pay", date: "2026-08-18", status: "pending", concept: "3 noches Doble Balcón" },
-      { id: "PAY-CS-206", guest: "Roberto Silva", amount: 74.75, method: "Datafast Tarjeta", date: "2026-08-15", status: "completed", concept: "1 noche Individual" },
+      { id: "PAY-CS-201", guest: "Carlos Méndez", amount: 219.55, method: "PayPhone Ecuador", date: "2026-08-15", status: "completed", concept: "3 noches 1 Cama Queen" },
+      { id: "PAY-CS-202", guest: "Laura Fernández", amount: 74.75, method: "Efectivo", date: "2026-08-16", status: "completed", concept: "1 noche 1 Cama Individual" },
+      { id: "PAY-CS-203", guest: "Familia Rodríguez", amount: 529.0, method: "Transferencia DeUna", date: "2026-08-16", status: "pending", concept: "Familiar: 1 Cama Queen + 2 Twin" },
+      { id: "PAY-CS-204", guest: "Miguel Torres", amount: 195.5, method: "Kushki Tarjeta", date: "2026-08-17", status: "pending", concept: "1 Cama King Size Frente al Mar" },
+      { id: "PAY-CS-205", guest: "Ana Gómez", amount: 293.25, method: "Booking.com Pay", date: "2026-08-18", status: "pending", concept: "3 noches 1 Cama Queen" },
+      { id: "PAY-CS-206", guest: "Roberto Silva", amount: 74.75, method: "Datafast Tarjeta", date: "2026-08-15", status: "completed", concept: "1 noche 1 Cama Individual" },
       { id: "PAY-CS-207", guest: "Javier Morales", amount: 391.0, method: "Transferencia", date: "2026-07-10", status: "failed", concept: "Estancia Julio" },
     ];
   }
@@ -860,7 +903,7 @@ export function getHotelInitialPayments(hotelId: string): HotelPayment[] {
     { id: "PAY-1041", guest: "Carlos Méndez", amount: 210, method: "Tarjeta / PayPhone", date: "2026-08-15", status: "completed", concept: "Reserva Alojamiento" },
     { id: "PAY-1042", guest: "Laura Fernández", amount: 55, method: "Efectivo", date: "2026-08-16", status: "completed", concept: "Estancia 1 noche" },
     { id: "PAY-1043", guest: "Familia Rodríguez", amount: 440, method: "Transferencia", date: "2026-08-16", status: "pending", concept: "Suite Familiar" },
-    { id: "PAY-1044", guest: "Miguel Torres", amount: 140, method: "Tarjeta empresa", date: "2026-08-17", status: "pending", concept: "Habitación Doble" },
+    { id: "PAY-1044", guest: "Miguel Torres", amount: 140, method: "Tarjeta empresa", date: "2026-08-17", status: "pending", concept: "1 Cama Queen" },
     { id: "PAY-1045", guest: "Ana Gómez", amount: 165, method: "Booking.com", date: "2026-08-18", status: "pending", concept: "Estancia fin de semana" },
     { id: "PAY-1046", guest: "Roberto Silva", amount: 70, method: "Tarjeta", date: "2026-08-15", status: "completed", concept: "Check-in recepción" },
     { id: "PAY-1047", guest: "Javier Morales", amount: 280, method: "Transferencia", date: "2026-07-10", status: "failed", concept: "Pago de reserva" },

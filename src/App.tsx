@@ -725,7 +725,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-              Habitación *
+              Tipo de Habitación *
             </label>
             <select
               className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -737,10 +737,10 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               value={form.room}
               onChange={(e) => setForm({ ...form, room: e.target.value })}
             >
-              <option value="">Seleccionar habitación...</option>
+              <option value="">Seleccionar tipo de habitación...</option>
               {availableRooms.map((r) => (
                 <option key={r.number} value={r.number}>
-                  {r.number} — {r.type} ({fmt(r.pricePerNight)}/noche)
+                  {r.type} ({fmt(r.pricePerNight)}/noche)
                 </option>
               ))}
             </select>
@@ -1001,7 +1001,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
                       {r.guestName}
                     </p>
                     <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                      Hab. {r.roomNumber} · {r.nights}n · {r.adults}ad
+                      {r.roomType} · {r.nights}n · {r.adults}ad
                     </p>
                   </div>
                   <div className="text-right">
@@ -1040,7 +1040,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
                     {r.guestName}
                   </p>
                   <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    Hab. {r.roomNumber} · {r.source}
+                    {r.roomType} · {r.source}
                   </p>
                 </div>
                 <div className="text-right">
@@ -1071,7 +1071,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
           (filter === "all" || r.status === filter) &&
           (search === "" ||
             r.guestName.toLowerCase().includes(search.toLowerCase()) ||
-            r.roomNumber.includes(search) ||
+            r.roomType.toLowerCase().includes(search.toLowerCase()) ||
             r.id.toLowerCase().includes(search.toLowerCase()))
       ),
     [filter, search, reservations]
@@ -1110,7 +1110,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             color: "var(--foreground)",
             minWidth: 200,
           }}
-          placeholder="Buscar por huésped, habitación, ID..."
+          placeholder="Buscar por huésped, tipo de habitación, ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -1144,7 +1144,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["ID", "Huésped", "Hab.", "Check-in", "Check-out", "Noches", "Canal", "Total", "Estado", "Acciones"].map(
+                {["ID", "Huésped", "Tipo de Habitación", "Check-in", "Check-out", "Noches", "Canal", "Total", "Estado", "Acciones"].map(
                   (h) => (
                     <th
                       key={h}
@@ -1181,11 +1181,11 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                     </p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="mono font-medium" style={{ color: "var(--foreground)" }}>
-                      {r.roomNumber}
-                    </span>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                    <p className="font-semibold text-xs text-amber-400">
                       {r.roomType}
+                    </p>
+                    <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                      {r.adults} ad. {r.children ? `· ${r.children} ch.` : ""}
                     </p>
                   </td>
                   <td className="px-4 py-3 mono text-xs whitespace-nowrap" style={{ color: "var(--foreground)" }}>
@@ -1238,8 +1238,8 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             <div className="grid sm:grid-cols-2 gap-3">
               <Field label="Nombre del huésped" value={editing.guestName} onChange={guestName => setEditing({ ...editing, guestName })} required />
               <Field label="Email" type="email" value={editing.guestEmail} onChange={guestEmail => setEditing({ ...editing, guestEmail })} required />
-              <Field label="Habitación" value={editing.roomNumber} onChange={roomNumber => setEditing({ ...editing, roomNumber })} required />
-              <Field label="Tipo" value={editing.roomType} onChange={roomType => setEditing({ ...editing, roomType })} />
+              <Field label="Tipo de Habitación" value={editing.roomType} onChange={roomType => setEditing({ ...editing, roomType })} required />
+              <Field label="Cupo / Cupón" value={editing.roomNumber || "Cupo Web"} onChange={roomNumber => setEditing({ ...editing, roomNumber })} />
               <Field label="Check-in" type="date" value={editing.checkIn} onChange={checkIn => setEditing({ ...editing, checkIn })} required />
               <Field label="Check-out" type="date" value={editing.checkOut} onChange={checkOut => setEditing({ ...editing, checkOut })} required />
               <Field label="Total ($ USD)" type="number" value={String(editing.total)} onChange={total => setEditing({ ...editing, total: Number(total) })} />
@@ -1336,13 +1336,13 @@ function RoomsView({
         className="p-4 rounded-xl border flex items-start gap-3"
         style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.3)" }}
       >
-        <span className="text-2xl flex-shrink-0">🏨</span>
+        <span className="text-2xl flex-shrink-0">🛏️</span>
         <div className="text-xs leading-relaxed">
           <p className="font-bold text-amber-400 text-sm">
-            Portal de Reservas Hoteleras · Manta (Booking / Extranet)
+            Portal de Reservas Hoteleras · Manta (Gestión por Tipo de Habitación)
           </p>
           <p className="mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Este sistema gestiona la intermediación turística, las <strong>opciones de habitación que los clientes escogieron</strong> y el catálogo de habitaciones publicadas en la web. No incluye módulos de aseo de habitaciones ni llaves físicas de mostrador porque <strong>no es un sistema PMS</strong>.
+            Este sistema gestiona la intermediación turística, las <strong>opciones y tipos de habitación que los clientes escogieron</strong> y el inventario de habitaciones publicado en la web. No incluye módulos de aseo ni llaves físicas porque <strong>no es un sistema PMS</strong>.
           </p>
         </div>
       </div>
@@ -1351,7 +1351,7 @@ function RoomsView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            Habitaciones y Reservas del Hotel
+            Tipos de Habitación & Cupos Disponibles
           </h1>
           <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
             Hotel activo: <strong style={{ color: "var(--primary)" }}>{currentMantaHotel.name}</strong> ({currentMantaHotel.city})
@@ -1380,7 +1380,7 @@ function RoomsView({
           }`}
         >
           <span>🧳</span>
-          <span>Lo que escogió el Cliente</span>
+          <span>Tipos de Habitación Reservados</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
             {hotelReservations.length || clientReservations.length}
           </span>
@@ -1395,7 +1395,7 @@ function RoomsView({
           }`}
         >
           <span>🏷️</span>
-          <span>Habitaciones Ofertadas en el Portal</span>
+          <span>Tipos de Habitación en Oferta Web</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
             {roomOffers.length}
           </span>
@@ -1410,7 +1410,7 @@ function RoomsView({
           }`}
         >
           <span>🏨</span>
-          <span>Solo los Hoteles de Manta</span>
+          <span>Catálogo de los 116 Alojamientos</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
             {MANTA_HOTELS.length}
           </span>
@@ -1423,7 +1423,7 @@ function RoomsView({
           {/* KPIs resumen de reservas del cliente */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <KpiCard
-              label="Habitaciones Reservadas"
+              label="Camas / Plazas Asignadas"
               value={String(displayedReservations.length)}
               sub="contratadas por turistas"
               accent
@@ -1452,7 +1452,7 @@ function RoomsView({
                 type="text"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Buscar por cliente, habitación (ej. Doble), código (ej. RES-4821)..."
+                placeholder="Buscar por cliente, tipo de habitación (ej. Suite, Matrimonial), código (ej. RES-4821)..."
                 className="w-full px-3 py-2 pl-9 rounded-lg border text-xs outline-none"
                 style={{
                   background: "var(--card)",
@@ -1629,17 +1629,17 @@ function RoomsView({
                 Tipos de Habitación en Oferta Web
               </h2>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                Estas son las opciones y cupos disponibles que los turistas pueden seleccionar en la web de <strong>{currentMantaHotel.name}</strong>.
+                Estas son las opciones de habitaciones y cupos disponibles que los turistas pueden reservar en la web de <strong>{currentMantaHotel.name}</strong>.
               </p>
             </div>
 
             <button
               onClick={() => {
-                const newId = `room-${Date.now().toString().slice(-4)}`;
+                const newId = `hab-${Date.now().toString().slice(-4)}`;
                 const newOffer: RoomOffer = {
                   id: newId,
-                  type: "Nueva Habitación Manta",
-                  beds: "1 cama queen",
+                  type: "Habitación Matrimonial Deluxe con Balcón",
+                  beds: "1 Cama Queen (1.60x2m)",
                   capacity: 2,
                   size: 24,
                   pricePerNight: 55,
@@ -1747,10 +1747,10 @@ function RoomsView({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
-                Catálogo de los 22 Hoteles de Manta
+                Catálogo de los 116 Alojamientos de Manta
               </h2>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                Selecciona cualquier hotel para ver sus habitaciones ofertadas y reservas de clientes.
+                Catálogo oficial adscrito al Catastro de Manta 2026. Selecciona cualquier establecimiento para gestionar sus tipos de habitación y cupos.
               </p>
             </div>
           </div>
@@ -1774,7 +1774,7 @@ function RoomsView({
                     />
                     <div className="flex items-center justify-between gap-1">
                       <span className="text-[10px] text-amber-400 font-bold">
-                        {"★".repeat(h.stars)} ({h.stars === 1 ? "Pensión" : h.stars === 2 ? "Hostal" : "Hotel"})
+                        {"★".repeat(h.stars)} ({h.category || `${h.stars} Estrellas`})
                       </span>
                       <span className="mono text-[10px] text-slate-400">
                         ⭐ {h.rating} ({h.reviews})
@@ -1787,7 +1787,7 @@ function RoomsView({
                     <p className="text-xs text-slate-400 mt-0.5">{h.city}</p>
 
                     <div className="mt-2 text-xs flex items-center justify-between text-slate-300">
-                      <span>Habitaciones: <strong>{h.rooms.length} tipos</strong></span>
+                      <span>Tipos de habitación: <strong>{h.rooms.length} opciones</strong></span>
                       <span className="font-mono text-amber-400 font-bold">Desde ${h.priceFrom}</span>
                     </div>
                   </div>
@@ -1936,11 +1936,11 @@ function RevenueView() {
   );
 
   const roomTypeRevenue = [
-    { type: "Doble Estándar", revenue: 8400, pct: 39 },
-    { type: "Simple", revenue: 4200, pct: 19 },
-    { type: "Triple", revenue: 3800, pct: 18 },
-    { type: "Doble Superior", revenue: 3100, pct: 14 },
-    { type: "Suite", revenue: 2100, pct: 10 },
+    { type: "1 Cama Queen Matrimonial", revenue: 8400, pct: 39 },
+    { type: "1 Cama Individual", revenue: 4200, pct: 19 },
+    { type: "1 Cama Queen + 1 Twin", revenue: 3800, pct: 18 },
+    { type: "1 Cama King Superior", revenue: 3100, pct: 14 },
+    { type: "Master Suite (King)", revenue: 2100, pct: 10 },
   ];
 
   return (
@@ -1962,7 +1962,7 @@ function RevenueView() {
         <KpiCard
           label="RevPAR"
           value={fmt(Math.round((21600 / (ROOMS.length * 31)) * 100) / 100)}
-          sub="Revenue por hab. disponible"
+          sub="Revenue por cama/plaza disponible"
         />
       </div>
 
@@ -2082,7 +2082,7 @@ function RevenueView() {
             className="text-xs uppercase tracking-widest mb-4"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Revenue por tipo (Ago)
+            Revenue por tipo de habitación (Ago)
           </p>
           <div className="space-y-3">
             {roomTypeRevenue.map((rt) => (
@@ -2276,9 +2276,9 @@ const INVOICE_STYLE: Record<InvoiceStatus, { bg: string; color: string; label: s
   refunded: { bg: "rgba(59, 130, 246, 0.15)", color: "#2563eb", label: "Reembolsada" },
 };
 const DELIVERY_STYLE: Record<InvoiceDeliveryStatus, { bg: string; color: string; label: string }> = {
-  issued: { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Autorizada SRI" },
-  error: { bg: "rgba(239, 68, 68, 0.15)", color: "#dc2626", label: "Error SRI" },
-  returned: { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Devuelta" },
+  issued: { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Cobro Aprobado" },
+  error: { bg: "rgba(239, 68, 68, 0.15)", color: "#dc2626", label: "Cobro Fallido" },
+  returned: { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Reversado" },
 };
 
 // ─── Billing view (SRI Ecuador) ───────────────────────────────────────────────
@@ -2335,7 +2335,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
       payMethod: "PayPhone / Tarjeta",
       deliveryStatus: "issued",
       clientDoc: newInvDoc || "1718293847",
-      roomType: "Habitación Estándar",
+      roomType: "1 Cama Queen Matrimonial",
     };
 
     setInvoices(current => [newInv, ...current]);
@@ -2348,31 +2348,42 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Facturación Electrónica</h1>
+            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Comprobantes de Pago & Facturación</h1>
             <span className="mono text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
-              SRI Ecuador (IVA 15%)
+              Pasarela PayPhone / DeUna
             </span>
           </div>
-          <p className="text-xs text-amber-500 font-medium mt-0.5">{hotelName} · RUC: {HOTEL_SRI_INFO[hotelId]?.ruc || "1391789456001"}</p>
+          <p className="text-xs text-amber-500 font-medium mt-0.5">{hotelName} · RUC: {HOTEL_SRI_INFO[hotelId]?.ruc || "1391789456001"} · Factura fiscal emitida por recepción</p>
         </div>
         <button
           onClick={() => setShowNewInvoiceModal(true)}
           className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-md flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
-          <span>+</span> Emitir Factura SRI
+          <span>+</span> Registrar Comprobante de Pago
         </button>
       </div>
 
+      {/* Operational model banner */}
+      <div className="p-3.5 rounded-xl border flex items-center justify-between gap-3 text-xs" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.25)" }}>
+        <div className="flex items-center gap-2.5">
+          <span className="text-xl flex-shrink-0">🏛️</span>
+          <div>
+            <p className="font-bold text-amber-400">Modelo Operativo: El Hotel es el Emisor de la Factura Fiscal</p>
+            <p className="text-slate-400 mt-0.5">La plataforma procesa y certifica los cobros digitales (PayPhone / DeUna). Cada hotel emite la Factura Electrónica SRI oficial a nombre del huésped al momento del check-in o check-out en recepción.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Cobrado SRI (Ago)" value={fmtUsd(totalPaid)} sub={`${invoices.filter(i => i.status === "paid").length} facturas autorizadas`} accent />
-        <KpiCard label="Pendiente de cobro" value={fmtUsd(totalPending)} sub={`${invoices.filter(i => i.status === "pending" || i.status === "overdue").length} facturas`} />
-        <KpiCard label="IVA 15% devengado" value={fmtUsd(totalIva)} sub="Tarifa vigente SRI Ecuador" />
-        <KpiCard label="Comprobantes SRI" value={String(invoices.length)} sub={`${invoices.filter(i => i.deliveryStatus === "issued").length} autorizados · 0 rechazados`} />
+        <KpiCard label="Cobrado en Pasarela (Ago)" value={fmtUsd(totalPaid)} sub={`${invoices.filter(i => i.status === "paid").length} pagos confirmados`} accent />
+        <KpiCard label="Pendiente de cobro" value={fmtUsd(totalPending)} sub={`${invoices.filter(i => i.status === "pending" || i.status === "overdue").length} transacciones`} />
+        <KpiCard label="Facturas Hotel Emitidas" value={String(invoices.filter(i => i.hotelInvoiceNumber).length || 3)} sub="entregadas al huésped en recepción" />
+        <KpiCard label="Facturas Hotel Pendientes" value={String(Math.max(0, invoices.length - (invoices.filter(i => i.hotelInvoiceNumber).length || 3)))} sub="por emitir en check-in / check-out" />
       </div>
 
       {/* Filters */}
       <div className="flex gap-1.5 flex-wrap">
-        {[{ k: "all" as const, l: "Todas" }, { k: "paid" as const, l: "Pagadas" }, { k: "pending" as const, l: "Pendientes" }, { k: "overdue" as const, l: "Vencidas" }].map(f => (
+        {[{ k: "all" as const, l: "Todos los Comprobantes" }, { k: "paid" as const, l: "Pagados" }, { k: "pending" as const, l: "Pendientes" }, { k: "overdue" as const, l: "Por Conciliar" }].map(f => (
           <button key={f.k} onClick={() => setStatusFilter(f.k)} className="px-3 py-1.5 rounded text-xs font-medium transition-colors border cursor-pointer" style={{ background: statusFilter === f.k ? "var(--primary)" : "var(--card)", color: statusFilter === f.k ? "var(--primary-foreground)" : "var(--muted-foreground)", borderColor: statusFilter === f.k ? "transparent" : "var(--border)" }}>
             {f.l}
           </button>
@@ -2384,7 +2395,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Nº Factura SRI", "Reserva", "Huésped", "Fecha", "Subtotal", "IVA 15%", "Total USD", "Método", "Cobro", "Estado SRI", ""].map(h => (
+                {["Nº Comprobante", "Reserva", "Huésped", "Fecha", "Subtotal", "IVA 15%", "Total USD", "Pasarela", "Estado Pago", "Factura del Hotel", ""].map(h => (
                   <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{h}</th>
                 ))}
               </tr>
@@ -2392,9 +2403,10 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
             <tbody>
               {filtered.map((inv, i) => {
                 const st = INVOICE_STYLE[inv.status];
+                const voucherCode = `REC-2026-${(inv.id.replace(/\D/g, "") || String(i + 101)).padStart(5, "0")}`;
                 return (
                   <tr key={inv.id} className="transition-colors hover:bg-[var(--secondary)]" style={{ borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none" }}>
-                    <td className="px-4 py-3"><span className="mono text-xs font-semibold text-amber-400">{inv.id}</span></td>
+                    <td className="px-4 py-3"><span className="mono text-xs font-semibold text-amber-400">{voucherCode}</span></td>
                     <td className="px-4 py-3"><span className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>{inv.resId}</span></td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-sm" style={{ color: "var(--foreground)" }}>{inv.guest}</p>
@@ -2406,10 +2418,20 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
                     <td className="px-4 py-3 mono font-semibold text-amber-400">{fmtUsd(inv.total)}</td>
                     <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>{inv.payMethod}</td>
                     <td className="px-4 py-3"><span className="mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
-                    <td className="px-4 py-3">{(() => { const audit = DELIVERY_STYLE[inv.deliveryStatus ?? "issued"]; return <span className="mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide flex items-center gap-1 w-fit" style={{ background: audit.bg, color: audit.color }}><span>✔</span> {audit.label}</span>; })()}</td>
                     <td className="px-4 py-3">
-                      <button onClick={() => setSelected(inv)} className="text-xs px-2.5 py-1 rounded font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer">
-                        Ver RIDE SRI
+                      {inv.hotelInvoiceNumber ? (
+                        <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1 w-fit">
+                          <span>✓</span> #{inv.hotelInvoiceNumber}
+                        </span>
+                      ) : (
+                        <span className="mono text-[10px] font-medium px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-800/60 flex items-center gap-1 w-fit">
+                          <span>⚠️</span> Pendiente Hotel
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button onClick={() => setSelected(inv)} className="text-xs px-2.5 py-1 rounded font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer whitespace-nowrap">
+                        Ver Comprobante de Pago
                       </button>
                     </td>
                   </tr>
@@ -2420,7 +2442,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
         </div>
       </div>
 
-      {/* SRI Electronic Invoice Modal */}
+      {/* Payment Receipt & Hotel Invoicing Modal */}
       {selected && (
         <SriInvoiceModal
           invoice={selected}
@@ -2431,22 +2453,22 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
             setInvoices(items => items.map(item => item.id === updated.id ? updated : item));
             setSelected(updated);
           }}
-          onReissue={() => {
-            const updated = { ...selected, deliveryStatus: "issued" as InvoiceDeliveryStatus };
+          onRegisterHotelInvoice={(invNum) => {
+            const updated = { ...selected, hotelInvoiceNumber: invNum };
             setInvoices(items => items.map(item => item.id === updated.id ? updated : item));
             setSelected(updated);
           }}
         />
       )}
 
-      {/* Quick create invoice modal */}
+      {/* Quick create payment receipt modal */}
       {showNewInvoiceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3, 7, 18, 0.8)", backdropFilter: "blur(4px)" }}>
           <form onSubmit={handleCreateQuickInvoice} className="w-full max-w-md rounded-2xl border p-6 space-y-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "var(--border)" }}>
               <div>
-                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Nueva Factura Electrónica SRI</h3>
-                <p className="text-xs text-amber-500 font-medium">{hotelName}</p>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Registrar Comprobante de Pago</h3>
+                <p className="text-xs text-amber-500 font-medium">{hotelName} · Pasarela de cobro</p>
               </div>
               <button type="button" onClick={() => setShowNewInvoiceModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
@@ -2468,13 +2490,13 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
               <label className="block text-xs mb-1 text-slate-400">Subtotal Sin Impuestos (USD) *</label>
               <input type="number" step="0.01" min="1" required value={newInvBase} onChange={e => setNewInvBase(Number(e.target.value))} className="w-full rounded border px-3 py-2 text-xs font-mono font-bold outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }} />
               <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-                <span>IVA 15% SRI: {fmtUsd(newInvBase * 0.15)}</span>
-                <span className="font-bold text-amber-400">Total: {fmtUsd(newInvBase * 1.15)}</span>
+                <span>IVA 15% (Referencial): {fmtUsd(newInvBase * 0.15)}</span>
+                <span className="font-bold text-amber-400">Total a Cobrar: {fmtUsd(newInvBase * 1.15)}</span>
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setShowNewInvoiceModal(false)} className="px-4 py-2 text-xs text-slate-400 hover:text-white">Cancelar</button>
-              <button type="submit" className="px-5 py-2 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 shadow">Emitir y Autorizar SRI</button>
+              <button type="submit" className="px-5 py-2 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 shadow">Registrar Comprobante</button>
             </div>
           </form>
         </div>
@@ -2771,7 +2793,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
               {hotel.name}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">{hotel.city} · {hotel.rooms} habitaciones · Precios en USD ($)</p>
+          <p className="text-xs text-slate-400 mt-0.5">{hotel.city} · {hotel.rooms} camas disponibles · Precios en USD ($)</p>
         </div>
         <button
           onClick={() => setShowNewTariffModal(true)}
@@ -2910,7 +2932,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
       {showNewTariffModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3, 7, 18, 0.8)", backdropFilter: "blur(4px)" }}>
           <form onSubmit={handleAddRoom} className="w-full max-w-sm rounded-xl border p-5 space-y-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <h3 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Nueva Tarifa / Habitación</h3>
+            <h3 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Nueva Tarifa por Tipo de Habitación</h3>
             <p className="text-xs text-amber-500 font-medium">{hotel.name}</p>
             <div>
               <label className="block text-xs mb-1 text-slate-400">Nombre de la Habitación / Tarifa *</label>
@@ -2919,7 +2941,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
                 required
                 value={newRoomType}
                 onChange={e => setNewRoomType(e.target.value)}
-                placeholder="Ej: Suite Frente al Mar"
+                placeholder="Ej: Habitación Matrimonial Frente al Mar"
                 className="w-full rounded border px-3 py-2 text-xs outline-none"
                 style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
               />
@@ -2964,19 +2986,18 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
 }
 
 const ALL_ROLES: AdminRole[] = ["superadmin", "admin", "manager", "receptionist"];
-const MANAGEMENT_ROLES: AdminRole[] = ["superadmin", "admin", "manager"];
 
 const NAV_ITEMS: { view: View; label: string; icon: string; divider?: boolean; roles: AdminRole[] }[] = [
-  { view: "hotels", label: "Hoteles de la Red", icon: "🏨", roles: ["superadmin", "admin"] },
+  { view: "hotels", label: "Catastro Hotelero (116)", icon: "🏨", roles: ["superadmin"] },
   { view: "users", label: "Usuarios y accesos", icon: "👤", roles: ["superadmin", "admin"], divider: true },
-  { view: "dashboard", label: "Dashboard Reservas", icon: "📊", roles: MANAGEMENT_ROLES, divider: true },
-  { view: "rooms", label: "Habitaciones del Cliente", icon: "🛏️", roles: ALL_ROLES },
-  { view: "reservations", label: "Listado de Reservas", icon: "📑", roles: ALL_ROLES },
-  { view: "guests", label: "Huéspedes", icon: "👥", roles: ALL_ROLES },
-  { view: "billing", label: "Liquidaciones al Hotel", icon: "💰", roles: ["superadmin", "admin", "manager"], divider: true },
-  { view: "payments", label: "Comprobantes de Pago", icon: "💳", roles: ALL_ROLES },
-  { view: "rates", label: "Tarifas por Temporada", icon: "🏷️", roles: ALL_ROLES },
-  { view: "revenue", label: "Métricas del Portal", icon: "📈", roles: MANAGEMENT_ROLES },
+  { view: "dashboard", label: "Dashboard Reservas", icon: "📊", roles: ["superadmin", "admin", "manager"], divider: true },
+  { view: "rooms", label: "Tipos de Habitación", icon: "🛏️", roles: ALL_ROLES },
+  { view: "reservations", label: "Bandeja de Reservas", icon: "📑", roles: ALL_ROLES },
+  { view: "guests", label: "Directorio Huéspedes", icon: "👥", roles: ["superadmin", "admin", "receptionist"] },
+  { view: "billing", label: "Comprobantes de Pago", icon: "🧾", roles: ["superadmin", "admin", "receptionist"], divider: true },
+  { view: "payments", label: "Pasarela & Links de Pago", icon: "💳", roles: ["superadmin", "admin", "receptionist"] },
+  { view: "rates", label: "Tarifas por Temporada", icon: "🏷️", roles: ["superadmin", "admin", "manager"] },
+  { view: "revenue", label: "Métricas & RevPAR", icon: "📈", roles: ["superadmin", "admin", "manager"] },
 ];
 
 // ─── Platform hotels data ─────────────────────────────────────────────────────
@@ -2985,8 +3006,10 @@ interface PlatformHotel {
   id: string;
   name: string;
   city: string;
-  stars: 1 | 2 | 3;
-  rooms: number;
+  stars: 1 | 2 | 3 | 4 | 5;
+  classification?: string;
+  category?: string;
+  rooms: number; // Capacidad de camas / plazas
   occupancy: number;
   monthRevenue: number;
   rating: number;
@@ -2995,6 +3018,7 @@ interface PlatformHotel {
   address?: string;
   phone?: string;
   taxId?: string;
+  owner?: string;
   description?: string;
   amenities?: string[];
   gallery?: string[];
@@ -3016,7 +3040,9 @@ const DEFAULT_HOTELS: PlatformHotel[] = MANTA_HOTELS.map((h, idx) => ({
   name: h.name,
   city: h.city,
   stars: h.stars,
-  rooms: 12 + ((idx * 3) % 25),
+  classification: h.classification,
+  category: h.category,
+  rooms: 14 + ((idx * 5) % 35),
   occupancy: 50 + ((idx * 8) % 45),
   monthRevenue: 6000 + ((idx * 2100) % 24000),
   rating: h.rating,
@@ -3025,29 +3051,45 @@ const DEFAULT_HOTELS: PlatformHotel[] = MANTA_HOTELS.map((h, idx) => ({
   address: h.address,
   phone: h.phone,
   taxId: h.taxId,
+  owner: h.owner,
   description: h.description,
   amenities: h.amenities,
   gallery: [h.image],
 }));
 
 const DEFAULT_STAFF: StaffUser[] = [
-  { id: "usr-001", name: "Carlos Admin", email: "admin@hotelmanta.com.ec", phone: "+593 99 100 1001", role: "superadmin", hotelIds: [], status: "active", lastAccess: "Hoy, 09:42" },
-  { id: "usr-002", name: "Ana Administradora", email: "direccion@laspalmeras.ec", phone: "+593 98 203 1212", role: "admin", hotelIds: ["las-palmeras"], status: "active", lastAccess: "Hoy, 08:15" },
-  { id: "usr-003", name: "María Gerente", email: "gerente@laspalmeras.ec", phone: "+593 99 322 4403", role: "manager", hotelIds: ["las-palmeras"], status: "active", lastAccess: "Ayer, 19:20" },
-  { id: "usr-004", name: "Juan Recepción", email: "recepcion@laspalmeras.ec", phone: "+593 98 100 2004", role: "receptionist", hotelIds: ["las-palmeras"], status: "active", lastAccess: "Hoy, 07:03" },
-  { id: "usr-005", name: "Lucía Gómez", email: "recepcion@hostalcentro.ec", phone: "+593 99 211 5005", role: "receptionist", hotelIds: ["hostal-centro"], status: "invited", lastAccess: "Pendiente" },
+  { id: "usr-001", name: "Carlos Admin", email: "admin@alojamanta.ec", phone: "+593 99 100 1001", role: "superadmin", hotelIds: [], status: "active", lastAccess: "Hoy, 09:42" },
+  { id: "usr-002", name: "Ana Administradora", email: "direccion@voyagermanta.ec", phone: "+593 98 203 1212", role: "admin", hotelIds: ["hotel-voyager-manta", "hostal-el-naufrago"], status: "active", lastAccess: "Hoy, 08:15" },
+  { id: "usr-003", name: "María Revenue", email: "revenue@voyagermanta.ec", phone: "+593 99 322 4403", role: "manager", hotelIds: ["hotel-voyager-manta", "hostal-el-naufrago"], status: "active", lastAccess: "Ayer, 19:20" },
+  { id: "usr-004", name: "Juan Recepción", email: "recepcion@voyagermanta.ec", phone: "+593 98 100 2004", role: "receptionist", hotelIds: ["hotel-voyager-manta", "hostal-el-naufrago"], status: "active", lastAccess: "Hoy, 07:03" },
+  { id: "usr-005", name: "Lucía Gómez", email: "recepcion@elnaufrago.ec", phone: "+593 99 211 5005", role: "receptionist", hotelIds: ["hostal-el-naufrago", "hostal-el-naufrago-2"], status: "invited", lastAccess: "Pendiente" },
 ];
 
 const ROLE_INFO: Record<AdminRole, { label: string; color: string; bg: string }> = {
-  superadmin: { label: "Superadministrador", color: "#d97706", bg: "rgba(245, 158, 11, 0.15)" },
-  admin: { label: "Administrador", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.15)" },
-  manager: { label: "Gerente", color: "#2563eb", bg: "rgba(37, 99, 235, 0.15)" },
-  receptionist: { label: "Recepcionista", color: "#059669", bg: "rgba(16, 185, 129, 0.15)" },
+  superadmin: { label: "Superadministrador (Cantonal)", color: "#d97706", bg: "rgba(245, 158, 11, 0.15)" },
+  admin: { label: "Administrador de Hotel", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.15)" },
+  manager: { label: "Revenue Manager", color: "#2563eb", bg: "rgba(37, 99, 235, 0.15)" },
+  receptionist: { label: "Recepcionista Front Desk", color: "#059669", bg: "rgba(16, 185, 129, 0.15)" },
 };
 
 function usePersistentState<T>(key: string, initialValue: T) {
   const [value, setValue] = useState<T>(() => {
     try {
+      // Limpieza proactiva de datos obsoletos del prototipo inicial (ciudades de España / menos de 50 hoteles)
+      if (key.includes("hotels")) {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && (parsed.length < 50 || parsed.some((h: any) => h.city === "Benidorm" || h.city === "Madrid" || h.city === "Granada" || h.city === "Málaga"))) {
+            localStorage.removeItem(key);
+            localStorage.removeItem("hoteldirekt.hotels");
+            return initialValue;
+          }
+          return parsed as T;
+        }
+        localStorage.removeItem("hoteldirekt.hotels");
+        return initialValue;
+      }
       const stored = localStorage.getItem(key);
       return stored ? JSON.parse(stored) as T : initialValue;
     } catch {
@@ -3084,44 +3126,204 @@ function Field({ label, value, onChange, type = "text", required = false }: {
   );
 }
 
-function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
+function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCatalog }: {
   hotels: PlatformHotel[];
   onSelect: (id: string) => void;
   onSave: (hotel: PlatformHotel) => void;
   onDelete: (id: string) => void;
   canDelete: boolean;
+  onResetCatalog?: () => void;
 }) {
   const [editing, setEditing] = useState<PlatformHotel | null>(null);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [classificationFilter, setClassificationFilter] = useState<string>("all");
+  const [sectorFilter, setSectorFilter] = useState<string>("all");
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [page, setPage] = useState<number>(1);
+
   const totalRevenue = hotels.reduce((s, h) => s + h.monthRevenue, 0);
   const activeHotels = hotels.filter(h => h.status === "active");
   const avgOccupancy = activeHotels.length ? Math.round(activeHotels.reduce((s, h) => s + h.occupancy, 0) / activeHotels.length) : 0;
   const activeCount = activeHotels.length;
 
-  const starLabel = (s: 1 | 2 | 3) => s === 1 ? "Pensión" : s === 2 ? "Hostal" : "Hotel";
+  const starLabel = (s: number) => `${s} Estrella${s > 1 ? "s" : ""}`;
   const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
     active: { bg: "rgba(16, 185, 129, 0.15)", color: "#059669", label: "Activo" },
     paused: { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Pausado" },
     pending: { bg: "rgba(59, 130, 246, 0.15)", color: "#2563eb", label: "Pendiente" },
   };
 
+  const filteredHotels = useMemo(() => {
+    return hotels.filter(h => {
+      const q = search.toLowerCase().trim();
+      const matchSearch = !q ||
+        h.name.toLowerCase().includes(q) ||
+        (h.city && h.city.toLowerCase().includes(q)) ||
+        (h.address && h.address.toLowerCase().includes(q)) ||
+        (h.taxId && h.taxId.includes(q)) ||
+        (h.owner && h.owner.toLowerCase().includes(q));
+
+      const matchCat = categoryFilter === "all" ||
+        (h.category && h.category.toLowerCase().includes(categoryFilter.toLowerCase())) ||
+        String(h.stars) === categoryFilter;
+
+      const matchClass = classificationFilter === "all" ||
+        (h.classification && h.classification.toLowerCase() === classificationFilter.toLowerCase());
+
+      const matchSector = sectorFilter === "all" ||
+        (h.city && h.city.toLowerCase().includes(sectorFilter.toLowerCase()));
+
+      return matchSearch && matchCat && matchClass && matchSector;
+    });
+  }, [hotels, search, categoryFilter, classificationFilter, sectorFilter]);
+
+  const totalPages = pageSize === 0 ? 1 : Math.ceil(filteredHotels.length / pageSize);
+  const paginatedHotels = pageSize === 0
+    ? filteredHotels
+    : filteredHotels.slice((page - 1) * pageSize, page * pageSize);
+
+  const sectors = ["Barbasquillo", "El Murciélago", "Tarqui", "Los Esteros", "San Mateo", "Santa Marianita", "Manta"];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Mis Hoteles</h1>
-          <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>{activeCount} propiedades activas en la plataforma</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>Catastro Hotelero Oficial de Manta</h1>
+            <span className="mono text-xs px-2.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              116 Establecimientos
+            </span>
+          </div>
+          <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            Catastro Turístico Cantonal 2026 · {activeCount} establecimientos activos en Manta, Manabí
+          </p>
         </div>
-        {canDelete && <button onClick={() => setEditing({ id: "", name: "", city: "", stars: 3, rooms: 1, occupancy: 0, monthRevenue: 0, rating: 0, status: "pending", address: "", phone: "", taxId: "", description: "", amenities: [], gallery: [] })} className="px-4 py-2 rounded text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
-          + Añadir hotel
-        </button>}
+        <div className="flex items-center gap-2 flex-wrap">
+          {onResetCatalog && (
+            <button
+              onClick={() => {
+                if (confirm("¿Restaurar todo el Catastro oficial de Manta con los 116 hoteles del archivo consolidado?")) {
+                  onResetCatalog();
+                }
+              }}
+              title="Restaurar y sincronizar todos los 116 hoteles de Manta desde el archivo oficial"
+              className="px-3 py-2 rounded text-xs font-semibold border flex items-center gap-1.5 transition-colors hover:bg-amber-500/10 cursor-pointer"
+              style={{ borderColor: "rgba(245, 158, 11, 0.4)", color: "#f59e0b" }}
+            >
+              <span>🔄</span> Recargar 116 Hoteles Oficiales
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => setEditing({ id: "", name: "", city: "Manta - Barbasquillo", stars: 3, rooms: 15, occupancy: 50, monthRevenue: 5000, rating: 4.0, status: "active", address: "", phone: "", taxId: "", description: "", amenities: [], gallery: [] })}
+              className="px-4 py-2 rounded text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer"
+              style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+            >
+              <span>+</span> Añadir Hotel
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Platform KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Hoteles activos" value={String(activeCount)} sub={`${hotels.length} en total`} />
+        <KpiCard label="Alojamientos registrados" value={String(activeCount)} sub={`${hotels.length} en el Catastro Cantonal 2026`} />
         <KpiCard label="Revenue plataforma (Ago)" value={fmtUsd(totalRevenue)} sub="facturado en USD Manta" accent />
-        <KpiCard label="Ocupación media" value={`${avgOccupancy}%`} sub="hoteles activos" />
-        <KpiCard label="Habitaciones totales" value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="en toda la red" />
+        <KpiCard label="Ocupación media cantonal" value={`${avgOccupancy}%`} sub="red oficial de Manta" />
+        <KpiCard label="Capacidad total de camas" value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="plazas de alojamiento cantonal" />
+      </div>
+
+      {/* Filter bar */}
+      <div className="p-4 rounded-xl border space-y-3" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              placeholder="🔍 Buscar por nombre de hotel, sector, dirección, propietario o RUC..."
+              className="w-full rounded-lg border px-3 py-2 text-xs outline-none"
+              style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            />
+            {search && (
+              <button
+                onClick={() => { setSearch(""); setPage(1); }}
+                className="absolute right-2.5 top-2 text-xs text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {/* Classification */}
+            <select
+              value={classificationFilter}
+              onChange={e => { setClassificationFilter(e.target.value); setPage(1); }}
+              className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
+              style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            >
+              <option value="all">Todas las Modalidades</option>
+              <option value="Hotel">Hoteles</option>
+              <option value="Hostal">Hostales</option>
+              <option value="Hostería">Hosterías</option>
+            </select>
+
+            {/* Stars / Category */}
+            <select
+              value={categoryFilter}
+              onChange={e => { setCategoryFilter(e.target.value); setPage(1); }}
+              className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
+              style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            >
+              <option value="all">Todas las Categorías</option>
+              <option value="5">5 Estrellas (Lujo)</option>
+              <option value="4">4 Estrellas (Primera)</option>
+              <option value="3">3 Estrellas (Superior)</option>
+              <option value="2">2 Estrellas (Turista)</option>
+              <option value="1">1 Estrella (Económico)</option>
+            </select>
+
+            {/* Sector */}
+            <select
+              value={sectorFilter}
+              onChange={e => { setSectorFilter(e.target.value); setPage(1); }}
+              className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
+              style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            >
+              <option value="all">Todos los Sectores</option>
+              {sectors.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+
+            {/* Page Size */}
+            <select
+              value={pageSize}
+              onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
+              className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
+              style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            >
+              <option value={25}>25 por pág.</option>
+              <option value={50}>50 por pág.</option>
+              <option value={0}>Ver todos (116)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Filters summary & clear */}
+        <div className="flex items-center justify-between text-xs pt-1 border-t" style={{ borderColor: "var(--border)" }}>
+          <span style={{ color: "var(--muted-foreground)" }}>
+            Mostrando <strong>{paginatedHotels.length}</strong> de <strong>{filteredHotels.length}</strong> establecimientos encontrados (Total cantón: {hotels.length})
+          </span>
+          {(search || categoryFilter !== "all" || classificationFilter !== "all" || sectorFilter !== "all") && (
+            <button
+              onClick={() => { setSearch(""); setCategoryFilter("all"); setClassificationFilter("all"); setSectorFilter("all"); setPage(1); }}
+              className="text-amber-400 hover:underline font-medium cursor-pointer"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Hotels table */}
@@ -3130,29 +3332,42 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Hotel", "Sector", "Cat.", "10% Servicio", "Habs.", "Ocupación", "Revenue (Ago)", "Rating", "Estado", ""].map(h => (
+                {["Alojamiento", "Sector / Parroquia", "Modalidad / Cat.", "10% Servicio", "Camas", "Ocupación", "Revenue (Ago)", "Rating", "Estado", ""].map(h => (
                   <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {hotels.map((h, i) => {
+              {paginatedHotels.map((h, i) => {
                 const ss = statusStyle[h.status];
                 const hasServ10 = h.gravaServicio10 ?? true;
                 return (
-                  <tr key={h.id} className="transition-colors hover:bg-[var(--secondary)]" style={{ borderBottom: i < hotels.length - 1 ? "1px solid var(--border)" : "none" }}>
+                  <tr key={h.id} className="transition-colors hover:bg-[var(--secondary)]" style={{ borderBottom: i < paginatedHotels.length - 1 ? "1px solid var(--border)" : "none" }}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {h.gallery?.[0] && <img src={h.gallery[0]} alt="" className="w-12 h-10 rounded object-cover" />}
-                        <div><p className="font-medium" style={{ color: "var(--foreground)" }}>{h.name}</p><p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>{h.amenities?.slice(0, 2).join(" · ")}</p></div>
+                        {h.gallery?.[0] ? (
+                          <img src={h.gallery[0]} alt="" className="w-12 h-10 rounded object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-12 h-10 rounded bg-slate-800 flex items-center justify-center text-sm flex-shrink-0">🏨</div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate" style={{ color: "var(--foreground)" }}>{h.name}</p>
+                          <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
+                            {h.taxId ? `RUC: ${h.taxId}` : ""} {h.address ? `· ${h.address}` : ""}
+                          </p>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>{h.city}</td>
+                    <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                      <p className="font-medium text-slate-200">{h.city}</p>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-0.5">
-                        {Array.from({ length: h.stars }).map((_, i) => <span key={i} style={{ color: "#f59e0b", fontSize: 10 }}>★</span>)}
+                        {Array.from({ length: h.stars }).map((_, idx) => <span key={idx} style={{ color: "#f59e0b", fontSize: 10 }}>★</span>)}
                       </div>
-                      <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>{starLabel(h.stars)}</span>
+                      <span className="text-[10px] block" style={{ color: "var(--muted-foreground)" }}>
+                        {h.classification || "Hotel"} · {starLabel(h.stars)}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <button
@@ -3191,9 +3406,9 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
-                        <button onClick={() => onSelect(h.id)} className="text-xs px-2 py-1.5 rounded font-medium transition-colors" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Gestionar</button>
-                        <button onClick={() => setEditing({ ...h })} className="text-xs px-2 py-1.5 rounded border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>Editar</button>
-                        {canDelete && <button onClick={() => { if (confirm(`¿Eliminar ${h.name}?`)) onDelete(h.id); }} className="text-xs px-2 py-1.5 rounded border" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button>}
+                        <button onClick={() => onSelect(h.id)} className="text-xs px-2 py-1.5 rounded font-medium transition-colors cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Gestionar</button>
+                        <button onClick={() => setEditing({ ...h })} className="text-xs px-2 py-1.5 rounded border cursor-pointer hover:border-amber-400" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>Editar</button>
+                        {canDelete && <button onClick={() => { if (confirm(`¿Eliminar ${h.name}?`)) onDelete(h.id); }} className="text-xs px-2 py-1.5 rounded border cursor-pointer" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button>}
                       </div>
                     </td>
                   </tr>
@@ -3202,6 +3417,51 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination controls */}
+        {pageSize > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t text-xs" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+            <span style={{ color: "var(--muted-foreground)" }}>
+              Página <strong>{page}</strong> de <strong>{totalPages}</strong>
+            </span>
+            <div className="flex gap-1.5">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="px-3 py-1.5 rounded border disabled:opacity-30 cursor-pointer font-medium"
+                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+              >
+                ← Anterior
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
+                const pageNum = idx + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className="w-8 h-8 rounded border text-xs font-semibold cursor-pointer"
+                    style={{
+                      background: page === pageNum ? "var(--primary)" : "transparent",
+                      color: page === pageNum ? "var(--primary-foreground)" : "var(--muted-foreground)",
+                      borderColor: page === pageNum ? "transparent" : "var(--border)",
+                    }}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              {totalPages > 5 && <span className="self-center px-1 text-slate-500">...</span>}
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="px-3 py-1.5 rounded border disabled:opacity-30 cursor-pointer font-medium"
+                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+              >
+                Siguiente →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {editing && (
@@ -3238,8 +3498,13 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete }: {
                   <option value="active">Activo</option><option value="paused">Pausado</option><option value="pending">Pendiente</option>
                 </select>
               </div>
-              <Field label="Habitaciones" type="number" value={String(editing.rooms)} onChange={rooms => setEditing({ ...editing, rooms: Number(rooms) })} required />
-              <Field label="Categoría (1–3)" type="number" value={String(editing.stars)} onChange={stars => setEditing({ ...editing, stars: Math.min(3, Math.max(1, Number(stars))) as 1 | 2 | 3 })} required />
+              <Field label="Capacidad de Camas / Plazas" type="number" value={String(editing.rooms)} onChange={rooms => setEditing({ ...editing, rooms: Number(rooms) })} required />
+              <div>
+                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Categoría Estrellas (1–5)</label>
+                <select value={editing.stars} onChange={e => setEditing({ ...editing, stars: Math.min(5, Math.max(1, Number(e.target.value))) as 1 | 2 | 3 | 4 | 5 })} className="w-full rounded border px-3 py-2.5 text-sm outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
+                  {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{s} Estrella{s > 1 ? "s" : ""}</option>)}
+                </select>
+              </div>
               <div className="sm:col-span-2 flex items-center gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10">
                 <input
                   id="hotel-grava-servicio"
@@ -3351,10 +3616,10 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         <div className="rounded-md border p-4 h-fit" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>Permisos por rol</p>
           {[
-            ["Superadministrador", "Todos los hoteles, usuarios y configuración."],
-            ["Administrador", "Todas las funciones de su hotel y su equipo."],
-            ["Gerente", "Operación, facturación y analítica; sin usuarios."],
-            ["Recepcionista", "Reservas, huéspedes, habitaciones, tarifas y pagos."],
+            ["Superadministrador (Cantonal)", "Acceso total a los 116 hoteles de Manta, auditoría, catastro y métricas consolidadas."],
+            ["Administrador de Hotel", "Control de su establecimiento, configuración del 10% de servicio, liquidaciones bancarias y su equipo."],
+            ["Revenue Manager", "Control de tarifas, temporadas, multiplicadores, inventario y disponibilidad de habitaciones."],
+            ["Recepcionista Front Desk", "Bandeja de reservas en tiempo real, registro de check-in/out, pagos y facturas electrónicas SRI."],
           ].map(([role, description]) => <div key={role} className="pb-3 mb-3 border-b last:border-0 last:mb-0 last:pb-0" style={{ borderColor: "var(--border)" }}><p className="text-xs font-semibold">{role}</p><p className="text-[11px] mt-1 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{description}</p></div>)}
         </div>
       </div>
@@ -3392,10 +3657,10 @@ export default function App() {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [guestUser, setGuestUser] = useState<GuestUser | null>(null);
   const [view, setView] = useState<View>("hotels");
-  const [activeHotelId, setActiveHotelId] = useState<string>("costa-sol");
+  const [activeHotelId, setActiveHotelId] = useState<string>("hotel-voyager-manta");
   const [showModal, setShowModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [hotels, setHotels] = usePersistentState<PlatformHotel[]>("hoteldirekt.hotels", DEFAULT_HOTELS);
+  const [hotels, setHotels] = usePersistentState<PlatformHotel[]>("hoteldirekt.hotels.manta_116", DEFAULT_HOTELS);
   const [staffUsers, setStaffUsers] = usePersistentState<StaffUser[]>("hoteldirekt.staff", DEFAULT_STAFF);
 
   useEffect(() => {
@@ -3465,9 +3730,9 @@ export default function App() {
         {/* Logo */}
         <div className="px-4 py-3.5 border-b" style={{ borderColor: "var(--border)" }}>
           <h2 className="text-base font-bold leading-tight" style={{ color: "var(--primary)" }}>
-            HotelDirekt Manta
+            AlojaManta
           </h2>
-          <p className="text-[10px] text-slate-400 mt-0.5">Portal de Reservas Hoteleras</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">Portal Cantonal de Alojamientos</p>
           {adminUser && (
             <div className="mt-1.5 flex items-center gap-1.5">
               <span className="mono text-[9px] px-1.5 py-0.5 rounded uppercase font-bold" style={{ background: ROLE_INFO[adminUser.role].bg, color: ROLE_INFO[adminUser.role].color }}>
@@ -3492,15 +3757,17 @@ export default function App() {
         {/* Hotel selector */}
         {view !== "hotels" && view !== "users" && activeHotel && (
           <div className="px-3 pt-3 pb-2 border-b" style={{ borderColor: "var(--border)" }}>
-            <p className="mono text-[9px] uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)" }}>Hotel activo</p>
+            <p className="mono text-[9px] uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)" }}>
+              {role === "superadmin" ? "Hotel supervisado" : "Mi Hotel"}
+            </p>
             <select
               className="w-full px-2 py-1.5 rounded text-xs font-medium border outline-none cursor-pointer hover:border-amber-500/50 transition-colors"
               style={{ background: "var(--secondary)", borderColor: "var(--border)", color: "var(--foreground)" }}
               value={activeHotelId}
-              disabled={false}
+              disabled={allowedHotels.length <= 1}
               onChange={e => setActiveHotelId(e.target.value)}
             >
-              {hotels.map(h => (
+              {allowedHotels.map(h => (
                 <option key={h.id} value={h.id}>{h.name}</option>
               ))}
             </select>
@@ -3604,7 +3871,7 @@ export default function App() {
               ☰
             </button>
             <span className="font-bold text-sm" style={{ color: "var(--primary)" }}>
-              HotelDirekt Manta
+              AlojaManta
             </span>
           </div>
           <button
@@ -3626,6 +3893,11 @@ export default function App() {
               onSave={hotel => setHotels(current => current.some(item => item.id === hotel.id) ? current.map(item => item.id === hotel.id ? hotel : item) : [...current, hotel])}
               onDelete={id => setHotels(current => current.filter(hotel => hotel.id !== id))}
               canDelete={role === "superadmin"}
+              onResetCatalog={() => {
+                localStorage.removeItem("hoteldirekt.hotels.manta_116");
+                localStorage.removeItem("hoteldirekt.hotels");
+                setHotels(DEFAULT_HOTELS);
+              }}
             />
           )}
           {view === "users" && (
