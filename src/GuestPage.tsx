@@ -26,12 +26,33 @@ interface SearchParams {
 const HOTELS: Hotel[] = MANTA_HOTELS;
 
 const DESTINATIONS = [
-  { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 18 },
-  { city: "Manta - El Murciélago", img: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=400&h=300&fit=crop&auto=format", hotels: 22 },
-  { city: "Manta - Tarqui", img: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=400&h=300&fit=crop&auto=format", hotels: 38 },
-  { city: "Manta - Santa Marianita", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop&auto=format", hotels: 9 },
-  { city: "Manta - San Mateo", img: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&h=300&fit=crop&auto=format", hotels: 8 },
-  { city: "Manta - Los Esteros", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=300&fit=crop&auto=format", hotels: 15 },
+  { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 18, type: "Playa & Zona Hotelera" },
+  { city: "Manta - El Murciélago", img: "https://images.unsplash.com/photo-1563273410-ca16d83b2cce?w=400&h=300&fit=crop&auto=format", hotels: 22, type: "Playa Urbana & Malecón" },
+  { city: "Manta - Tarqui", img: "https://images.unsplash.com/photo-1704908327293-82e8a6026450?w=400&h=300&fit=crop&auto=format", hotels: 38, type: "Parroquia Urbana" },
+  { city: "Manta - Santa Marianita", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop&auto=format", hotels: 9, type: "Parroquia Rural · Kitesurf" },
+  { city: "Manta - San Mateo", img: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=400&h=300&fit=crop&auto=format", hotels: 8, type: "Parroquia Urbana · Surf" },
+  { city: "Manta - Los Esteros", img: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=300&fit=crop&auto=format", hotels: 15, type: "Parroquia Urbana" },
+  { city: "Manta - San Lorenzo", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop&auto=format", hotels: 4, type: "Parroquia Rural · Pacoche" },
+  { city: "Manta - Eloy Alfaro", img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop&auto=format", hotels: 2, type: "Parroquia Urbana" },
+];
+
+const MANTA_PARROQUIAS_OFICIALES = [
+  { name: "Manta (Matriz)", query: "Manta", type: "Parroquia Urbana", desc: "Barbasquillo, El Murciélago, Malecón y Centro", count: 40, icon: "🏛️" },
+  { name: "Tarqui", query: "Tarqui", type: "Parroquia Urbana", desc: "Playa de Tarqui, hotelería y comercio tradicional", count: 38, icon: "🏖️" },
+  { name: "Los Esteros", query: "Los Esteros", type: "Parroquia Urbana", desc: "Zona costera, hoteles y playas del norte", count: 15, icon: "🌊" },
+  { name: "San Mateo", query: "San Mateo", type: "Parroquia Urbana", desc: "Puerto pesquero artesanal, acantilados y surf", count: 8, icon: "⛵" },
+  { name: "Santa Marianita", query: "Santa Marianita", type: "Parroquia Rural", desc: "Capital del kitesurf del Ecuador y playa amplia", count: 9, icon: "🪁" },
+  { name: "San Lorenzo", query: "San Lorenzo", type: "Parroquia Rural", desc: "Reserva Marina de Pacoche, El Faro y senderos", count: 4, icon: "🌿" },
+  { name: "Eloy Alfaro", query: "Eloy Alfaro", type: "Parroquia Urbana", desc: "Sector residencial y comercial del cantón", count: 2, icon: "🏘️" },
+];
+
+const MANTA_SECTORES_DESTACADOS = [
+  { name: "Barbasquillo", query: "Barbasquillo", parroquia: "Parroquia Manta", desc: "Hoteles frente al mar, gastronomía y alta gama", count: 18, badge: "Exclusivo", icon: "🍸" },
+  { name: "Playa El Murciélago", query: "El Murciélago", parroquia: "Parroquia Manta", desc: "Malecón escénico, playa urbana y vida nocturna", count: 22, badge: "Popular", icon: "🌴" },
+  { name: "Playa Santa Marianita", query: "Santa Marianita", parroquia: "Parroquia Rural", desc: "Kitesurf, viento constante y mar abierto", count: 9, badge: "Kitesurf", icon: "🪁" },
+  { name: "San Lorenzo & Pacoche", query: "San Lorenzo", parroquia: "Parroquia Rural", desc: "Naturaleza, bosque húmedo y playas vírgenes", count: 4, badge: "Ecoturismo", icon: "🐢" },
+  { name: "Playa Tarqui", query: "Tarqui", parroquia: "Parroquia Tarqui", desc: "Gastronomía marina, mariscos y tradición", count: 38, badge: "Tradición", icon: "🐟" },
+  { name: "Puerto San Mateo", query: "San Mateo", parroquia: "Parroquia San Mateo", desc: "Miradores marinos y surf sobre olas derechas", count: 8, badge: "Surf & Puerto", icon: "🌊" },
 ];
 
 const DEMO_RESERVATIONS: MyReservation[] = INITIAL_DEMO_RESERVATIONS;
@@ -181,32 +202,348 @@ function PriceBreakdownBox({
 
 // ─── Search bar ───────────────────────────────────────────────────────────────
 
-function SearchBar({ params, onChange, onSearch, variant = "hero" }: { params: SearchParams; onChange: (p: SearchParams) => void; onSearch: () => void; variant?: "hero" | "sticky" }) {
+function SearchBar({
+  params,
+  onChange,
+  onSearch,
+  variant = "hero",
+}: {
+  params: SearchParams;
+  onChange: (p: SearchParams) => void;
+  onSearch: () => void;
+  variant?: "hero" | "sticky";
+}) {
+  const [isPopOpen, setIsPopOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"parroquias" | "sectores" | "todo">("parroquias");
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setIsPopOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleSelectDestination(destQuery: string) {
+    onChange({ ...params, destination: destQuery });
+    setIsPopOpen(false);
+  }
+
+  function handleClear() {
+    onChange({ ...params, destination: "" });
+    setIsPopOpen(false);
+  }
+
   return (
-    <div className={`w-full max-w-full flex flex-col md:flex-row gap-2.5 md:items-end ${variant === "hero" ? "p-3 sm:p-4 rounded-2xl shadow-2xl" : "p-2.5 rounded-xl border"}`} style={{ background: "#fff", borderColor: variant === "sticky" ? "#e2e8f0" : undefined }}>
-      <div className="flex-1 min-w-0">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">¿A dónde vas?</label>
-        <input className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none text-slate-800" style={{ borderColor: "#cbd5e1" }} value={params.destination} onChange={e => onChange({ ...params, destination: e.target.value })} placeholder="Ciudad, parroquia o playa..." list="dest-list" />
-        <datalist id="dest-list">{DESTINATIONS.map(d => <option key={d.city} value={d.city} />)}</datalist>
+    <div
+      className={`w-full max-w-full flex flex-col md:flex-row gap-2.5 md:items-end ${
+        variant === "hero"
+          ? "p-3 sm:p-4 rounded-3xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/60"
+          : "p-2.5 rounded-2xl border bg-white shadow-xs"
+      }`}
+      style={{ borderColor: variant === "sticky" ? "#e2e8f0" : undefined }}
+    >
+      {/* ─── Selector de Destino Moderno (Custom Popover) ─── */}
+      <div className="flex-1 min-w-0 relative" ref={popoverRef}>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+            <span>📍</span>
+            <span>¿A dónde vas en Manta?</span>
+          </label>
+          <span className="text-[9px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+            7 Parroquias Oficiales
+          </span>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <span className="text-sm">🔍</span>
+          </div>
+
+          <input
+            type="text"
+            value={params.destination}
+            onFocus={() => setIsPopOpen(true)}
+            onChange={e => {
+              onChange({ ...params, destination: e.target.value });
+              if (!isPopOpen) setIsPopOpen(true);
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                setIsPopOpen(false);
+                onSearch();
+              } else if (e.key === "Escape") {
+                setIsPopOpen(false);
+              }
+            }}
+            placeholder="Parroquia, playa o sector de Manta..."
+            className="w-full pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 cursor-pointer shadow-2xs"
+          />
+
+          {params.destination && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer text-xs font-bold"
+              title="Borrar filtro de destino"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* ─── Modern Glass Popover ─── */}
+        {isPopOpen && (
+          <div
+            className="absolute left-0 top-full mt-2 w-full sm:w-[460px] max-w-[95vw] rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
+            style={{ boxShadow: "0 20px 40px -15px rgba(0,0,0,0.18)" }}
+          >
+            {/* Header del Popover */}
+            <div className="p-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🗺️</span>
+                <div>
+                  <p className="font-bold text-xs text-white leading-tight">Distribución Territorial de Manta</p>
+                  <p className="text-[10px] text-slate-300">116 alojamientos catastrados</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPopOpen(false)}
+                className="w-6 h-6 rounded-full bg-slate-700/80 hover:bg-slate-600 text-slate-200 text-xs flex items-center justify-center cursor-pointer transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Pestañas Segmentadas Modernas (Pill Tabs) */}
+            <div className="p-2 bg-slate-100/90 border-b border-slate-200 flex items-center gap-1 text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => setActiveTab("parroquias")}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  activeTab === "parroquias"
+                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/80"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                }`}
+              >
+                <span>🏛️</span>
+                <span>7 Parroquias</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("sectores")}
+                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  activeTab === "sectores"
+                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/80"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                }`}
+              >
+                <span>🏖️</span>
+                <span>Playas & Sectores</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("todo")}
+                className={`py-1.5 px-2.5 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                  activeTab === "todo"
+                    ? "bg-amber-500 text-slate-950 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                }`}
+              >
+                <span>⭐</span>
+                <span>Todo</span>
+              </button>
+            </div>
+
+            {/* Contenido según pestaña */}
+            <div className="max-h-72 overflow-y-auto p-2 divide-y divide-slate-100 text-xs">
+              {/* Pestaña 1: Las 7 Parroquias Oficiales */}
+              {activeTab === "parroquias" && (
+                <div className="space-y-1">
+                  {MANTA_PARROQUIAS_OFICIALES.map(p => (
+                    <button
+                      key={p.name}
+                      type="button"
+                      onClick={() => handleSelectDestination(p.query)}
+                      className="w-full p-2.5 rounded-xl hover:bg-amber-50/80 text-left transition-all cursor-pointer group flex items-center justify-between border border-transparent hover:border-amber-200"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 transition-colors">
+                          {p.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-slate-800 text-xs group-hover:text-amber-900 transition-colors">
+                              {p.name}
+                            </span>
+                            <span
+                              className={`text-[9px] font-semibold px-1.5 py-0.2 rounded ${
+                                p.type.includes("Rural")
+                                  ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                                  : "bg-blue-100 text-blue-900 border border-blue-300"
+                              }`}
+                            >
+                              {p.type}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">{p.desc}</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full shrink-0 group-hover:bg-amber-200 group-hover:text-amber-950 transition-colors">
+                        {p.count} hot.
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Pestaña 2: Playas y Sectores Destacados */}
+              {activeTab === "sectores" && (
+                <div className="space-y-1">
+                  {MANTA_SECTORES_DESTACADOS.map(s => (
+                    <button
+                      key={s.name}
+                      type="button"
+                      onClick={() => handleSelectDestination(s.query)}
+                      className="w-full p-2.5 rounded-xl hover:bg-amber-50/80 text-left transition-all cursor-pointer group flex items-center justify-between border border-transparent hover:border-amber-200"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-200 group-hover:text-amber-950 transition-colors">
+                          {s.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-slate-800 text-xs group-hover:text-amber-900 transition-colors">
+                              {s.name}
+                            </span>
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                              {s.badge}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">{s.parroquia} · {s.desc}</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full shrink-0 group-hover:bg-amber-200 group-hover:text-amber-950 transition-colors">
+                        {s.count} hot.
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Pestaña 3: Todo el Cantón */}
+              {activeTab === "todo" && (
+                <div className="p-3 text-center space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center text-2xl mx-auto shadow-xs">
+                    🌊
+                  </div>
+                  <p className="font-bold text-slate-900 text-xs">Todo el Cantón Manta</p>
+                  <p className="text-[11px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                    Buscará en los 116 hoteles, hostales y hosterías catastrados en las 7 parroquias del cantón.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectDestination("")}
+                    className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer transition-colors shadow-xs"
+                  >
+                    Ver los 116 Alojamientos de Manta
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Pie del Popover */}
+            <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+              <span>💡 Selecciona una opción o escribe para filtrar</span>
+              <button
+                type="button"
+                onClick={() => {
+                  onChange({ ...params, destination: "" });
+                  setIsPopOpen(false);
+                }}
+                className="text-amber-700 hover:underline font-semibold cursor-pointer"
+              >
+                Limpiar filtro
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* ─── Fechas (Llegada & Salida) ─── */}
       <div className="grid grid-cols-2 gap-2 md:flex md:gap-2">
         <div className="min-w-0 sm:w-32">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">Llegada</label>
-          <input type="date" className="w-full px-2.5 py-2 rounded-lg border text-xs sm:text-sm font-medium outline-none text-slate-800" style={{ borderColor: "#cbd5e1", colorScheme: "light" }} value={params.checkIn} min={todayStr()} onChange={e => onChange({ ...params, checkIn: e.target.value, checkOut: params.checkOut && e.target.value >= params.checkOut ? addDays(e.target.value, 1) : params.checkOut })} />
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
+            <span>📅</span>
+            <span>Llegada</span>
+          </label>
+          <input
+            type="date"
+            className="w-full px-2.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
+            style={{ colorScheme: "light" }}
+            value={params.checkIn}
+            min={todayStr()}
+            onChange={e =>
+              onChange({
+                ...params,
+                checkIn: e.target.value,
+                checkOut: params.checkOut && e.target.value >= params.checkOut ? addDays(e.target.value, 1) : params.checkOut,
+              })
+            }
+          />
         </div>
+
         <div className="min-w-0 sm:w-32">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">Salida</label>
-          <input type="date" className="w-full px-2.5 py-2 rounded-lg border text-xs sm:text-sm font-medium outline-none text-slate-800" style={{ borderColor: "#cbd5e1", colorScheme: "light" }} value={params.checkOut} min={params.checkIn ? addDays(params.checkIn, 1) : addDays(todayStr(), 1)} onChange={e => onChange({ ...params, checkOut: e.target.value })} />
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
+            <span>📅</span>
+            <span>Salida</span>
+          </label>
+          <input
+            type="date"
+            className="w-full px-2.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
+            style={{ colorScheme: "light" }}
+            value={params.checkOut}
+            min={params.checkIn ? addDays(params.checkIn, 1) : addDays(todayStr(), 1)}
+            onChange={e => onChange({ ...params, checkOut: e.target.value })}
+          />
         </div>
       </div>
-      <div className="min-w-0 md:w-28">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left">Huéspedes</label>
-        <select className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none text-slate-800 bg-white" style={{ borderColor: "#cbd5e1" }} value={params.adults} onChange={e => onChange({ ...params, adults: Number(e.target.value) })}>
-          {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n} adulto{n > 1 ? "s" : ""}</option>)}
+
+      {/* ─── Huéspedes ─── */}
+      <div className="min-w-0 md:w-32">
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
+          <span>👥</span>
+          <span>Huéspedes</span>
+        </label>
+        <select
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
+          value={params.adults}
+          onChange={e => onChange({ ...params, adults: Number(e.target.value) })}
+        >
+          {[1, 2, 3, 4, 5, 6].map(n => (
+            <option key={n} value={n}>
+              {n} adulto{n > 1 ? "s" : ""}
+            </option>
+          ))}
         </select>
       </div>
-      <button onClick={onSearch} className="w-full md:w-auto px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all whitespace-nowrap cursor-pointer shadow-sm text-center" style={{ background: "#f59e0b", color: "#0c1220" }}>
-        🔍 Buscar
+
+      {/* ─── Botón de Búsqueda Moderno ─── */}
+      <button
+        type="button"
+        onClick={() => {
+          setIsPopOpen(false);
+          onSearch();
+        }}
+        className="w-full md:w-auto px-7 py-2.5 rounded-xl font-black text-sm transition-all whitespace-nowrap cursor-pointer text-center bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+      >
+        <span>🔍</span>
+        <span>Buscar Hoteles</span>
       </button>
     </div>
   );
@@ -324,7 +661,6 @@ function AccountView({
   onViewVoucher,
   onBack,
   initialTab = "hub",
-  onAdminAccess,
 }: {
   user: GuestUser;
   reservations: MyReservation[];
@@ -332,10 +668,9 @@ function AccountView({
   onCancelReservation: (id: string) => void;
   onViewVoucher: (res: MyReservation) => void;
   onBack?: () => void;
-  initialTab?: "hub" | "reservations" | "personal" | "billing" | "payments" | "benefits";
-  onAdminAccess?: () => void;
+  initialTab?: "hub" | "reservations" | "personal" | "billing" | "payments" | "about";
 }) {
-  const [activeTab, setActiveTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "benefits">(initialTab);
+  const [activeTab, setActiveTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "about">(initialTab);
   const [resFilter, setResFilter] = useState<"all" | "upcoming" | "completed" | "cancelled">("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -431,16 +766,6 @@ function AccountView({
         </button>
 
         <div className="flex items-center gap-2">
-          {onAdminAccess && (
-            <button
-              onClick={onAdminAccess}
-              className="text-xs px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 font-semibold hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
-              title="Acceso para recepcionistas y propietarios de hotel"
-            >
-              <span>🏨</span>
-              <span className="hidden sm:inline">Panel Hotel / PMS</span>
-            </button>
-          )}
           <button
             onClick={onLogout}
             className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors font-medium cursor-pointer"
@@ -462,8 +787,8 @@ function AccountView({
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900" style={{ fontFamily: "DM Serif Display, serif" }}>
                   {profile.fullName || user.name}
                 </h1>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
-                  ⭐ Nivel 1 · Huésped Frecuente Manta
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  ✓ Cuenta Verificada
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">{user.email} · {profile.phone}</p>
@@ -491,7 +816,7 @@ function AccountView({
             { id: "personal", label: "Datos Personales & Check-in", icon: "👤" },
             { id: "billing", label: "Facturación SRI Hotel", icon: "🏛️" },
             { id: "payments", label: "Medios de Pago", icon: "💳" },
-            { id: "benefits", label: "Beneficios Manta Direct", icon: "🎁" },
+            { id: "about", label: "Acerca de AlojaManta", icon: "ℹ️" },
           ].map(t => (
             <button
               key={t.id}
@@ -540,10 +865,10 @@ function AccountView({
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("reservations")}
+                  onClick={onBack}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Alojamientos guardados y favoritos</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Explorar alojamientos en Manta</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -657,71 +982,77 @@ function AccountView({
               </div>
             </div>
 
-            {/* Card 5: Beneficios Manta Direct */}
+            {/* Card 5: Acerca de AlojaManta */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>🎁</span>
-                  <span>Beneficios Manta Direct</span>
+                  <span>ℹ️</span>
+                  <span>Acerca de AlojaManta</span>
                 </h3>
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-                  0% Comisión OTA
+                  Red Oficial Manta
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
                 <button
-                  onClick={() => setActiveTab("benefits")}
+                  onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Tarifa neta garantizada por el hotel</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">116 Alojamientos catastrados y validados</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("benefits")}
+                  onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Alianzas en Murciélago & Barbasquillo</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Modelo directo sin comisiones abusivas</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab("benefits")}
+                  onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Cancelación flexible sin penalidades</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Facturación tributaria directa ante el SRI</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
 
-            {/* Card 6: Ayuda, Soporte & Propietarios */}
+            {/* Card 6: Atención y Asistencia al Huésped */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>🏖️</span>
-                  <span>Soporte & Hoteleros</span>
+                  <span>💬</span>
+                  <span>Asistencia al Huésped</span>
                 </h3>
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                   Cantón Manta
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
-                <div className="py-2.5 flex items-center justify-between text-left">
-                  <span className="text-slate-700 font-medium">Asistencia local: +593 5 262 8900</span>
-                  <span className="text-slate-400">📞</span>
-                </div>
-                <div className="py-2.5 flex items-center justify-between text-left">
-                  <span className="text-slate-700 font-medium">WhatsApp Manta: +593 99 876 5432</span>
-                  <span className="text-slate-400">💬</span>
-                </div>
-                {onAdminAccess && (
-                  <button
-                    onClick={onAdminAccess}
-                    className="w-full py-2.5 flex items-center justify-between text-left text-amber-800 font-bold hover:underline cursor-pointer group"
-                  >
-                    <span>¿Eres hotelero? Ingresa a tu panel PMS</span>
-                    <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </button>
-                )}
+                <a
+                  href="https://wa.me/593998765432?text=Hola%2C%20requiero%20asistencia%20en%20AlojaManta"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-2.5 flex items-center justify-between text-left hover:text-emerald-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-emerald-600">WhatsApp Manta: +593 99 876 5432</span>
+                  <span className="text-emerald-600 font-bold group-hover:translate-x-1 transition-transform">💬</span>
+                </a>
+                <a
+                  href="tel:+59352628900"
+                  className="py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Línea Cantonal: +593 5 262 8900</span>
+                  <span className="text-amber-600 font-bold group-hover:translate-x-1 transition-transform">📞</span>
+                </a>
+                <button
+                  onClick={() => setActiveTab("reservations")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Consultar reservas y vouchers con QR</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1105,55 +1436,330 @@ function AccountView({
         </div>
       )}
 
-      {/* ─── TAB 6: BENEFICIOS MANTA DIRECT ─── */}
-      {activeTab === "benefits" && (
-        <div className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl space-y-5" style={{ borderColor: "#e2e8f0" }}>
-          <div className="border-b pb-4" style={{ borderColor: "#f1f5f9" }}>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🎁</span>
+      {/* ─── TAB 6: ACERCA DE ALOJAMANTA ─── */}
+      {activeTab === "about" && (
+        <div className="rounded-2xl border bg-white p-6 sm:p-8 shadow-xs max-w-3xl space-y-6" style={{ borderColor: "#e2e8f0" }}>
+          <div className="border-b pb-5" style={{ borderColor: "#f1f5f9" }}>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">ℹ️</span>
               <div>
-                <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-                  Beneficios del Programa Manta Direct
+                <h3 className="font-bold text-slate-900 text-xl sm:text-2xl" style={{ fontFamily: "DM Serif Display, serif" }}>
+                  Acerca de AlojaManta
                 </h3>
-                <p className="text-xs text-slate-500">
-                  Por reservar directamente con el hotel en lugar de intermediarios internacionales.
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  Red oficial de comercialización directa y formalización hotelera del Cantón Manta.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div className="p-4 rounded-xl border bg-amber-50/50 border-amber-200">
-              <span className="text-xl">💰</span>
-              <p className="font-bold text-slate-900 mt-1">Sin Sobreprecio OTA</p>
-              <p className="text-slate-600 mt-0.5 leading-relaxed">
-                Ahorras entre el 15% y 20% en cada noche frente a plataformas extranjeras que cobran altas comisiones al hotel.
+          <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800">
+              <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
+                <span>🏛️</span>
+                <span>Iniciativa Turística Cantonal de Hospedaje Formal</span>
+              </h4>
+              <p>
+                <strong>AlojaManta</strong> es la plataforma tecnológica desarrollada para articular de forma transparente la oferta de alojamiento formal en la ciudad y cantón de Manta, Manabí, conectando a huéspedes nacionales y extranjeros directamente con los establecimientos de hospedaje.
               </p>
             </div>
-            <div className="p-4 rounded-xl border bg-blue-50/50 border-blue-200">
-              <span className="text-xl">🎟️</span>
-              <p className="font-bold text-slate-900 mt-1">Alianzas en Restaurantes</p>
-              <p className="text-slate-600 mt-0.5 leading-relaxed">
-                Presentando tu voucher obtienes 10% de descuento en locales gastronómicos aliados de Barbasquillo y Murciélago.
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
+                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                  <span className="text-base">🏨</span>
+                  <span>116 Alojamientos Catastrados</span>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Integra hoteles, hostales, hosterías y residencias turísticas legalmente registradas e inspeccionadas en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
+                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                  <span className="text-base">💰</span>
+                  <span>0% Sobreprecio de Intermediarios</span>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Elimina el sobreprecio del 18% al 20% habitual de las agencias de viajes online (OTAs) internacionales. La tarifa que pagas va íntegramente a dinamizar el sector hotelero local.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
+                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                  <span className="text-base">🏛️</span>
+                  <span>Facturación Tributaria Directa (SRI)</span>
+                </div>
+                <p className="text-xs text-slate-600">
+                  La factura fiscal oficial con 15% de IVA y deducibilidad tributaria es emitida directamente por la razón social del hotel al momento de tu check-in en recepción física.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
+                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                  <span className="text-base">📱</span>
+                  <span>Check-in Digital Inmediato</span>
+                </div>
+                <p className="text-xs text-slate-600">
+                  Cada reserva genera un voucher oficial con código QR y token de validación instantáneo para recepción sin trámites engorrosos ni papeleo innecesario.
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 border-slate-100">
+              <h4 className="font-bold text-slate-800 text-xs sm:text-sm mb-1.5">Compromiso con el Huésped y la Ciudad</h4>
+              <p className="text-xs text-slate-500">
+                Al reservar mediante AlojaManta, aseguras un trato directo con los anfitriones y hoteleros de Manta, políticas de cancelación claras, seguridad en tus pagos digitales y el respaldo de establecimientos que cumplen con los estándares de hospitalidad del puerto manabita.
               </p>
             </div>
-            <div className="p-4 rounded-xl border bg-emerald-50/50 border-emerald-200">
-              <span className="text-xl">⚡</span>
-              <p className="font-bold text-slate-900 mt-1">Check-in Prioritario</p>
-              <p className="text-slate-600 mt-0.5 leading-relaxed">
-                Recepción exprés mostrando el código QR de confirmación desde tu teléfono.
-              </p>
-            </div>
-            <div className="p-4 rounded-xl border bg-purple-50/50 border-purple-200">
-              <span className="text-xl">🔄</span>
-              <p className="font-bold text-slate-900 mt-1">Cancelación Flexible</p>
-              <p className="text-slate-600 mt-0.5 leading-relaxed">
-                Trato directo con el hotel para cambios de fecha sin trámites engorrosos ni penalizaciones abusivas.
-              </p>
+
+            <div className="flex justify-between items-center pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("hub")}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+              >
+                ← Volver al Panel
+              </button>
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
+                >
+                  Explorar Alojamientos Disponibles →
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Modal Acerca de AlojaManta ───────────────────────────────────────────────
+
+function AboutModal({
+  onClose,
+  onExplore,
+}: {
+  onClose: () => void;
+  onExplore?: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150" style={{ borderColor: "#e2e8f0" }}>
+        {/* Header */}
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl">ℹ️</span>
+            <div>
+              <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+                Acerca de AlojaManta
+              </h3>
+              <p className="text-xs text-slate-500">
+                Red oficial de reservas directas y formalización hotelera del Cantón Manta
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer text-sm"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-600 leading-relaxed">
+          {/* Banner */}
+          <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800">
+            <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
+              <span>🏛️</span>
+              <span>Iniciativa Turística y Comercial Cantonal</span>
+            </h4>
+            <p>
+              <strong>AlojaManta</strong> nace como el ecosistema digital directo para que los visitantes puedan reservar con total seguridad en la planta hotelera formal del cantón Manta (Manabí, Ecuador), sin pagar sobreprecios a intermediarios internacionales.
+            </p>
+          </div>
+
+          {/* 4 Pilares clave */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
+              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                <span className="text-base">🏨</span>
+                <span>116 Establecimientos Registrados</span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Catastro completo de hoteles, hostales, hosterías y departamentos en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
+              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                <span className="text-base">💰</span>
+                <span>0% Comisión de Intermediación (OTA)</span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                A diferencia de portales foráneos que cobran entre el 18% y 20% al hotelero, aquí se garantiza la tarifa más competitiva y el dinero dinamiza directamente la economía local.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
+              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                <span className="text-base">🏛️</span>
+                <span>Factura Fiscal Oficial (SRI)</span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                La factura electrónica con 15% de IVA y deducibilidad de gastos personales es emitida por la razón social del hotel de destino en recepción física.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
+              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+                <span className="text-base">📲</span>
+                <span>Vouchers con QR & Check-in Ágil</span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Confirmación instantánea con código QR y token de validación descargable en PDF o guardado en tu cuenta para un registro ágil en recepción.
+              </p>
+            </div>
+          </div>
+
+          {/* Contacto Directo */}
+          <div className="p-4 rounded-xl border border-slate-200 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <p className="font-bold text-slate-900 text-xs">Mesa de Asistencia Turística Manta</p>
+              <p className="text-[11px] text-slate-500">Atención directa para consultas de reserva y orientación en el cantón.</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="https://wa.me/593998765432?text=Hola%2C%20quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20AlojaManta"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-colors"
+              >
+                <span>💬</span>
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href="tel:+59352628900"
+                className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors"
+              >
+                <span>📞</span>
+                <span>Llamar</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-between text-xs" style={{ borderColor: "#e2e8f0" }}>
+          <span className="text-slate-400">Cantón Manta · Manabí · Ecuador</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-100 cursor-pointer"
+            >
+              Cerrar
+            </button>
+            {onExplore && (
+              <button
+                onClick={onExplore}
+                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg cursor-pointer transition-colors shadow-2xs"
+              >
+                Explorar Hoteles
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal Legal & Facturación SRI ────────────────────────────────────────────
+
+function LegalModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150" style={{ borderColor: "#e2e8f0" }}>
+        {/* Header */}
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl">🏛️</span>
+            <div>
+              <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+                Facturación SRI & Términos del Servicio
+              </h3>
+              <p className="text-xs text-slate-500">
+                Normativa tributaria y condiciones de reserva en AlojaManta
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer text-sm"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
+          <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-slate-800">
+            <h4 className="font-bold text-blue-950 text-sm mb-1 flex items-center gap-1.5">
+              <span>🧾</span>
+              <span>Emisión Directa de Comprobante Fiscal SRI</span>
+            </h4>
+            <p>
+              La factura electrónica legal con 15% de IVA para deducibilidad tributaria ante el Servicio de Rentas Internas (SRI) del Ecuador es emitida por el establecimiento hotelero directamente al momento del check-in o recepción. AlojaManta liquida y transfiere el pago neto sin retenciones abusivas.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
+              <h5 className="font-bold text-slate-900 mb-1">1. Datos Tributarios Requeridos</h5>
+              <p className="text-[11px] text-slate-600">
+                Puedes registrar previamente tu RUC o Cédula, Razón Social, Dirección y Correo electrónico desde la pestaña "Facturación SRI Hotel" de tu cuenta para agilizar la entrega de tu factura electrónica.
+              </p>
+            </div>
+
+            <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
+              <h5 className="font-bold text-slate-900 mb-1">2. Cancelación y Modificaciones</h5>
+              <p className="text-[11px] text-slate-600">
+                Las políticas de cancelación son transparentes y fijadas por cada establecimiento. Puedes anular o reprogramar tu estancia directamente desde "Mis Reservas" o comunicándote con el hotel a través de los canales de asistencia autorizados.
+              </p>
+            </div>
+
+            <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
+              <h5 className="font-bold text-slate-900 mb-1">3. Protección y Privacidad de Datos</h5>
+              <p className="text-[11px] text-slate-600">
+                Tus datos personales y de pago se procesan bajo protocolos cifrados y no son compartidos con terceros comerciales ajenos a la estancia hotelera contratada.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-end text-xs" style={{ borderColor: "#e2e8f0" }}>
+          <button
+            onClick={onClose}
+            className="px-5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg cursor-pointer transition-colors"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2397,16 +3003,18 @@ function HomePage({
   onSearch,
   theme,
   onToggleTheme,
-  onAdminAccess,
   onOpenConsult,
+  onOpenAbout,
+  onOpenLegal,
 }: {
   params: SearchParams;
   onChange: (p: SearchParams) => void;
   onSearch: () => void;
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
-  onAdminAccess?: () => void;
   onOpenConsult?: () => void;
+  onOpenAbout?: () => void;
+  onOpenLegal?: () => void;
 }) {
   return (
     <div style={{ background: "#f8fafc" }}>
@@ -2417,27 +3025,45 @@ function HomePage({
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(12,18,32,0.3) 0%, rgba(12,18,32,0.75) 100%)" }} />
         <div className="relative max-w-5xl mx-auto px-4 pt-12 sm:pt-20 pb-8 sm:pb-12 text-center">
           <h1 className="text-3xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel en Manta</h1>
-          <p className="text-white/80 text-sm sm:text-base mb-6 sm:mb-8 max-w-lg mx-auto">Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.</p>
+          <p className="text-white/80 text-sm sm:text-base mb-6 sm:mb-8 max-w-lg mx-auto">
+            Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo, Santa Marianita y San Lorenzo.
+          </p>
           <div className="max-w-4xl mx-auto"><SearchBar params={params} onChange={onChange} onSearch={onSearch} /></div>
         </div>
       </div>
       <div className="border-b" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-          {[["🛡️", "Cobro digital seguro (PayPhone/DeUna)"], ["✅", "Confirmación instantánea"], ["🔄", "Cancelación flexible"], ["🏆", "Tarifa directa sin sobreprecio OTA"], ["💬", "Atención local en Manta"]].map(([icon, text]) => (
+          {[["🛡️", "Cobro digital seguro (PayPhone/DeUna)"], ["✅", "Confirmación instantánea con QR"], ["🔄", "Cancelación flexible con el hotel"], ["🏆", "Tarifa directa sin sobreprecio OTA"], ["💬", "Atención local cantonal en Manta"]].map(([icon, text]) => (
             <div key={text as string} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 shrink-0"><span>{icon}</span>{text}</div>
           ))}
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>Sectores y Playas de Manta</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-12">
+        <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>Sectores y Playas de Manta</h2>
+            <p className="text-xs text-slate-500">Distribución en las 7 parroquias del cantón Manta</p>
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+            116 Alojamientos Catastrados
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-12">
           {DESTINATIONS.map(d => (
-            <button key={d.city} onClick={() => { onChange({ ...params, destination: d.city }); onSearch(); }} className="relative rounded-xl overflow-hidden transition-transform hover:scale-105 hover:shadow-lg cursor-pointer" style={{ height: 110 }}>
-              <img src={d.img} alt={d.city} className="w-full h-full object-cover" />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 60%)" }} />
-              <div className="absolute bottom-0 left-0 right-0 p-2 text-left">
-                <p className="text-white font-bold text-sm">{d.city.replace("Manta - ", "")}</p>
-                <p className="text-white/70 text-[10px]">{d.hotels} hoteles</p>
+            <button
+              key={d.city}
+              onClick={() => { onChange({ ...params, destination: d.city }); onSearch(); }}
+              className="relative rounded-2xl overflow-hidden transition-all hover:scale-[1.03] hover:shadow-xl cursor-pointer group text-left border border-slate-200/50"
+              style={{ height: 125 }}
+            >
+              <img src={d.img} alt={d.city} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 mb-1 inline-block">
+                  {d.type || "Manta"}
+                </span>
+                <p className="text-white font-bold text-sm leading-tight truncate">{d.city.replace("Manta - ", "")}</p>
+                <p className="text-white/80 text-[10px] mt-0.5">{d.hotels} hoteles</p>
               </div>
             </button>
           ))}
@@ -2466,17 +3092,61 @@ function HomePage({
           ))}
         </div>
       </div>
-      <footer className="border-t mt-10" style={{ background: "#1e293b", borderColor: "#334155" }}>
-        <div className="max-w-5xl mx-auto px-4 py-8 flex flex-wrap gap-8 justify-between">
-          <div>
-            <p className="font-bold text-white text-lg mb-1" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
-            <p className="text-xs text-slate-400 max-w-xs">Plataforma oficial de reservas y comercialización directa hotelera para el cantón Manta, Manabí.</p>
+      <footer className="border-t mt-10" style={{ background: "#0f172a", borderColor: "#1e293b" }}>
+        <div className="max-w-5xl mx-auto px-4 py-10 flex flex-wrap gap-8 justify-between">
+          <div className="max-w-xs space-y-2">
+            <p className="font-bold text-white text-xl" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
+            <p className="text-xs text-slate-400 leading-relaxed">Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.</p>
+            <div className="pt-1">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                116 Alojamientos Catastrados
+              </span>
+            </div>
           </div>
-          <div className="flex gap-10 text-xs text-slate-400">
-            <div className="space-y-1.5"><p className="font-semibold text-slate-300 mb-2">Sectores</p><p>Barbasquillo & El Murciélago</p><p>Tarqui & Los Esteros</p><p>San Mateo & Santa Marianita</p></div>
-            <div className="space-y-1.5">
-              <p className="font-semibold text-slate-300 mb-2">Ayuda & Soporte</p>
-              {onOpenConsult ? (
+          <div className="flex flex-wrap gap-10 text-xs text-slate-400">
+            <div className="space-y-2">
+              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">Sectores y Playas</p>
+              <button
+                type="button"
+                onClick={() => { onChange({ ...params, destination: "Manta - Barbasquillo" }); onSearch(); }}
+                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+              >
+                Barbasquillo & El Murciélago
+              </button>
+              <button
+                type="button"
+                onClick={() => { onChange({ ...params, destination: "Manta - Tarqui" }); onSearch(); }}
+                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+              >
+                Tarqui & Los Esteros
+              </button>
+              <button
+                type="button"
+                onClick={() => { onChange({ ...params, destination: "Manta - Santa Marianita" }); onSearch(); }}
+                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+              >
+                Santa Marianita & San Mateo
+              </button>
+              <button
+                type="button"
+                onClick={() => { onChange({ ...params, destination: "Manta - San Lorenzo" }); onSearch(); }}
+                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+              >
+                San Lorenzo & Reserva Pacoche
+              </button>
+            </div>
+            <div className="space-y-2">
+              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">Ayuda & Información</p>
+              {onOpenAbout && (
+                <button
+                  type="button"
+                  onClick={onOpenAbout}
+                  className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                >
+                  Acerca de AlojaManta
+                </button>
+              )}
+              {onOpenConsult && (
                 <button
                   type="button"
                   onClick={onOpenConsult}
@@ -2484,36 +3154,52 @@ function HomePage({
                 >
                   Consultar mi reserva
                 </button>
-              ) : (
-                <p>Consultar Reserva</p>
               )}
-              <p>Contacto directo hotel</p>
-              <p>Términos de servicio</p>
+              {onOpenLegal && (
+                <button
+                  type="button"
+                  onClick={onOpenLegal}
+                  className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                >
+                  Facturación SRI & Términos
+                </button>
+              )}
+              <a
+                href="https://wa.me/593998765432?text=Hola%2C%20requiero%20asistencia%20en%20AlojaManta"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-emerald-400 text-slate-400 transition-colors text-left flex items-center gap-1 cursor-pointer"
+              >
+                <span>WhatsApp: +593 99 876 5432</span>
+              </a>
+              <a
+                href="tel:+59352628900"
+                className="hover:text-amber-400 text-slate-400 transition-colors text-left flex items-center gap-1 cursor-pointer"
+              >
+                <span>Central: +593 5 262 8900</span>
+              </a>
             </div>
           </div>
         </div>
-        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400" style={{ borderColor: "#334155" }}>
-          <span>© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta</span>
+        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400" style={{ borderColor: "#1e293b" }}>
+          <span>© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta · 116 Alojamientos Catastrados</span>
           <div className="flex items-center gap-4">
-            {onToggleTheme && (
+            {onOpenAbout && (
               <button
                 type="button"
-                onClick={onToggleTheme}
-                className="flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition-colors text-xs py-1 px-2.5 rounded hover:bg-slate-800 cursor-pointer"
-                title="Cambiar tema claro / oscuro"
+                onClick={onOpenAbout}
+                className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
               >
-                <span>{theme === "dark" ? "☀️" : "🌙"}</span>
-                <span>{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+                Acerca de la Plataforma
               </button>
             )}
-            {onAdminAccess && (
+            {onOpenLegal && (
               <button
                 type="button"
-                onClick={onAdminAccess}
-                className="text-slate-500 hover:text-slate-300 transition-colors text-xs py-1 px-2 cursor-pointer"
-                title="Acceso para administradores y recepción hotelera"
+                onClick={onOpenLegal}
+                className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
               >
-                Acceso Establecimientos
+                Facturación SRI
               </button>
             )}
           </div>
@@ -2554,9 +3240,11 @@ export default function GuestPage({
   // Modales
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showConsultModal, setShowConsultModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
   const [voucherRes, setVoucherRes] = useState<MyReservation | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [accountInitialTab, setAccountInitialTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "benefits">("hub");
+  const [accountInitialTab, setAccountInitialTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "about">("hub");
 
   // Reservas persistentes
   const [reservations, setReservations] = useState<MyReservation[]>(() => {
@@ -2644,8 +3332,8 @@ export default function GuestPage({
                     <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">
                       {user.name.split(" ")[0]}
                     </p>
-                    <p className="text-[9px] text-amber-700 font-semibold leading-none">
-                      Nivel 1 Huésped
+                    <p className="text-[9px] text-slate-500 font-semibold leading-none">
+                      Mi cuenta
                     </p>
                   </div>
                   <span className="text-xs text-slate-400">▾</span>
@@ -2669,15 +3357,15 @@ export default function GuestPage({
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="font-bold text-sm text-white truncate">{user.name}</p>
-                            <span className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 mt-0.5">
-                              ⭐ Huésped Frecuente Manta
+                            <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 mt-0.5">
+                              Cuenta de Huésped
                             </span>
                             <p className="text-[11px] text-slate-400 truncate mt-0.5">{user.email}</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Enlaces del Menú */}
+                      {/* Enlaces del Menú (100% Asociados) */}
                       <div className="py-1.5 text-xs text-slate-700 font-medium">
                         <button
                           onClick={() => { setAccountInitialTab("hub"); setView("account"); setShowProfileMenu(false); }}
@@ -2735,28 +3423,15 @@ export default function GuestPage({
                         </button>
 
                         <button
-                          onClick={() => { setAccountInitialTab("benefits"); setView("account"); setShowProfileMenu(false); }}
+                          onClick={() => { setAccountInitialTab("about"); setView("account"); setShowProfileMenu(false); }}
                           className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
-                          <span className="text-base">🎁</span>
+                          <span className="text-base">ℹ️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Beneficios Manta Direct</p>
-                            <p className="text-[10px] text-slate-400">Garantía sin recargos OTA de intermediarios</p>
+                            <p className="font-semibold text-slate-800">Acerca de AlojaManta</p>
+                            <p className="text-[10px] text-slate-400">Información del proyecto y reserva directa</p>
                           </div>
                         </button>
-
-                        {onAdminAccess && (
-                          <button
-                            onClick={() => { setShowProfileMenu(false); onAdminAccess(); }}
-                            className="w-full px-4 py-2 text-left hover:bg-amber-50 text-amber-900 flex items-center gap-2.5 transition-colors cursor-pointer border-t border-slate-100"
-                          >
-                            <span className="text-base">🏨</span>
-                            <div>
-                              <p className="font-semibold">Acceso Hotel / PMS</p>
-                              <p className="text-[10px] text-amber-700">Administración y mostrador hotelero</p>
-                            </div>
-                          </button>
-                        )}
                       </div>
 
                       {/* Cerrar Sesión */}
@@ -2794,8 +3469,9 @@ export default function GuestPage({
           onSearch={handleSearch}
           theme={theme}
           onToggleTheme={onToggleTheme}
-          onAdminAccess={onAdminAccess}
           onOpenConsult={() => setShowConsultModal(true)}
+          onOpenAbout={() => setShowAboutModal(true)}
+          onOpenLegal={() => setShowLegalModal(true)}
         />
       )}
       {view === "results" && <ResultsView params={params} onChange={setParams} onSearch={handleSearch} onSelect={handleSelectHotel} />}
@@ -2809,7 +3485,6 @@ export default function GuestPage({
           onViewVoucher={setVoucherRes}
           onBack={() => setView("home")}
           initialTab={accountInitialTab}
-          onAdminAccess={onAdminAccess}
         />
       )}
 
@@ -2857,6 +3532,22 @@ export default function GuestPage({
       {/* Modal de Voucher / Comprobante de Cobro */}
       {voucherRes && (
         <InvoiceModal res={voucherRes} onClose={() => setVoucherRes(null)} />
+      )}
+
+      {/* Modal Acerca de AlojaManta */}
+      {showAboutModal && (
+        <AboutModal
+          onClose={() => setShowAboutModal(false)}
+          onExplore={() => {
+            setShowAboutModal(false);
+            handleSearch();
+          }}
+        />
+      )}
+
+      {/* Modal Legal & Facturación SRI */}
+      {showLegalModal && (
+        <LegalModal onClose={() => setShowLegalModal(false)} />
       )}
 
       {/* Botón flotante para cambiar tema (Modo Claro / Modo Oscuro) */}
