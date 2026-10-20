@@ -314,7 +314,7 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
 }
 
 
-// ─── My Account view ──────────────────────────────────────────────────────────
+// ─── My Account view (Hub & Perfil) ──────────────────────────────────────────
 
 function AccountView({
   user,
@@ -322,15 +322,76 @@ function AccountView({
   onLogout,
   onCancelReservation,
   onViewVoucher,
+  onBack,
+  initialTab = "hub",
+  onAdminAccess,
 }: {
   user: GuestUser;
   reservations: MyReservation[];
   onLogout: () => void;
   onCancelReservation: (id: string) => void;
   onViewVoucher: (res: MyReservation) => void;
+  onBack?: () => void;
+  initialTab?: "hub" | "reservations" | "personal" | "billing" | "payments" | "benefits";
+  onAdminAccess?: () => void;
 }) {
+  const [activeTab, setActiveTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "benefits">(initialTab);
+  const [resFilter, setResFilter] = useState<"all" | "upcoming" | "completed" | "cancelled">("all");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  // Perfil del huésped persistente
+  const [profile, setProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`alojamanta_profile_${user.email}`);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return {
+      fullName: user.name,
+      email: user.email,
+      documentType: "Cédula de Identidad (Ecuador)",
+      documentNumber: "1314589201",
+      phone: "+593 99 234 5678",
+      city: "Guayaquil / Ecuador",
+      roomPref: "Cama Matrimonial King · Piso alto con vista",
+      dietPref: "Desayuno incluido en estancia",
+      // Facturación SRI
+      wantsInvoice: true,
+      taxId: "1314589201001",
+      razonSocial: user.name,
+      direccionFiscal: "Av. Malecón y Calle 15, Edif. Poseidón",
+      correoFactura: user.email,
+    };
+  });
+
+  function showToast(msg: string) {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  }
+
+  function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      localStorage.setItem(`alojamanta_profile_${user.email}`, JSON.stringify(profile));
+    } catch {}
+    showToast("✓ Datos de perfil guardados para tu próximo check-in");
+  }
+
+  function handleSaveBilling(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      localStorage.setItem(`alojamanta_profile_${user.email}`, JSON.stringify(profile));
+    } catch {}
+    showToast("✓ Datos fiscales SRI actualizados para la factura del hotel");
+  }
+
   const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-    upcoming: { bg: "#1e3a5f", color: "#93c5fd", label: "Próxima" },
+    upcoming: { bg: "#1e3a5f", color: "#93c5fd", label: "Próxima estancia" },
     completed: { bg: "#064e3b", color: "#6ee7b7", label: "Completada" },
     cancelled: { bg: "#450a0a", color: "#fca5a5", label: "Cancelada" },
   };
@@ -339,94 +400,760 @@ function AccountView({
     r.guestEmail.toLowerCase() === user.email.toLowerCase() ||
     r.guestName.toLowerCase().includes(user.name.toLowerCase())
   );
-  const displayList = userReservations.length > 0 ? userReservations : reservations;
+  const allList = userReservations.length > 0 ? userReservations : reservations;
+
+  const filteredReservations = allList.filter(r => {
+    if (resFilter === "all") return true;
+    return r.status === resFilter;
+  });
+
+  const totalNights = allList.reduce((s, r) => s + r.nights, 0);
+  const totalPaid = allList.reduce((s, r) => s + r.total, 0);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Profile */}
-      <div className="flex items-center gap-4 mb-8 p-5 rounded-2xl border bg-white shadow-xs" style={{ borderColor: "#e2e8f0" }}>
-        <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0" style={{ background: "#fef3c7", color: "#92400e" }}>
-          {user.name.charAt(0).toUpperCase()}
+    <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-emerald-700 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <span>✓</span>
+          <span>{toastMessage}</span>
         </div>
-        <div className="flex-1">
-          <p className="font-bold text-slate-800 text-lg">{user.name}</p>
-          <p className="text-sm text-slate-400">{user.email}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Miembro activo · {displayList.length} reservas registradas en Manta</p>
-        </div>
-        <button onClick={onLogout} className="text-xs px-3.5 py-2 rounded-lg border font-medium transition-colors hover:bg-red-50 cursor-pointer" style={{ borderColor: "#fee2e2", color: "#ef4444" }}>
-          Cerrar sesión
+      )}
+
+      {/* Navegación superior */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <button
+          onClick={onBack}
+          className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>←</span>
+          <span>Volver a buscar hoteles</span>
         </button>
+
+        <div className="flex items-center gap-2">
+          {onAdminAccess && (
+            <button
+              onClick={onAdminAccess}
+              className="text-xs px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 font-semibold hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
+              title="Acceso para recepcionistas y propietarios de hotel"
+            >
+              <span>🏨</span>
+              <span className="hidden sm:inline">Panel Hotel / PMS</span>
+            </button>
+          )}
+          <button
+            onClick={onLogout}
+            className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors font-medium cursor-pointer"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
-        {[
-          { label: "Reservas", val: String(displayList.length) },
-          { label: "Noches hospedado", val: String(displayList.reduce((s, r) => s + r.nights, 0)) },
-          { label: "Total abonado", val: fmt(displayList.reduce((s, r) => s + r.total, 0)) },
-        ].map(s => (
-          <div key={s.label} className="rounded-xl p-4 border bg-white text-center shadow-xs" style={{ borderColor: "#e2e8f0" }}>
-            <p className="text-xl font-bold text-slate-800">{s.val}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
+      {/* Tarjeta de Encabezado del Huésped */}
+      <div className="rounded-2xl border bg-white p-5 sm:p-6 mb-6 shadow-xs" style={{ borderColor: "#e2e8f0" }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b" style={{ borderColor: "#f1f5f9" }}>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center text-2xl font-black shadow-md shrink-0">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900" style={{ fontFamily: "DM Serif Display, serif" }}>
+                  {profile.fullName || user.name}
+                </h1>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                  ⭐ Nivel 1 · Huésped Frecuente Manta
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">{user.email} · {profile.phone}</p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Reserva directa oficial · Sin sobreprecios ni cargos ocultos de intermediarios
+              </p>
+            </div>
           </div>
-        ))}
+
+          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
+            <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Resumen de cuenta</span>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="font-bold text-slate-700 font-mono">{allList.length} reservas</span>
+              <span className="text-slate-300">|</span>
+              <span className="font-bold text-amber-600 font-mono">{totalNights} noches</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Barra de pestañas */}
+        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap scrollbar-none pt-4 text-xs font-semibold">
+          {[
+            { id: "hub", label: "Panel General", icon: "🏠" },
+            { id: "reservations", label: `Mis Reservas (${allList.length})`, icon: "🛎️" },
+            { id: "personal", label: "Datos Personales & Check-in", icon: "👤" },
+            { id: "billing", label: "Facturación SRI Hotel", icon: "🏛️" },
+            { id: "payments", label: "Medios de Pago", icon: "💳" },
+            { id: "benefits", label: "Beneficios Manta Direct", icon: "🎁" },
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as any)}
+              className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                activeTab === t.id
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              <span>{t.icon}</span>
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Reservations */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-slate-800 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>Mis Reservas en Manta</h2>
-        <span className="text-xs text-slate-400">{displayList.length} registro{displayList.length !== 1 ? "s" : ""}</span>
-      </div>
-      <div className="space-y-4">
-        {displayList.map(res => {
-          const st = statusStyle[res.status] || statusStyle.upcoming;
-          return (
-            <div key={res.id} className="rounded-2xl border bg-white overflow-hidden shadow-xs" style={{ borderColor: "#e2e8f0" }}>
-              <div className="flex flex-col sm:flex-row">
-                <img src={res.image} alt={res.room} className="sm:w-44 w-full object-cover" style={{ height: 130 }} />
-                <div className="flex-1 p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
+      {/* ─── TAB 1: HUB PRINCIPAL (Tarjetas Categorizadas) ─── */}
+      {activeTab === "hub" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Card 1: Estancias y Viajes */}
+            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span>🛎️</span>
+                  <span>Estancias y Viajes</span>
+                </h3>
+                <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  {allList.length} activas
+                </span>
+              </div>
+              <div className="space-y-1 divide-y divide-slate-100 text-xs">
+                <button
+                  onClick={() => setActiveTab("reservations")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Mis reservas y viajes en Manta</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("reservations")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Vouchers y comprobantes con QR</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("reservations")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Alojamientos guardados y favoritos</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 2: Gestión de la cuenta y Check-in */}
+            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span>👤</span>
+                  <span>Datos del Huésped</span>
+                </h3>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Check-in ágil
+                </span>
+              </div>
+              <div className="space-y-1 divide-y divide-slate-100 text-xs">
+                <button
+                  onClick={() => setActiveTab("personal")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Datos personales (Cédula / Pasaporte)</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("personal")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Teléfono y WhatsApp de confirmación</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("personal")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Preferencias de cama y habitación</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 3: Facturación Directa SRI */}
+            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span>Facturación SRI</span>
+                </h3>
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  Factura del Hotel
+                </span>
+              </div>
+              <div className="space-y-1 divide-y divide-slate-100 text-xs">
+                <button
+                  onClick={() => setActiveTab("billing")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Datos tributarios (RUC / Cédula)</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("billing")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Razón Social y Domicilio fiscal</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("billing")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Emisión en recepción del alojamiento</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 4: Medios de Pago Digitales */}
+            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span>💳</span>
+                  <span>Cobro y Pagos</span>
+                </h3>
+                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                  Digital Seguro
+                </span>
+              </div>
+              <div className="space-y-1 divide-y divide-slate-100 text-xs">
+                <button
+                  onClick={() => setActiveTab("payments")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Tarjetas de crédito y débito vinculadas</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("payments")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Cobro local vía PayPhone & DeUna</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("payments")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Certificados de acreditación hotelera</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 5: Beneficios Manta Direct */}
+            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span>🎁</span>
+                  <span>Beneficios Manta Direct</span>
+                </h3>
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                  0% Comisión OTA
+                </span>
+              </div>
+              <div className="space-y-1 divide-y divide-slate-100 text-xs">
+                <button
+                  onClick={() => setActiveTab("benefits")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Tarifa neta garantizada por el hotel</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("benefits")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Alianzas en Murciélago & Barbasquillo</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("benefits")}
+                  className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
+                >
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Cancelación flexible sin penalidades</span>
+                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 6: Ayuda, Soporte & Propietarios */}
+            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                  <span>🏖️</span>
+                  <span>Soporte & Hoteleros</span>
+                </h3>
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  Cantón Manta
+                </span>
+              </div>
+              <div className="space-y-1 divide-y divide-slate-100 text-xs">
+                <div className="py-2.5 flex items-center justify-between text-left">
+                  <span className="text-slate-700 font-medium">Asistencia local: +593 5 262 8900</span>
+                  <span className="text-slate-400">📞</span>
+                </div>
+                <div className="py-2.5 flex items-center justify-between text-left">
+                  <span className="text-slate-700 font-medium">WhatsApp Manta: +593 99 876 5432</span>
+                  <span className="text-slate-400">💬</span>
+                </div>
+                {onAdminAccess && (
+                  <button
+                    onClick={onAdminAccess}
+                    className="w-full py-2.5 flex items-center justify-between text-left text-amber-800 font-bold hover:underline cursor-pointer group"
+                  >
+                    <span>¿Eres hotelero? Ingresa a tu panel PMS</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── TAB 2: MIS RESERVAS ─── */}
+      {activeTab === "reservations" && (
+        <div className="space-y-5">
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border" style={{ borderColor: "#e2e8f0" }}>
+            <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs font-semibold">
+              {[
+                { id: "all", label: "Todas" },
+                { id: "upcoming", label: "Próximas" },
+                { id: "completed", label: "Completadas" },
+                { id: "cancelled", label: "Canceladas" },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setResFilter(f.id as any)}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    resFilter === f.id
+                      ? "bg-amber-500 text-slate-950 font-bold shadow-xs"
+                      : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {f.label} ({f.id === "all" ? allList.length : allList.filter(x => x.status === f.id).length})
+                </button>
+              ))}
+            </div>
+
+            <span className="text-xs text-slate-400">
+              Mostrando {filteredReservations.length} de {allList.length} reservas
+            </span>
+          </div>
+
+          {/* Listado */}
+          <div className="space-y-4">
+            {filteredReservations.map(res => {
+              const st = statusStyle[res.status] || statusStyle.upcoming;
+              return (
+                <div key={res.id} className="rounded-2xl border bg-white overflow-hidden shadow-xs hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
+                  <div className="flex flex-col sm:flex-row">
+                    <img src={res.image} alt={res.room} className="sm:w-48 w-full object-cover" style={{ height: 140 }} />
+                    <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
                       <div>
-                        <p className="font-bold text-slate-800">{res.hotel}</p>
-                        <p className="text-xs text-slate-400">{res.city} · {res.room}</p>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-bold text-slate-900 text-base">{res.hotel}</p>
+                            <p className="text-xs text-slate-500 font-medium">{res.city} · {res.room}</p>
+                          </div>
+                          <span className="mono text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider" style={{ background: st.bg, color: st.color }}>
+                            {st.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2 flex items-center gap-2">
+                          <span>📅 {fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</span>
+                          <span>·</span>
+                          <span>🌙 {res.nights} noche{res.nights > 1 ? "s" : ""}</span>
+                        </p>
                       </div>
-                      <span className="mono text-[10px] px-2 py-1 rounded uppercase font-bold" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1.5">
-                      {fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)} · {res.nights} noche{res.nights > 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
-                    <div>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wide">Código de reserva</p>
-                      <p className="font-mono text-sm font-semibold text-slate-700">{res.id}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-base" style={{ color: "#f59e0b" }}>{fmt(res.total)}</p>
-                      <button onClick={() => onViewVoucher(res)} className="text-xs px-3 py-1.5 rounded-lg font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer">
-                        🧾 Ver Voucher
-                      </button>
-                      {res.status === "upcoming" && (
-                        <button
-                          onClick={() => {
-                            if (confirm(`¿Deseas cancelar la reserva ${res.id}?`)) {
-                              onCancelReservation(res.id);
-                            }
-                          }}
-                          className="text-xs px-2.5 py-1.5 rounded-lg font-semibold transition-all border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
-                        >
-                          Cancelar
-                        </button>
-                      )}
+
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
+                        <div>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Código de confirmación</p>
+                          <p className="font-mono text-sm font-bold text-slate-800">{res.id}</p>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <p className="font-black text-lg text-slate-900">{fmt(res.total)}</p>
+                          <button
+                            onClick={() => onViewVoucher(res)}
+                            className="text-xs px-3.5 py-1.5 rounded-xl font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer flex items-center gap-1"
+                          >
+                            <span>🧾</span>
+                            <span>Ver Voucher</span>
+                          </button>
+                          {res.status === "upcoming" && (
+                            <button
+                              onClick={() => {
+                                if (confirm(`¿Deseas cancelar la reserva ${res.id}? Recuerda que la política flexible te reintegra el valor total.`)) {
+                                  onCancelReservation(res.id);
+                                  showToast(`Reserva ${res.id} cancelada correctamente`);
+                                }
+                              }}
+                              className="text-xs px-2.5 py-1.5 rounded-xl font-semibold transition-all border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
+              );
+            })}
+
+            {filteredReservations.length === 0 && (
+              <div className="text-center py-12 rounded-2xl border bg-white" style={{ borderColor: "#e2e8f0" }}>
+                <p className="text-3xl mb-2">🏖️</p>
+                <p className="font-bold text-slate-700 text-sm">No tienes reservas con este filtro</p>
+                <button
+                  onClick={() => setResFilter("all")}
+                  className="mt-3 text-xs text-amber-700 font-semibold underline cursor-pointer"
+                >
+                  Ver todas las reservas
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── TAB 3: DATOS PERSONALES & CHECK-IN ─── */}
+      {activeTab === "personal" && (
+        <form onSubmit={handleSaveProfile} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
+          <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
+            <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <span>👤</span>
+              <span>Datos Personales y Check-in Exprés</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Esta información agiliza tu registro en la recepción de los hoteles de Manta y personaliza tu estancia.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Nombre y Apellidos Completos</label>
+              <input
+                type="text"
+                value={profile.fullName}
+                onChange={e => setProfile({ ...profile, fullName: e.target.value })}
+                className="w-full px-3 py-2 text-sm border rounded-xl outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                style={{ borderColor: "#cbd5e1" }}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Tipo de Documento</label>
+                <select
+                  value={profile.documentType}
+                  onChange={e => setProfile({ ...profile, documentType: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none bg-white"
+                  style={{ borderColor: "#cbd5e1" }}
+                >
+                  <option value="Cédula de Identidad (Ecuador)">Cédula de Identidad (Ecuador)</option>
+                  <option value="Pasaporte Internacional">Pasaporte Internacional</option>
+                  <option value="RUC Personal">RUC Personal</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Número de Identificación</label>
+                <input
+                  type="text"
+                  value={profile.documentNumber}
+                  onChange={e => setProfile({ ...profile, documentNumber: e.target.value })}
+                  placeholder="Ej: 1314589201"
+                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
+                  style={{ borderColor: "#cbd5e1" }}
+                />
               </div>
             </div>
-          );
-        })}
-      </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Correo Electrónico</label>
+                <input
+                  type="email"
+                  value={profile.email}
+                  disabled
+                  className="w-full px-3 py-2 text-sm border rounded-xl bg-slate-50 text-slate-500 cursor-not-allowed"
+                  style={{ borderColor: "#cbd5e1" }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Teléfono / WhatsApp</label>
+                <input
+                  type="text"
+                  value={profile.phone}
+                  onChange={e => setProfile({ ...profile, phone: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
+                  style={{ borderColor: "#cbd5e1" }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Ciudad o País de Residencia</label>
+              <input
+                type="text"
+                value={profile.city}
+                onChange={e => setProfile({ ...profile, city: e.target.value })}
+                placeholder="Ej: Quito, Guayaquil, Cuenca, etc."
+                className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
+                style={{ borderColor: "#cbd5e1" }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Preferencia Habitual de Habitación</label>
+              <input
+                type="text"
+                value={profile.roomPref}
+                onChange={e => setProfile({ ...profile, roomPref: e.target.value })}
+                placeholder="Ej: Cama King, piso alto, almohadas extras..."
+                className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
+                style={{ borderColor: "#cbd5e1" }}
+              />
+            </div>
+
+            <div className="pt-3 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab("hub")}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
+              >
+                Guardar Datos de Huésped
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* ─── TAB 4: FACTURACIÓN DIRECTA SRI ─── */}
+      {activeTab === "billing" && (
+        <form onSubmit={handleSaveBilling} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
+          <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
+                <span>🏛️</span>
+                <span>Datos Fiscales para el Hotel (SRI Ecuador)</span>
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300">
+                15% IVA SRI
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              <strong>El hotel emite tu factura fiscal oficial en recepción.</strong> Guarda aquí tus datos para que el recepcionista la facture automáticamente a tu nombre o empresa.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+              <span className="text-base">ℹ️</span>
+              <p>
+                La plataforma de reserva cobra y transfiere el importe neto al alojamiento. La factura con validez tributaria ante el SRI es emitida por la razón social del hotel destino al momento de tu estancia.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">RUC o Cédula para Factura</label>
+                <input
+                  type="text"
+                  value={profile.taxId}
+                  onChange={e => setProfile({ ...profile, taxId: e.target.value })}
+                  placeholder="Ej: 1314589201001"
+                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
+                  style={{ borderColor: "#cbd5e1" }}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Razón Social o Nombre Fiscal</label>
+                <input
+                  type="text"
+                  value={profile.razonSocial}
+                  onChange={e => setProfile({ ...profile, razonSocial: e.target.value })}
+                  placeholder="Nombre de empresa o persona natural"
+                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
+                  style={{ borderColor: "#cbd5e1" }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Dirección Fiscal en Ecuador</label>
+              <input
+                type="text"
+                value={profile.direccionFiscal}
+                onChange={e => setProfile({ ...profile, direccionFiscal: e.target.value })}
+                placeholder="Calle, número y ciudad"
+                className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
+                style={{ borderColor: "#cbd5e1" }}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Correo para Factura Electrónica</label>
+              <input
+                type="email"
+                value={profile.correoFactura}
+                onChange={e => setProfile({ ...profile, correoFactura: e.target.value })}
+                className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
+                style={{ borderColor: "#cbd5e1" }}
+                required
+              />
+            </div>
+
+            <div className="pt-3 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab("hub")}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+              >
+                Volver
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
+              >
+                Guardar Datos de Facturación
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* ─── TAB 5: MEDIOS DE PAGO ─── */}
+      {activeTab === "payments" && (
+        <div className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl space-y-5" style={{ borderColor: "#e2e8f0" }}>
+          <div className="border-b pb-4" style={{ borderColor: "#f1f5f9" }}>
+            <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <span>💳</span>
+              <span>Medios de Pago y Cobro Digital</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Pasarelas integradas seguras para reservas directas en Manta.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {/* Tarjeta 1 */}
+            <div className="p-4 rounded-xl border flex items-center justify-between bg-slate-50" style={{ borderColor: "#cbd5e1" }}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">💳</span>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">Visa Débito / Crédito **** 4821</p>
+                  <p className="text-[10px] text-slate-400">Vence 09/28 · Pago digital seguro con 3DS</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Predeterminada</span>
+            </div>
+
+            {/* PayPhone */}
+            <div className="p-4 rounded-xl border flex items-center justify-between bg-slate-50" style={{ borderColor: "#cbd5e1" }}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📱</span>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">PayPhone Ecuador</p>
+                  <p className="text-[10px] text-slate-400">Vinculado con número {profile.phone}</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Activo</span>
+            </div>
+
+            {/* DeUna */}
+            <div className="p-4 rounded-xl border flex items-center justify-between bg-slate-50" style={{ borderColor: "#cbd5e1" }}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">⚡</span>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">DeUna / Banco Pichincha</p>
+                  <p className="text-[10px] text-slate-400">Cobro QR instantáneo sin comisiones extra</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Disponible</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── TAB 6: BENEFICIOS MANTA DIRECT ─── */}
+      {activeTab === "benefits" && (
+        <div className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl space-y-5" style={{ borderColor: "#e2e8f0" }}>
+          <div className="border-b pb-4" style={{ borderColor: "#f1f5f9" }}>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🎁</span>
+              <div>
+                <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+                  Beneficios del Programa Manta Direct
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Por reservar directamente con el hotel en lugar de intermediarios internacionales.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-4 rounded-xl border bg-amber-50/50 border-amber-200">
+              <span className="text-xl">💰</span>
+              <p className="font-bold text-slate-900 mt-1">Sin Sobreprecio OTA</p>
+              <p className="text-slate-600 mt-0.5 leading-relaxed">
+                Ahorras entre el 15% y 20% en cada noche frente a plataformas extranjeras que cobran altas comisiones al hotel.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border bg-blue-50/50 border-blue-200">
+              <span className="text-xl">🎟️</span>
+              <p className="font-bold text-slate-900 mt-1">Alianzas en Restaurantes</p>
+              <p className="text-slate-600 mt-0.5 leading-relaxed">
+                Presentando tu voucher obtienes 10% de descuento en locales gastronómicos aliados de Barbasquillo y Murciélago.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border bg-emerald-50/50 border-emerald-200">
+              <span className="text-xl">⚡</span>
+              <p className="font-bold text-slate-900 mt-1">Check-in Prioritario</p>
+              <p className="text-slate-600 mt-0.5 leading-relaxed">
+                Recepción exprés mostrando el código QR de confirmación desde tu teléfono.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border bg-purple-50/50 border-purple-200">
+              <span className="text-xl">🔄</span>
+              <p className="font-bold text-slate-900 mt-1">Cancelación Flexible</p>
+              <p className="text-slate-600 mt-0.5 leading-relaxed">
+                Trato directo con el hotel para cambios de fecha sin trámites engorrosos ni penalizaciones abusivas.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1828,6 +2555,8 @@ export default function GuestPage({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showConsultModal, setShowConsultModal] = useState(false);
   const [voucherRes, setVoucherRes] = useState<MyReservation | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [accountInitialTab, setAccountInitialTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "benefits">("hub");
 
   // Reservas persistentes
   const [reservations, setReservations] = useState<MyReservation[]>(() => {
@@ -1901,25 +2630,148 @@ export default function GuestPage({
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {user ? (
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="relative shrink-0">
                 <button
-                  onClick={() => setView("account")}
-                  className={`text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                    view === "account" ? "text-amber-800 bg-amber-100" : "text-slate-700 bg-slate-100 hover:bg-slate-200"
-                  }`}
+                  type="button"
+                  onClick={() => setShowProfileMenu(prev => !prev)}
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-slate-200 hover:border-amber-400 bg-white hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
+                  title="Menú de perfil y cuenta"
                 >
-                  <span className="w-5 h-5 rounded-full bg-amber-400 text-slate-900 text-xs flex items-center justify-center font-bold">
+                  <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 text-xs flex items-center justify-center font-black shadow-2xs">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
-                  <span className="max-w-[70px] sm:max-w-none truncate">{user.name.split(" ")[0]}</span>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">
+                      {user.name.split(" ")[0]}
+                    </p>
+                    <p className="text-[9px] text-amber-700 font-semibold leading-none">
+                      Nivel 1 Huésped
+                    </p>
+                  </div>
+                  <span className="text-xs text-slate-400">▾</span>
                 </button>
-                <button
-                  onClick={onLogout}
-                  className="text-xs text-slate-400 hover:text-red-600 transition-colors px-1 cursor-pointer"
-                  title="Cerrar sesión"
-                >
-                  Salir
-                </button>
+
+                {showProfileMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowProfileMenu(false)}
+                    />
+                    <div
+                      className="absolute right-0 mt-2 w-72 rounded-2xl border bg-white shadow-2xl z-50 overflow-hidden divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-100"
+                      style={{ borderColor: "#e2e8f0" }}
+                    >
+                      {/* Cabecera del usuario */}
+                      <div className="p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-amber-400 text-slate-950 font-black text-base flex items-center justify-center shrink-0 shadow-md">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-sm text-white truncate">{user.name}</p>
+                            <span className="inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 mt-0.5">
+                              ⭐ Huésped Frecuente Manta
+                            </span>
+                            <p className="text-[11px] text-slate-400 truncate mt-0.5">{user.email}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Enlaces del Menú */}
+                      <div className="py-1.5 text-xs text-slate-700 font-medium">
+                        <button
+                          onClick={() => { setAccountInitialTab("hub"); setView("account"); setShowProfileMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <span className="text-base">🏠</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">Centro de mi cuenta</p>
+                            <p className="text-[10px] text-slate-400">Panel general de perfil y servicios</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => { setAccountInitialTab("reservations"); setView("account"); setShowProfileMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <span className="text-base">🛎️</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">Mis Reservas y Viajes</p>
+                            <p className="text-[10px] text-slate-400">Ver vouchers y códigos de check-in</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => { setAccountInitialTab("personal"); setView("account"); setShowProfileMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <span className="text-base">👤</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">Datos Personales & Check-in</p>
+                            <p className="text-[10px] text-slate-400">Cédula, contacto y preferencias de cama</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => { setAccountInitialTab("billing"); setView("account"); setShowProfileMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <span className="text-base">🏛️</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">Datos de Facturación SRI</p>
+                            <p className="text-[10px] text-slate-400">Factura directa emitida por el hotel</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => { setAccountInitialTab("payments"); setView("account"); setShowProfileMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <span className="text-base">💳</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">Medios de Pago</p>
+                            <p className="text-[10px] text-slate-400">Tarjetas, DeUna y PayPhone</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => { setAccountInitialTab("benefits"); setView("account"); setShowProfileMenu(false); }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <span className="text-base">🎁</span>
+                          <div>
+                            <p className="font-semibold text-slate-800">Beneficios Manta Direct</p>
+                            <p className="text-[10px] text-slate-400">Garantía sin recargos OTA de intermediarios</p>
+                          </div>
+                        </button>
+
+                        {onAdminAccess && (
+                          <button
+                            onClick={() => { setShowProfileMenu(false); onAdminAccess(); }}
+                            className="w-full px-4 py-2 text-left hover:bg-amber-50 text-amber-900 flex items-center gap-2.5 transition-colors cursor-pointer border-t border-slate-100"
+                          >
+                            <span className="text-base">🏨</span>
+                            <div>
+                              <p className="font-semibold">Acceso Hotel / PMS</p>
+                              <p className="text-[10px] text-amber-700">Administración y mostrador hotelero</p>
+                            </div>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Cerrar Sesión */}
+                      <div className="p-2 bg-slate-50">
+                        <button
+                          onClick={() => { setShowProfileMenu(false); onLogout(); }}
+                          className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <span>🚪</span>
+                          <span>Cerrar sesión</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <button
@@ -1955,6 +2807,9 @@ export default function GuestPage({
           onLogout={onLogout}
           onCancelReservation={handleCancelReservation}
           onViewVoucher={setVoucherRes}
+          onBack={() => setView("home")}
+          initialTab={accountInitialTab}
+          onAdminAccess={onAdminAccess}
         />
       )}
 
