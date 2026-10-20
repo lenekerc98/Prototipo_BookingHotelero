@@ -249,14 +249,11 @@ function SearchBar({
     >
       {/* ─── Selector de Destino Moderno (Custom Popover) ─── */}
       <div className="flex-1 min-w-0 relative" ref={popoverRef}>
-        <div className="flex items-center justify-between mb-1">
+        <div className="mb-1">
           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <span>📍</span>
             <span>¿A dónde vas en Manta?</span>
           </label>
-          <span className="text-[9px] font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
-            7 Parroquias Oficiales
-          </span>
         </div>
 
         <div className="relative">
