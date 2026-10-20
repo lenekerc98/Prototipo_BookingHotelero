@@ -55,6 +55,363 @@ const MANTA_SECTORES_DESTACADOS = [
   { name: "Puerto San Mateo", query: "San Mateo", parroquia: "Parroquia San Mateo", desc: "Miradores marinos y surf sobre olas derechas", count: 8, badge: "Surf & Puerto", icon: "🌊" },
 ];
 
+interface MantaSectorPoint {
+  id: string;
+  name: string;
+  query: string;
+  type: "Parroquia Urbana" | "Parroquia Rural";
+  badge: string;
+  desc: string;
+  count: number;
+  icon: string;
+  x: number;
+  y: number;
+  labelX: number;
+  labelY: number;
+  tag: string;
+}
+
+const MANTA_MAP_SECTORS: MantaSectorPoint[] = [
+  {
+    id: "los-esteros",
+    name: "Los Esteros",
+    query: "Los Esteros",
+    type: "Parroquia Urbana",
+    badge: "Urbana · Hoteles Costeros",
+    desc: "Playas norteñas, hoteles frente al mar y acceso al aeropuerto",
+    count: 15,
+    icon: "🌊",
+    x: 350,
+    y: 72,
+    labelX: 350,
+    labelY: 48,
+    tag: "Hoteles frente al mar",
+  },
+  {
+    id: "tarqui",
+    name: "Tarqui",
+    query: "Tarqui",
+    type: "Parroquia Urbana",
+    badge: "Urbana · Playa & Gastronomía",
+    desc: "Playa tradicional de Tarqui, mariscos, astillero artesanal y hotelería",
+    count: 38,
+    icon: "⛵",
+    x: 285,
+    y: 98,
+    labelX: 285,
+    labelY: 124,
+    tag: "Playa tradicional y comercio",
+  },
+  {
+    id: "manta",
+    name: "Manta (Matriz)",
+    query: "Manta",
+    type: "Parroquia Urbana",
+    badge: "Urbana · Barbasquillo & Murciélago",
+    desc: "Centro financiero, Malecón Escénico, Barbasquillo y Playa El Murciélago",
+    count: 40,
+    icon: "🏙️",
+    x: 200,
+    y: 84,
+    labelX: 180,
+    labelY: 60,
+    tag: "Barbasquillo & Murciélago",
+  },
+  {
+    id: "eloy-alfaro",
+    name: "Eloy Alfaro",
+    query: "Eloy Alfaro",
+    type: "Parroquia Urbana",
+    badge: "Urbana · Residencial & Comercial",
+    desc: "Sector urbano dinámico y conectado en el interior del cantón",
+    count: 2,
+    icon: "🏘️",
+    x: 305,
+    y: 170,
+    labelX: 305,
+    labelY: 196,
+    tag: "Sector Comercial e Interior",
+  },
+  {
+    id: "san-mateo",
+    name: "San Mateo",
+    query: "San Mateo",
+    type: "Parroquia Urbana",
+    badge: "Urbana · Puerto & Surf",
+    desc: "Puerto pesquero artesanal, acantilados costeros y olas derechas para surf",
+    count: 8,
+    icon: "🏄",
+    x: 160,
+    y: 155,
+    labelX: 135,
+    labelY: 138,
+    tag: "Puerto pesquero y Surf",
+  },
+  {
+    id: "santa-marianita",
+    name: "Santa Marianita",
+    query: "Santa Marianita",
+    type: "Parroquia Rural",
+    badge: "Rural · Capital Kitesurf",
+    desc: "Playa amplia de mar abierto, viento ideal todo el año y escuelas de kite",
+    count: 9,
+    icon: "🪁",
+    x: 120,
+    y: 220,
+    labelX: 85,
+    labelY: 202,
+    tag: "Capital del Kitesurf",
+  },
+  {
+    id: "san-lorenzo",
+    name: "San Lorenzo",
+    query: "San Lorenzo",
+    type: "Parroquia Rural",
+    badge: "Rural · Reserva Pacoche & Faro",
+    desc: "Bosque húmedo protegido de Pacoche, El Faro, senderos ecológicos y playas vírgenes",
+    count: 4,
+    icon: "🌿",
+    x: 75,
+    y: 285,
+    labelX: 105,
+    labelY: 305,
+    tag: "Reserva Marina y Bosque de Pacoche",
+  },
+];
+
+function MantaSectorMap({
+  selectedDestination,
+  onSelectDestination,
+}: {
+  selectedDestination: string;
+  onSelectDestination: (dest: string) => void;
+}) {
+  const [hoveredId, setHoveredId] = useState<string>("manta");
+  const activeSector = MANTA_MAP_SECTORS.find(s => s.id === hoveredId) || MANTA_MAP_SECTORS[2];
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {/* Contenedor del Mapa SVG Interactivo */}
+      <div className="relative rounded-2xl bg-gradient-to-br from-sky-100/70 via-sky-50/50 to-emerald-50/40 border border-slate-200/80 overflow-hidden shadow-inner">
+        {/* Marca de agua Océano Pacífico */}
+        <div className="absolute top-3 left-4 pointer-events-none select-none">
+          <p className="text-[10px] tracking-widest font-black uppercase text-sky-500/70 flex items-center gap-1">
+            <span>🌊</span>
+            <span>Océano Pacífico</span>
+          </p>
+          <p className="text-[9px] text-sky-400/50 font-mono">Costa de Manta</p>
+        </div>
+
+        {/* Rosa de los vientos */}
+        <div className="absolute top-2.5 right-3 pointer-events-none select-none text-[9px] font-bold text-slate-500 bg-white/90 px-2 py-0.5 rounded-full border border-slate-200 flex items-center gap-1 shadow-2xs">
+          <span>🧭</span>
+          <span>Norte ↑</span>
+        </div>
+
+        <svg
+          viewBox="0 0 440 330"
+          className="w-full h-auto max-h-[280px] select-none"
+          style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.03))" }}
+        >
+          <defs>
+            <linearGradient id="mantaLandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="50%" stopColor="#f8fafc" />
+              <stop offset="100%" stopColor="#e2e8f0" />
+            </linearGradient>
+
+            <linearGradient id="mantaPacocheGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#dcfce7" />
+              <stop offset="100%" stopColor="#bbf7d0" />
+            </linearGradient>
+
+            <filter id="mantaPinShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodOpacity="0.2" />
+            </filter>
+          </defs>
+
+          {/* Olas sutiles en el océano */}
+          <path
+            d="M 25 70 Q 45 65 65 70 T 105 70 M 20 130 Q 40 125 60 130 T 100 130 M 15 190 Q 35 185 55 190"
+            fill="none"
+            stroke="#bae6fd"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+
+          {/* Territorio Continental de Cantón Manta */}
+          <path
+            d="M 440 35 
+               C 390 40, 360 55, 330 65 
+               C 280 80, 240 75, 200 78 
+               C 175 80, 160 100, 150 130 
+               C 140 160, 125 190, 105 220 
+               C 85 250, 65 270, 50 295 
+               C 45 305, 45 320, 50 330 
+               L 440 330 Z"
+            fill="url(#mantaLandGrad)"
+            stroke="#cbd5e1"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+
+          {/* Bosque Húmedo y Reserva de Pacoche */}
+          <path
+            d="M 50 260 
+               C 70 255, 100 265, 120 280 
+               C 125 295, 120 315, 115 330 
+               L 50 330 Z"
+            fill="url(#mantaPacocheGrad)"
+            stroke="#86efac"
+            strokeWidth="1.5"
+            strokeDasharray="3 2"
+          />
+          <text x="75" y="322" fontSize="9" fontWeight="bold" fill="#166534" textAnchor="middle">
+            🌲 Pacoche
+          </text>
+
+          {/* Ruta del Spondylus (Conectividad costera) */}
+          <path
+            d="M 370 70 Q 280 100 200 84 T 160 155 T 120 220 T 75 285"
+            fill="none"
+            stroke="#f59e0b"
+            strokeWidth="2"
+            strokeDasharray="4 3"
+            opacity="0.5"
+          />
+
+          {/* 7 Pines Georreferenciados del Cantón */}
+          {MANTA_MAP_SECTORS.map(sec => {
+            const isHovered = hoveredId === sec.id;
+            const isSelected = selectedDestination.toLowerCase().includes(sec.query.toLowerCase());
+
+            return (
+              <g
+                key={sec.id}
+                className="cursor-pointer"
+                onMouseEnter={() => setHoveredId(sec.id)}
+                onClick={() => onSelectDestination(sec.query)}
+              >
+                {/* Halo pulsante */}
+                {isHovered && (
+                  <circle
+                    cx={sec.x}
+                    cy={sec.y}
+                    r="16"
+                    fill="#f59e0b"
+                    opacity="0.3"
+                  />
+                )}
+
+                {/* Pin central */}
+                <circle
+                  cx={sec.x}
+                  cy={sec.y}
+                  r={isHovered ? 12 : isSelected ? 11 : 9}
+                  fill={isHovered ? "#f59e0b" : isSelected ? "#fef3c7" : "#ffffff"}
+                  stroke={isHovered ? "#b45309" : isSelected ? "#d97706" : "#0f172a"}
+                  strokeWidth={isHovered || isSelected ? 2.5 : 1.5}
+                  filter="url(#mantaPinShadow)"
+                />
+
+                {/* Icono del pin */}
+                <text
+                  x={sec.x}
+                  y={sec.y + 3.5}
+                  fontSize={isHovered ? 10 : 8}
+                  textAnchor="middle"
+                  className="pointer-events-none select-none"
+                >
+                  {sec.icon}
+                </text>
+
+                {/* Pastilla con nombre y hoteles */}
+                <g transform={`translate(${sec.labelX}, ${sec.labelY})`}>
+                  <rect
+                    x="-42"
+                    y="-9"
+                    width="84"
+                    height="18"
+                    rx="9"
+                    fill={isHovered ? "#0f172a" : isSelected ? "#fef3c7" : "#ffffff"}
+                    stroke={isHovered ? "#0f172a" : isSelected ? "#f59e0b" : "#e2e8f0"}
+                    strokeWidth="1"
+                    filter="url(#mantaPinShadow)"
+                  />
+                  <text
+                    x="0"
+                    y="3"
+                    fontSize="8.5"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    fill={isHovered ? "#ffffff" : isSelected ? "#78350f" : "#1e293b"}
+                    className="pointer-events-none select-none"
+                  >
+                    {sec.name.split(" ")[0]} ({sec.count})
+                  </text>
+                </g>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Leyenda en el pie del mapa */}
+        <div className="px-3 py-1.5 bg-white/95 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 font-medium">
+              <span className="w-2 h-2 rounded-full bg-blue-500"></span> 5 Urbanas
+            </span>
+            <span className="flex items-center gap-1 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 2 Rurales
+            </span>
+            <span className="flex items-center gap-1 font-medium text-amber-700">
+              <span className="text-xs">🛣️</span> Spondylus
+            </span>
+          </div>
+          <span className="text-[9px] text-slate-400">Haz clic en un pin para seleccionar</span>
+        </div>
+      </div>
+
+      {/* Inspector de Zona Activa */}
+      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 animate-in fade-in duration-100">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-950 flex items-center justify-center text-xl shrink-0 shadow-2xs border border-amber-200">
+            {activeSector.icon}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h5 className="font-bold text-xs text-slate-900">{activeSector.name}</h5>
+              <span
+                className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                  activeSector.type.includes("Rural")
+                    ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                    : "bg-blue-100 text-blue-900 border border-blue-300"
+                }`}
+              >
+                {activeSector.type.includes("Rural") ? "Rural" : "Urbana"}
+              </span>
+              <span className="text-[10px] font-bold font-mono text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                {activeSector.count} hoteles
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 truncate mt-0.5">{activeSector.desc}</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onSelectDestination(activeSector.query)}
+          className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs whitespace-nowrap cursor-pointer transition-colors shadow-xs flex items-center gap-1 shrink-0"
+        >
+          <span>Buscar aquí</span>
+          <span>→</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const DEMO_RESERVATIONS: MyReservation[] = INITIAL_DEMO_RESERVATIONS;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -214,7 +571,7 @@ function SearchBar({
   variant?: "hero" | "sticky";
 }) {
   const [isPopOpen, setIsPopOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"parroquias" | "sectores" | "todo">("parroquias");
+  const [activeTab, setActiveTab] = useState<"mapa" | "parroquias" | "sectores" | "todo">("mapa");
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Cerrar al hacer clic fuera
@@ -265,6 +622,7 @@ function SearchBar({
             type="text"
             value={params.destination}
             onFocus={() => setIsPopOpen(true)}
+            onClick={() => setIsPopOpen(true)}
             onChange={e => {
               onChange({ ...params, destination: e.target.value });
               if (!isPopOpen) setIsPopOpen(true);
@@ -322,8 +680,20 @@ function SearchBar({
               </button>
             </div>
 
-            {/* Chips de Categoría Rápidos (Estilo Airbnb) */}
+            {/* Chips de Categoría Rápidos (Con opción de Mapa) */}
             <div className="px-4 py-2 bg-slate-50/70 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setActiveTab("mapa")}
+                className={`py-1 px-3 rounded-full whitespace-nowrap transition-all cursor-pointer font-bold flex items-center gap-1.5 text-[11px] ${
+                  activeTab === "mapa"
+                    ? "bg-amber-500 text-slate-950 shadow-xs"
+                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <span>🗺️</span>
+                <span>Mapa de Sectorización</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("parroquias")}
@@ -353,7 +723,7 @@ function SearchBar({
                 onClick={() => setActiveTab("todo")}
                 className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "todo"
-                    ? "bg-amber-500 text-slate-950 shadow-xs"
+                    ? "bg-slate-900 text-white shadow-xs"
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
                 }`}
               >
@@ -362,8 +732,16 @@ function SearchBar({
               </button>
             </div>
 
-            {/* Contenido en Cuadrícula Visual (2 Columnas en tablet/desktop) */}
-            <div className="max-h-80 overflow-y-auto p-3 text-xs">
+            {/* Contenido según pestaña */}
+            <div className="max-h-[380px] overflow-y-auto p-3 text-xs">
+              {/* Pestaña: Mapa Interactivo de Sectorización */}
+              {activeTab === "mapa" && (
+                <MantaSectorMap
+                  selectedDestination={params.destination}
+                  onSelectDestination={handleSelectDestination}
+                />
+              )}
+
               {/* Pestaña 1: Parroquias Oficiales en Cuadrícula */}
               {activeTab === "parroquias" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
