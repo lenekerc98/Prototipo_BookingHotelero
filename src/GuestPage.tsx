@@ -242,12 +242,12 @@ function SearchBar({
     <div
       className={`w-full max-w-full flex flex-col md:flex-row gap-2.5 md:items-end ${
         variant === "hero"
-          ? "p-3 sm:p-4 rounded-3xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/60"
-          : "p-2.5 rounded-2xl border bg-white shadow-xs"
+          ? "p-3 sm:p-4 rounded-2xl bg-white shadow-xl shadow-slate-900/10 border border-slate-200/90"
+          : "p-2.5 rounded-2xl border border-slate-200 bg-white shadow-xs"
       }`}
       style={{ borderColor: variant === "sticky" ? "#e2e8f0" : undefined }}
     >
-      {/* ─── Selector de Destino Moderno (Custom Popover) ─── */}
+      {/* ─── Selector de Destino Moderno (Solid Clean Popover) ─── */}
       <div className="flex-1 min-w-0 relative" ref={popoverRef}>
         <div className="mb-1">
           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
@@ -278,7 +278,7 @@ function SearchBar({
               }
             }}
             placeholder="Parroquia, playa o sector de Manta..."
-            className="w-full pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 cursor-pointer shadow-2xs"
+            className="w-full pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 cursor-pointer shadow-2xs"
           />
 
           {params.destination && (
@@ -293,16 +293,17 @@ function SearchBar({
           )}
         </div>
 
-        {/* ─── Modern Glass Popover ─── */}
+        {/* ─── Modern Solid Surface Popover (Sin Glassmorphism) ─── */}
         {isPopOpen && (
           <div
-            className="absolute left-0 top-full mt-2 w-full sm:w-[460px] max-w-[95vw] rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
-            style={{ boxShadow: "0 20px 40px -15px rgba(0,0,0,0.18)" }}
+            className="absolute left-0 top-full mt-2 w-full sm:w-[460px] max-w-[95vw] rounded-2xl bg-white border border-slate-200 shadow-2xl shadow-slate-900/20 z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Header del Popover */}
-            <div className="p-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🗺️</span>
+            <div className="p-3 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-slate-800 text-amber-400 flex items-center justify-center text-sm shrink-0 border border-slate-700/60">
+                  🗺️
+                </div>
                 <div>
                   <p className="font-bold text-xs text-white leading-tight">Distribución Territorial de Manta</p>
                   <p className="text-[10px] text-slate-300">116 alojamientos catastrados</p>
@@ -311,20 +312,20 @@ function SearchBar({
               <button
                 type="button"
                 onClick={() => setIsPopOpen(false)}
-                className="w-6 h-6 rounded-full bg-slate-700/80 hover:bg-slate-600 text-slate-200 text-xs flex items-center justify-center cursor-pointer transition-colors"
+                className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs flex items-center justify-center cursor-pointer transition-colors border border-slate-700/60"
               >
                 ✕
               </button>
             </div>
 
-            {/* Pestañas Segmentadas Modernas (Pill Tabs) */}
-            <div className="p-2 bg-slate-100/90 border-b border-slate-200 flex items-center gap-1 text-[11px] font-bold">
+            {/* Pestañas Segmentadas Modernas (Solid Pill Tabs) */}
+            <div className="p-1.5 bg-slate-100 border-b border-slate-200 flex items-center gap-1 text-[11px] font-semibold">
               <button
                 type="button"
                 onClick={() => setActiveTab("parroquias")}
-                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   activeTab === "parroquias"
-                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/80"
+                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/90 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                 }`}
               >
@@ -334,9 +335,9 @@ function SearchBar({
               <button
                 type="button"
                 onClick={() => setActiveTab("sectores")}
-                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   activeTab === "sectores"
-                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/80"
+                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/90 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                 }`}
               >
@@ -348,7 +349,7 @@ function SearchBar({
                 onClick={() => setActiveTab("todo")}
                 className={`py-1.5 px-2.5 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
                   activeTab === "todo"
-                    ? "bg-amber-500 text-slate-950 shadow-xs"
+                    ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                 }`}
               >
@@ -367,10 +368,10 @@ function SearchBar({
                       key={p.name}
                       type="button"
                       onClick={() => handleSelectDestination(p.query)}
-                      className="w-full p-2.5 rounded-xl hover:bg-amber-50/80 text-left transition-all cursor-pointer group flex items-center justify-between border border-transparent hover:border-amber-200"
+                      className="w-full p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group flex items-center justify-between border border-transparent hover:border-slate-200"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 transition-colors border border-slate-200/60">
                           {p.icon}
                         </div>
                         <div className="min-w-0">
@@ -379,19 +380,19 @@ function SearchBar({
                               {p.name}
                             </span>
                             <span
-                              className={`text-[9px] font-semibold px-1.5 py-0.2 rounded ${
+                              className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md ${
                                 p.type.includes("Rural")
-                                  ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
-                                  : "bg-blue-100 text-blue-900 border border-blue-300"
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                  : "bg-blue-50 text-blue-800 border border-blue-200"
                               }`}
                             >
                               {p.type}
                             </span>
                           </div>
-                          <p className="text-[10px] text-slate-400 truncate mt-0.5">{p.desc}</p>
+                          <p className="text-[10px] text-slate-500 truncate mt-0.5">{p.desc}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full shrink-0 group-hover:bg-amber-200 group-hover:text-amber-950 transition-colors">
+                      <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 border border-slate-200/60 transition-colors">
                         {p.count} hot.
                       </span>
                     </button>
@@ -407,10 +408,10 @@ function SearchBar({
                       key={s.name}
                       type="button"
                       onClick={() => handleSelectDestination(s.query)}
-                      className="w-full p-2.5 rounded-xl hover:bg-amber-50/80 text-left transition-all cursor-pointer group flex items-center justify-between border border-transparent hover:border-amber-200"
+                      className="w-full p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group flex items-center justify-between border border-transparent hover:border-slate-200"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-200 group-hover:text-amber-950 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 text-amber-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 transition-colors border border-slate-200/60">
                           {s.icon}
                         </div>
                         <div className="min-w-0">
@@ -418,14 +419,14 @@ function SearchBar({
                             <span className="font-bold text-slate-800 text-xs group-hover:text-amber-900 transition-colors">
                               {s.name}
                             </span>
-                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
                               {s.badge}
                             </span>
                           </div>
-                          <p className="text-[10px] text-slate-400 truncate mt-0.5">{s.parroquia} · {s.desc}</p>
+                          <p className="text-[10px] text-slate-500 truncate mt-0.5">{s.parroquia} · {s.desc}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full shrink-0 group-hover:bg-amber-200 group-hover:text-amber-950 transition-colors">
+                      <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 border border-slate-200/60 transition-colors">
                         {s.count} hot.
                       </span>
                     </button>
