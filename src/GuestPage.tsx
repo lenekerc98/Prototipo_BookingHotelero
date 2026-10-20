@@ -293,52 +293,56 @@ function SearchBar({
           )}
         </div>
 
-        {/* ─── Modern Solid Surface Popover (Sin Glassmorphism) ─── */}
+        {/* ─── Modern Travel Explorer Popover (Airbnb Style: 100% Light, Espacioso y Visual) ─── */}
         {isPopOpen && (
           <div
-            className="absolute left-0 top-full mt-2 w-full sm:w-[460px] max-w-[95vw] rounded-2xl bg-white border border-slate-200 shadow-2xl shadow-slate-900/20 z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 top-full mt-2 w-full sm:w-[500px] max-w-[96vw] rounded-2xl bg-white border border-slate-200/90 shadow-2xl shadow-slate-900/15 z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
           >
-            {/* Header del Popover */}
-            <div className="p-3 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-slate-800 text-amber-400 flex items-center justify-center text-sm shrink-0 border border-slate-700/60">
-                  🗺️
+            {/* Header Amigable y Luminoso (Sin barras negras) */}
+            <div className="px-4 pt-3.5 pb-2.5 bg-white border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">🧭</span>
+                  <h4 className="font-bold text-xs text-slate-900">Explora Manta por zona</h4>
+                  <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    116 alojamientos
+                  </span>
                 </div>
-                <div>
-                  <p className="font-bold text-xs text-white leading-tight">Distribución Territorial de Manta</p>
-                  <p className="text-[10px] text-slate-300">116 alojamientos catastrados</p>
-                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Elige una parroquia oficial o una playa turística destacada
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPopOpen(false)}
-                className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs flex items-center justify-center cursor-pointer transition-colors border border-slate-700/60"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 text-xs flex items-center justify-center cursor-pointer transition-colors"
+                title="Cerrar"
               >
                 ✕
               </button>
             </div>
 
-            {/* Pestañas Segmentadas Modernas (Solid Pill Tabs) */}
-            <div className="p-1.5 bg-slate-100 border-b border-slate-200 flex items-center gap-1 text-[11px] font-semibold">
+            {/* Chips de Categoría Rápidos (Estilo Airbnb) */}
+            <div className="px-4 py-2 bg-slate-50/70 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveTab("parroquias")}
-                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "parroquias"
-                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/90 font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 <span>🏛️</span>
-                <span>7 Parroquias</span>
+                <span>7 Parroquias Oficiales</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("sectores")}
-                className={`flex-1 py-1.5 px-2 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "sectores"
-                    ? "bg-white text-slate-950 shadow-xs border border-slate-200/90 font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 <span>🏖️</span>
@@ -347,88 +351,84 @@ function SearchBar({
               <button
                 type="button"
                 onClick={() => setActiveTab("todo")}
-                className={`py-1.5 px-2.5 rounded-lg text-center transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "todo"
-                    ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    ? "bg-amber-500 text-slate-950 shadow-xs"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 <span>⭐</span>
-                <span>Todo</span>
+                <span>Todo Manta</span>
               </button>
             </div>
 
-            {/* Contenido según pestaña */}
-            <div className="max-h-72 overflow-y-auto p-2 divide-y divide-slate-100 text-xs">
-              {/* Pestaña 1: Las 7 Parroquias Oficiales */}
+            {/* Contenido en Cuadrícula Visual (2 Columnas en tablet/desktop) */}
+            <div className="max-h-80 overflow-y-auto p-3 text-xs">
+              {/* Pestaña 1: Parroquias Oficiales en Cuadrícula */}
               {activeTab === "parroquias" && (
-                <div className="space-y-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {MANTA_PARROQUIAS_OFICIALES.map(p => (
                     <button
                       key={p.name}
                       type="button"
                       onClick={() => handleSelectDestination(p.query)}
-                      className="w-full p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group flex items-center justify-between border border-transparent hover:border-slate-200"
+                      className="p-2.5 rounded-xl border border-slate-150 hover:border-amber-300 bg-white hover:bg-amber-50/40 text-left transition-all cursor-pointer group flex flex-col justify-between hover:shadow-sm"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 transition-colors border border-slate-200/60">
-                          {p.icon}
+                      <div className="flex items-start justify-between gap-1 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base group-hover:scale-110 transition-transform">{p.icon}</span>
+                          <span className="font-bold text-slate-900 text-xs group-hover:text-amber-900">
+                            {p.name}
+                          </span>
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-slate-800 text-xs group-hover:text-amber-900 transition-colors">
-                              {p.name}
-                            </span>
-                            <span
-                              className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md ${
-                                p.type.includes("Rural")
-                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                  : "bg-blue-50 text-blue-800 border border-blue-200"
-                              }`}
-                            >
-                              {p.type}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 truncate mt-0.5">{p.desc}</p>
-                        </div>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
+                          {p.count} hot.
+                        </span>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 border border-slate-200/60 transition-colors">
-                        {p.count} hot.
-                      </span>
+                      <div className="flex items-center justify-between gap-1 text-[10px]">
+                        <span className="text-slate-500 truncate max-w-[160px]">{p.desc}</span>
+                        <span
+                          className={`text-[8px] font-bold px-1.5 py-0.2 rounded uppercase shrink-0 ${
+                            p.type.includes("Rural")
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                              : "bg-blue-50 text-blue-800 border border-blue-200"
+                          }`}
+                        >
+                          {p.type.includes("Rural") ? "Rural" : "Urbana"}
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Pestaña 2: Playas y Sectores Destacados */}
+              {/* Pestaña 2: Playas y Sectores Destacados en Cuadrícula */}
               {activeTab === "sectores" && (
-                <div className="space-y-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {MANTA_SECTORES_DESTACADOS.map(s => (
                     <button
                       key={s.name}
                       type="button"
                       onClick={() => handleSelectDestination(s.query)}
-                      className="w-full p-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group flex items-center justify-between border border-transparent hover:border-slate-200"
+                      className="p-2.5 rounded-xl border border-slate-150 hover:border-amber-300 bg-white hover:bg-amber-50/40 text-left transition-all cursor-pointer group flex flex-col justify-between hover:shadow-sm"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 text-amber-700 flex items-center justify-center text-sm shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 transition-colors border border-slate-200/60">
-                          {s.icon}
+                      <div className="flex items-start justify-between gap-1 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base group-hover:scale-110 transition-transform">{s.icon}</span>
+                          <span className="font-bold text-slate-900 text-xs group-hover:text-amber-900">
+                            {s.name}
+                          </span>
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-slate-800 text-xs group-hover:text-amber-900 transition-colors">
-                              {s.name}
-                            </span>
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                              {s.badge}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 truncate mt-0.5">{s.parroquia} · {s.desc}</p>
-                        </div>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
+                          {s.count} hot.
+                        </span>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0 group-hover:bg-amber-100 group-hover:text-amber-950 border border-slate-200/60 transition-colors">
-                        {s.count} hot.
-                      </span>
+                      <div className="flex items-center justify-between gap-1 text-[10px]">
+                        <span className="text-slate-500 truncate max-w-[160px]">{s.desc}</span>
+                        <span className="text-[8px] font-bold px-1.5 py-0.2 rounded uppercase shrink-0 bg-amber-50 text-amber-800 border border-amber-200">
+                          {s.badge}
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -436,13 +436,13 @@ function SearchBar({
 
               {/* Pestaña 3: Todo el Cantón */}
               {activeTab === "todo" && (
-                <div className="p-3 text-center space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center text-2xl mx-auto shadow-xs">
+                <div className="p-4 text-center space-y-2 bg-slate-50/70 rounded-xl border border-slate-150">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center text-xl mx-auto shadow-2xs">
                     🌊
                   </div>
-                  <p className="font-bold text-slate-900 text-xs">Todo el Cantón Manta</p>
+                  <p className="font-bold text-slate-900 text-xs">Catálogo Completo de Manta</p>
                   <p className="text-[11px] text-slate-500 max-w-xs mx-auto leading-relaxed">
-                    Buscará en los 116 hoteles, hostales y hosterías catastrados en las 7 parroquias del cantón.
+                    Visualiza los 116 hoteles, hostales y hosterías registrados en las 7 parroquias del cantón.
                   </p>
                   <button
                     type="button"
@@ -456,18 +456,20 @@ function SearchBar({
             </div>
 
             {/* Pie del Popover */}
-            <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-              <span>💡 Selecciona una opción o escribe para filtrar</span>
-              <button
-                type="button"
-                onClick={() => {
-                  onChange({ ...params, destination: "" });
-                  setIsPopOpen(false);
-                }}
-                className="text-amber-700 hover:underline font-semibold cursor-pointer"
-              >
-                Limpiar filtro
-              </button>
+            <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+              <span>💡 También puedes escribir directamente el nombre del sector</span>
+              {params.destination && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange({ ...params, destination: "" });
+                    setIsPopOpen(false);
+                  }}
+                  className="text-amber-700 hover:underline font-semibold cursor-pointer"
+                >
+                  Limpiar filtro
+                </button>
+              )}
             </div>
           </div>
         )}
