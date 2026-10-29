@@ -137,14 +137,14 @@ function PriceBreakdownBox({
 
   return (
     <div className={`rounded-xl border bg-white p-3.5 shadow-sm text-left transition-all ${className}`} style={{ borderColor: "#e2e8f0" }}>
-      {/* Resumen estilo Booking */}
+      {/* Resumen de precio */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Desglose del precio</span>
             {ivaPct === 8 && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                🇪🇨 IVA 8% Feriado Activo
+                IVA 8% tarifa feriado
               </span>
             )}
           </div>
@@ -172,45 +172,42 @@ function PriceBreakdownBox({
       {expanded && (
         <div className="mt-3 pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
           <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
-            <span>ℹ️</span>
-            <span>Información tributaria (LORTI & Ley de Turismo Ecuador)</span>
+            <span>Detalle de impuestos y tasas</span>
           </div>
 
           <div className="rounded-lg p-3 bg-slate-50 border border-slate-200/80 space-y-2">
             <div className="flex items-center gap-1.5 font-semibold text-slate-700 text-[11px] pb-1.5 border-b border-slate-200">
-              <span>💳</span>
-              <span>Impuestos aplicables: US${totalImpuestos.toFixed(2)}</span>
+              <span>Impuestos y cargos: US${totalImpuestos.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between items-center text-slate-600">
               <span>
-                {ivaPct}% IVA {ivaPct === 8 ? `(${decretoCfg.nombreFeriado})` : "(Tarifa Ordinaria)"}
+                {ivaPct}% IVA {ivaPct === 8 ? `(${decretoCfg.nombreFeriado})` : ""}
               </span>
               <span className={`font-mono font-medium ${ivaPct === 8 ? "text-emerald-700 font-bold" : ""}`}>US${iva.toFixed(2)}</span>
             </div>
 
             {hasService10 ? (
               <div className="flex justify-between items-center text-emerald-800 font-medium bg-emerald-50 px-2 py-1 rounded border border-emerald-100">
-                <span>10% Servicio Turístico (Ley Turismo Art. 41)</span>
+                <span>10% Servicio turístico</span>
                 <span className="font-mono font-bold">US${servicio.toFixed(2)}</span>
               </div>
             ) : (
               <div className="flex justify-between items-center text-slate-400 italic text-[11px]">
-                <span>10% Servicio Turístico (Hostal exento)</span>
+                <span>10% Servicio turístico (no aplica)</span>
                 <span className="font-mono">US$0.00</span>
               </div>
             )}
           </div>
 
           <div className="flex justify-between items-center pt-1 font-bold text-slate-900 text-sm border-t border-slate-100">
-            <span>Total final a pagar</span>
+            <span>Total a pagar</span>
             <span className="text-base font-black text-amber-600 font-mono">US${totalPagar.toFixed(2)}</span>
           </div>
 
-          <div className="p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 flex items-start gap-1.5 text-[11px] text-amber-900 leading-tight">
-            <span className="text-sm">🏛️</span>
+          <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-200/80 text-[11px] text-amber-900 leading-tight">
             <div>
-              <strong>Voucher QR de Reserva Garantizada:</strong> Emitido al confirmar su pago. Presente su código QR al arribar a {hotelName ? <strong>{hotelName}</strong> : "el alojamiento"} para validar su estancia.
+              <strong>Voucher digital de reserva:</strong> Emitido con tu código de confirmación al validar el pago. Preséntalo a tu llegada a {hotelName ? <strong>{hotelName}</strong> : "el alojamiento"}.
             </div>
           </div>
         </div>
@@ -644,16 +641,15 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
               <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · Manta, Manabí</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER QR</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER DIGITAL</span>
               <p className="font-mono font-bold text-slate-100 text-xs mt-1">REC-{res.id}</p>
               <p className="text-[10px] text-slate-400">Entrada: {fmtDateShort(res.checkIn)}</p>
             </div>
           </div>
         </div>
 
-        <div className="p-3 bg-blue-50 border-b border-blue-200 text-[11px] text-blue-900 flex items-center gap-2">
-          <span>🏛️</span>
-          <span><strong>Voucher Digital de Reserva:</strong> Certifica su reserva garantizada y pago en línea. Presente este código en {hotelMeta.nombreComercial} en su Fecha de Entrada para validar su Voucher QR.</span>
+        <div className="p-3 bg-blue-50 border-b border-blue-200 text-[11px] text-blue-900">
+          <span><strong>Voucher Digital de Reserva:</strong> Certifica tu reserva garantizada y pago en línea. Presenta tu código de reserva en {hotelMeta.nombreComercial} a tu llegada.</span>
         </div>
 
         <div className="px-6 py-5 space-y-4">
@@ -779,7 +775,7 @@ function AccountView({
     try {
       localStorage.setItem(`alojamanta_profile_${user.email}`, JSON.stringify(profile));
     } catch {}
-    showToast("✓ Datos de perfil guardados para tu próximo check-in");
+    showToast("Datos de perfil guardados para tus reservas");
   }
 
   function handleSaveBilling(e: React.FormEvent) {
@@ -876,12 +872,12 @@ function AccountView({
         {/* Barra de pestañas */}
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap scrollbar-none pt-4 text-xs font-semibold">
           {[
-            { id: "hub", label: "Panel General", icon: "🏠" },
-            { id: "reservations", label: `Mis Reservas (${allList.length})`, icon: "🛎️" },
-            { id: "personal", label: "Datos Personales & Check-in", icon: "👤" },
-            { id: "billing", label: "Comprobantes y Contacto", icon: "🧾" },
-            { id: "payments", label: "Medios de Pago", icon: "💳" },
-            { id: "about", label: "Acerca de AlojaManta", icon: "ℹ️" },
+            { id: "hub", label: "Inicio" },
+            { id: "reservations", label: `Mis Reservas (${allList.length})` },
+            { id: "personal", label: "Datos personales" },
+            { id: "billing", label: "Comprobantes" },
+            { id: "payments", label: "Medios de pago" },
+            { id: "about", label: "Información" },
           ].map(t => (
             <button
               key={t.id}
@@ -892,7 +888,6 @@ function AccountView({
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`}
             >
-              <span>{t.icon}</span>
               <span>{t.label}</span>
             </button>
           ))}
@@ -906,9 +901,8 @@ function AccountView({
             {/* Card 1: Estancias y Viajes */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>🛎️</span>
-                  <span>Estancias y Viajes</span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Estancias y viajes
                 </h3>
                 <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                   {allList.length} activas
@@ -926,7 +920,7 @@ function AccountView({
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Vouchers y comprobantes con QR</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Vouchers y comprobantes de reserva</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
@@ -939,15 +933,14 @@ function AccountView({
               </div>
             </div>
 
-            {/* Card 2: Gestión de la cuenta y Check-in */}
+            {/* Card 2: Gestión de la cuenta y Llegada */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>👤</span>
-                  <span>Datos del Huésped</span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Datos del titular
                 </h3>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  Check-in ágil
+                  Llegada ágil
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -978,9 +971,8 @@ function AccountView({
             {/* Card 3: Comprobantes y Contacto */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>🏛️</span>
-                  <span>Comprobantes de Pago</span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Comprobantes de pago
                 </h3>
                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                   Comprobante de Reserva
@@ -1014,12 +1006,11 @@ function AccountView({
             {/* Card 4: Medios de Pago Digitales */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>💳</span>
-                  <span>Cobro y Pagos</span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Cobro y pagos
                 </h3>
                 <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                  Digital Seguro
+                  Digital seguro
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1050,12 +1041,11 @@ function AccountView({
             {/* Card 5: Acerca de AlojaManta */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>ℹ️</span>
-                  <span>Acerca de AlojaManta</span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Acerca de AlojaManta
                 </h3>
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-                  Red Oficial Manta
+                  Red Manta
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1086,9 +1076,8 @@ function AccountView({
             {/* Card 6: Atención y Asistencia al Huésped */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                  <span>💬</span>
-                  <span>Asistencia al Huésped</span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Asistencia al huésped
                 </h3>
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                   Cantón Manta
@@ -1115,7 +1104,7 @@ function AccountView({
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Consultar reservas y vouchers con QR</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Consultar reservas y comprobantes</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1232,16 +1221,15 @@ function AccountView({
         </div>
       )}
 
-      {/* ─── TAB 3: DATOS PERSONALES & CHECK-IN ─── */}
+      {/* ─── TAB 3: DATOS PERSONALES ─── */}
       {activeTab === "personal" && (
         <form onSubmit={handleSaveProfile} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
           <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
-            <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
-              <span>👤</span>
-              <span>Datos Personales y Check-in Exprés</span>
+            <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+              Datos Personales del Huésped
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Esta información agiliza tu registro en la recepción de los hoteles de Manta y personaliza tu estancia.
+              Esta información agiliza la validación de tu reserva en la recepción de los hoteles de Manta.
             </p>
           </div>
 
@@ -1365,7 +1353,7 @@ function AccountView({
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              <strong>El establecimiento recibe tus datos verificados para agilizar tu check-in.</strong> Guarda aquí tus datos para que el recepcionista registre tu reserva automáticamente a tu nombre o empresa.
+              <strong>El establecimiento recibe tus datos verificados para agilizar la validación de tu reserva.</strong> Guarda aquí tus datos para que el hotel emita tus comprobantes de estancia a tu nombre o empresa.
             </p>
           </div>
 
@@ -1492,7 +1480,7 @@ function AccountView({
                 <span className="text-2xl">⚡</span>
                 <div>
                   <p className="text-xs font-bold text-slate-800">DeUna / Banco Pichincha</p>
-                  <p className="text-[10px] text-slate-400">Cobro QR instantáneo sin comisiones extra</p>
+                  <p className="text-[10px] text-slate-400">Cobro instantáneo por app móvil sin comisiones extra</p>
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Disponible</span>
@@ -1563,10 +1551,10 @@ function AccountView({
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
                 <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                   <span className="text-base">📱</span>
-                  <span>Check-in Digital Inmediato</span>
+                  <span>Confirmación Digital Inmediata</span>
                 </div>
                 <p className="text-xs text-slate-600">
-                  Cada reserva genera un voucher oficial con código QR y token de validación instantáneo para recepción sin trámites engorrosos ni papeleo innecesario.
+                  Cada reserva genera un voucher oficial con código de confirmación y token de verificación instantáneo para recepción sin trámites engorrosos ni papeleo innecesario.
                 </p>
               </div>
             </div>
@@ -1688,10 +1676,10 @@ function AboutModal({
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
               <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                 <span className="text-base">📲</span>
-                <span>Vouchers con QR & Check-in Ágil</span>
+                <span>Vouchers con Código de Confirmación</span>
               </div>
               <p className="text-[11px] text-slate-600">
-                Confirmación instantánea con código QR y token de validación descargable en PDF o guardado en tu cuenta para un registro ágil en recepción.
+                Confirmación instantánea con código de reserva único descargable en PDF o guardado en tu cuenta para un registro ágil en recepción.
               </p>
             </div>
           </div>
@@ -1787,7 +1775,7 @@ function LegalModal({ onClose }: { onClose: () => void }) {
               <span>Comprobante Digital de Reserva y Pagos</span>
             </h4>
             <p>
-              La plataforma emite el comprobante de reserva y certificación de pago digital con el desglose del 15% de IVA. El establecimiento hotelero entrega el recibo y registro de estancia directamente al momento del check-in en recepción.
+              La plataforma emite el comprobante de reserva y certificación de pago digital con el desglose del 15% de IVA. El establecimiento hotelero entrega el recibo y comprobante de estancia directamente presentando tu código de reserva a la llegada.
             </p>
           </div>
 
@@ -2295,9 +2283,17 @@ function BookingModal({
   const [authError, setAuthError] = useState("");
 
   // Guest details
+  const [docType, setDocType] = useState<"CEDULA" | "RUC" | "PASAPORTE">("CEDULA");
   const [form, setForm] = useState({
-    name: user?.name ?? "", email: user?.email ?? "",
-    phone: "", dni: "", notes: "",
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    phone: "",
+    dni: "",
+    razonSocial: "",
+    country: "Ecuador",
+    city: "Manta",
+    address: "",
+    notes: "",
   });
 
   // Card
@@ -2315,8 +2311,8 @@ function BookingModal({
   const last4 = cardNum.replace(/\s/g, "").slice(-4) || "****";
 
   const STEPS: { k: BookingStep; l: string }[] = user
-    ? [{ k: "details", l: "1. Datos y Tarifa" }, { k: "payment", l: "2. Pago Seguro" }, { k: "invoice", l: "3. Voucher QR" }]
-    : [{ k: "auth", l: "1. Acceso / Invitado" }, { k: "details", l: "2. Datos y Tarifa" }, { k: "payment", l: "3. Pago Seguro" }, { k: "invoice", l: "4. Voucher QR" }];
+    ? [{ k: "details", l: "1. Datos y Tarifa" }, { k: "payment", l: "2. Pago Seguro" }, { k: "invoice", l: "3. Voucher de Reserva" }]
+    : [{ k: "auth", l: "1. Acceso / Invitado" }, { k: "details", l: "2. Datos y Tarifa" }, { k: "payment", l: "3. Pago Seguro" }, { k: "invoice", l: "4. Voucher de Reserva" }];
 
   const stepIndex = STEPS.findIndex(s => s.k === step);
 
@@ -2415,21 +2411,19 @@ function BookingModal({
           {step === "auth" && (
             <div className="space-y-4">
               <div className="text-center pb-1">
-                <p className="text-2xl mb-1">🔑</p>
                 <h3 className="font-bold text-slate-800 text-base" style={{ fontFamily: "DM Serif Display, serif" }}>
                   {authMode === "login" ? "Inicia sesión o reserva como invitado" : "Crea tu cuenta gratis"}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">Accede a tu cuenta de viajero o continúa directamente sin registro obligatorio (RF-02)</p>
+                <p className="text-xs text-slate-500 mt-1">Accede con tu cuenta o reserva directamente sin necesidad de registrarte</p>
               </div>
 
-              {/* RF-02: Guest Checkout sin cuenta obligatoria */}
+              {/* Guest Checkout */}
               <button
                 type="button"
                 onClick={() => setStep("details")}
-                className="w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border-2 border-emerald-500 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 cursor-pointer shadow-sm"
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border border-emerald-600 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 cursor-pointer shadow-sm"
               >
-                <span>⚡</span>
-                <span>Continuar como Invitado (Reserva Rápida sin cuenta)</span>
+                <span>Continuar como invitado</span>
               </button>
 
               <div className="relative flex items-center gap-2">
@@ -2463,8 +2457,8 @@ function BookingModal({
                   {authMode === "login" ? "Entrar y continuar →" : "Crear cuenta y continuar →"}
                 </button>
               </form>
-              <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2" style={{ borderColor: "#e2e8f0", color: "#475569" }}>
-                🌐 Continuar con Google
+              <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors" style={{ borderColor: "#e2e8f0", color: "#475569" }}>
+                <span>Continuar con Google</span>
               </button>
             </div>
           )}
@@ -2473,29 +2467,153 @@ function BookingModal({
           {step === "details" && (
             <div className="space-y-4">
               <h3 className="font-bold text-slate-800">1. Datos del huésped titular</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs text-slate-400 mb-1">Nombre completo *</label>
-                  <input className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ej: Carlos Mendoza" />
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs text-slate-400 mb-1">Email para envío de Voucher QR *</label>
-                  <input type="email" className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="cliente@correo.ec" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre completo del titular *</label>
+                  <input
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    placeholder="Ej: Carlos Mendoza"
+                    required
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Teléfono / WhatsApp (Ecuador)</label>
-                  <input type="tel" className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+593 98 421 8890" />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Cédula / RUC / Pasaporte *</label>
-                  <input className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.dni} onChange={e => setForm({ ...form, dni: e.target.value })} placeholder="1309847512" />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Email para voucher y confirmación *</label>
+                  <input
+                    type="email"
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    placeholder="cliente@correo.ec"
+                    required
+                  />
                 </div>
               </div>
 
-              {/* RF-04: Selección de Plan de Tarifa */}
+              {/* Selector dinámico de Tipo de Documento */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Tipo de Documento *</label>
+                  <select
+                    value={docType}
+                    onChange={e => {
+                      const t = e.target.value as "CEDULA" | "RUC" | "PASAPORTE";
+                      setDocType(t);
+                      setForm(f => ({ ...f, dni: "" }));
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border text-xs font-semibold outline-none bg-white cursor-pointer"
+                    style={{ borderColor: "#cbd5e1" }}
+                  >
+                    <option value="CEDULA">Cédula de Identidad (10 dígitos)</option>
+                    <option value="RUC">RUC (13 dígitos / Empresa)</option>
+                    <option value="PASAPORTE">Pasaporte Internacional (Alfanumérico)</option>
+                  </select>
+                </div>
+
+                <div className={docType === "RUC" ? "sm:col-span-1" : "sm:col-span-2"}>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {docType === "CEDULA" && "Cédula de Identidad (10 dígitos) *"}
+                    {docType === "RUC" && "Número de RUC (13 dígitos) *"}
+                    {docType === "PASAPORTE" && "Número de Pasaporte (Alfanumérico) *"}
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={docType === "CEDULA" ? 10 : docType === "RUC" ? 13 : 20}
+                    value={form.dni}
+                    onChange={e => {
+                      let val = e.target.value;
+                      if (docType === "CEDULA" || docType === "RUC") {
+                        val = val.replace(/\D/g, "");
+                      } else {
+                        val = val.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                      }
+                      setForm({ ...form, dni: val });
+                    }}
+                    placeholder={docType === "CEDULA" ? "1314589201" : docType === "RUC" ? "1391789456001" : "A14892015"}
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono bg-white"
+                    style={{ borderColor: "#cbd5e1" }}
+                    required
+                  />
+                  {docType === "CEDULA" && form.dni.length > 0 && form.dni.length !== 10 && (
+                    <p className="text-[10px] text-amber-600 mt-0.5">La cédula debe contener exactamente 10 dígitos numéricos.</p>
+                  )}
+                  {docType === "RUC" && form.dni.length > 0 && form.dni.length !== 13 && (
+                    <p className="text-[10px] text-amber-600 mt-0.5">El RUC ecuatoriano debe tener 13 dígitos numéricos (termina en 001).</p>
+                  )}
+                </div>
+
+                {docType === "RUC" && (
+                  <div className="col-span-1 sm:col-span-3">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Razón Social o Nombre de Empresa *</label>
+                    <input
+                      type="text"
+                      value={form.razonSocial}
+                      onChange={e => setForm({ ...form, razonSocial: e.target.value })}
+                      placeholder="Ej: IMPORTADORA DEL PACIFICO S.A.S."
+                      className="w-full px-3 py-2 rounded-lg border text-sm outline-none bg-white"
+                      style={{ borderColor: "#cbd5e1" }}
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Teléfono, País, Ciudad y Dirección */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Teléfono / WhatsApp *</label>
+                  <input
+                    type="tel"
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    value={form.phone}
+                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                    placeholder="+593 98 421 8890"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">País</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    value={form.country}
+                    onChange={e => setForm({ ...form, country: e.target.value })}
+                    placeholder="Ecuador"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Ciudad</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    value={form.city}
+                    onChange={e => setForm({ ...form, city: e.target.value })}
+                    placeholder="Manta, Portoviejo, Quito..."
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Dirección domiciliaria o fiscal</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
+                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    value={form.address}
+                    onChange={e => setForm({ ...form, address: e.target.value })}
+                    placeholder="Av. 4 de Noviembre y Calle 114, Manta"
+                  />
+                </div>
+              </div>
+
+              {/* Selección de Plan de Tarifa */}
               <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
-                  <span>🏷️ 2. Plan de Tarifa (RF-04)</span>
+                  <span>2. Plan de tarifa</span>
                   <span className="text-[10px] font-mono text-amber-700">{fmt(effectiveNightlyRate)} / noche</span>
                 </p>
                 <div className="grid grid-cols-1 gap-2 text-xs">
@@ -2536,10 +2654,10 @@ function BookingModal({
                 </div>
               </div>
 
-              {/* RF-06: Extras y Servicios Adicionales de Alojamiento */}
+              {/* Extras y Servicios Adicionales */}
               <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
-                  <span>✨ 3. Extras y Servicios Adicionales (RF-06)</span>
+                  <span>3. Servicios adicionales</span>
                   {extrasTotal > 0 && <span className="text-[10px] font-mono font-bold text-emerald-700">+{fmt(extrasTotal)}</span>}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -2711,7 +2829,7 @@ function BookingModal({
               <div className="text-center py-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mx-auto mb-2" style={{ background: "#d1fae5" }}>✓</div>
                 <h3 className="font-bold text-slate-800 text-base">¡Pago procesado y reserva confirmada!</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Voucher QR de Reserva Garantizada y liquidación de pasarela</p>
+                <p className="text-xs text-slate-500 mt-0.5">Voucher Oficial de Reserva Garantizada y liquidación de pasarela</p>
               </div>
 
               {/* Electronic payment receipt & Voucher */}
@@ -2728,21 +2846,18 @@ function BookingModal({
                     <p className="text-[10px] text-slate-400">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
                   </div>
                   <div className="text-right">
-                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER QR DIGITAL</span>
+                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER DIGITAL</span>
                     <p className="font-bold mt-1 text-slate-100 font-mono text-xs">{invoiceId}</p>
                     <p className="mono text-[10px] text-slate-400">{issueDate}</p>
                   </div>
                 </div>
 
-                {/* Banner de Comprobante Oficial */}
-                <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 flex items-start gap-2 text-[11px] text-amber-900 leading-tight">
-                  <span className="text-base flex-shrink-0">🏨</span>
-                  <div>
-                    <p className="font-bold">Voucher Oficial de Reserva - {hotel.name}:</p>
-                    <p className="text-amber-800 text-[10px] mt-0.5">
-                      Este documento certifica su reserva garantizada y pago en línea. Presente el código QR en {hotel.name} en su Fecha de Entrada para validar su reserva.
-                    </p>
-                  </div>
+                {/* Banner de Comprobante */}
+                <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-900 leading-tight">
+                  <p className="font-bold">Voucher de reserva - {hotel.name}:</p>
+                  <p className="text-amber-800 text-[10px] mt-0.5">
+                    Este documento confirma tu reserva garantizada y pago en línea. Presenta tu código de reserva al llegar al hotel para validar tu estancia.
+                  </p>
                 </div>
 
                 {/* Client + hotel */}
@@ -2750,9 +2865,22 @@ function BookingModal({
                   <div className="px-4 py-3 bg-white">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Huésped titular</p>
                     <p className="font-semibold text-slate-800 text-sm">{form.name || user?.name || "Huésped Invitado"}</p>
+                    {docType === "RUC" && form.razonSocial && (
+                      <p className="text-xs text-slate-600 font-medium">🏢 {form.razonSocial}</p>
+                    )}
                     <p className="text-xs text-slate-500">{form.email || user?.email || "invitado@alojamanta.ec"}</p>
-                    {form.dni && <p className="mono text-xs text-slate-500">C.I. / Pasaporte: {form.dni}</p>}
+                    {form.dni && (
+                      <p className="mono text-xs text-slate-500">
+                        {docType === "CEDULA" ? "Cédula: " : docType === "RUC" ? "RUC: " : "Pasaporte: "}
+                        {form.dni}
+                      </p>
+                    )}
                     {form.phone && <p className="text-xs text-slate-500">Tel: {form.phone}</p>}
+                    {(form.city || form.country) && (
+                      <p className="text-[11px] text-slate-400 truncate">
+                        📍 {[form.address, form.city, form.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
                   </div>
                   <div className="px-4 py-3 bg-white">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Hotel prestador</p>
@@ -2839,19 +2967,23 @@ function BookingModal({
                   </div>
                 </div>
 
-                {/* Verification code / QR */}
+                {/* Verification code & Booking Reference */}
                 <div className="px-4 py-3 flex items-center justify-between" style={{ background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Código QR de Validación de Reserva</p>
-                    <p className="font-mono font-bold text-slate-700 tracking-widest text-sm">{verifyCode}</p>
-                    <p className="text-[10px] text-slate-400">Presenta este código al recepcionista al momento del check-in.</p>
-                  </div>
-                  <div className="w-14 h-14 flex-shrink-0 rounded-lg flex items-center justify-center border-2 border-slate-300 bg-white">
-                    <div className="grid grid-cols-5 gap-0.5 w-10 h-10">
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <div key={i} className="rounded-sm" style={{ background: (i % 2 === 0 || i % 3 === 0) ? "#0c1220" : "transparent", aspectRatio: "1" }} />
-                      ))}
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Código de Confirmación de Reserva</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="font-mono font-bold text-slate-800 tracking-wider text-sm">{resId}</p>
+                      <span className="text-slate-300">|</span>
+                      <span className="font-mono font-bold text-amber-600 text-xs">PIN: {verifyCode}</span>
                     </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Menciona este código o tu nombre al presentarte en el establecimiento.</p>
+                  </div>
+                  <div className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-center shadow-xs">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Estado</span>
+                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                      Confirmada
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2924,7 +3056,7 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
                     : `${getActiveIvaPercent(hotel.id)}% IVA (Hostal Exento 10% Serv.)`}
                 </span>
                 <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                  ✓ Voucher QR Garantizado
+                  ✓ Reserva Garantizada
                 </span>
               </div>
             </div>
@@ -3009,17 +3141,17 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
             </div>
           </div>
 
-          {/* RF-07: Puntos de referencia y tiempos de traslado en Manta */}
+          {/* Puntos de referencia y tiempos de traslado en Manta */}
           <div className="mt-5 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4" style={{ borderColor: "#f1f5f9" }}>
             <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5 flex items-center gap-1.5">
-                <span>🗺️</span> Distancias y Tiempos de Traslado en Manta (RF-07)
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5">
+                Lugares de interés cercanos
               </p>
               <div className="space-y-2 text-xs">
                 {landmarks.map(lm => (
                   <div key={lm.place} className="flex items-center justify-between gap-2 py-1 border-b border-slate-200/60 last:border-0">
-                    <span className="text-slate-700 font-medium flex items-center gap-1.5">
-                      <span>{lm.icon}</span> {lm.place}
+                    <span className="text-slate-700 font-medium">
+                      {lm.place}
                     </span>
                     <span className="text-[11px] font-mono text-slate-500 whitespace-nowrap">{lm.dist} · {lm.time}</span>
                   </div>
@@ -3027,13 +3159,13 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
               </div>
             </div>
 
-            {/* RF-08: Reseñas y Valoraciones Verificadas (Escala 1 a 10 por subcriterios) */}
+            {/* Reseñas y Valoraciones Verificadas */}
             <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-2.5">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <span>⭐</span> Valoración Verificada por Subcriterios (RF-08)
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Puntuación de los huéspedes
                 </p>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">100% Huéspedes Reales</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Opiniones verificadas</span>
               </div>
               <div className="space-y-2 text-xs">
                 {subcriteria.map(sc => (
@@ -3054,11 +3186,11 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 mb-5 border" style={{ background: "#fef3c7", borderColor: "#fcd34d" }}>
         <div className="flex flex-wrap gap-4 text-sm font-semibold text-amber-800">
-          <span>📅 Entrada: {fmtDateShort(params.checkIn)} → Salida: {fmtDateShort(params.checkOut)}</span>
-          <span>🌙 {nights} noche{nights > 1 ? "s" : ""}</span>
-          <span>👤 {params.adults + params.children} huésped{params.adults + params.children > 1 ? "es" : ""}</span>
+          <span>Entrada: {fmtDateShort(params.checkIn)} → Salida: {fmtDateShort(params.checkOut)}</span>
+          <span>{nights} noche{nights > 1 ? "s" : ""}</span>
+          <span>{params.adults + params.children} huésped{params.adults + params.children > 1 ? "es" : ""}</span>
         </div>
-        <p className="text-xs text-amber-700">✓ Voucher QR inmediato · Cancelación gratuita hasta 48h antes</p>
+        <p className="text-xs text-amber-700">Confirmación inmediata · Cancelación flexible según tarifa</p>
       </div>
       <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Tipos de Habitación y Cupos para Venta Web</h2>
       <div className="space-y-4">
@@ -3083,7 +3215,7 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {room.amenities.map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{a}</span>)}
-                    {room.breakfastIncluded && <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "#d1fae5", color: "#065f46" }}>☕ Desayuno incl.</span>}
+                    {room.breakfastIncluded && <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "#d1fae5", color: "#065f46" }}>Desayuno incluido</span>}
                   </div>
                 </div>
 
@@ -3098,8 +3230,8 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                   />
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${room.available <= 2 ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
-                        {room.available <= 2 ? `⚡ ¡Últimos ${room.available} cupos web!` : `✓ ${room.available} cupos disponibles para venta web`}
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${room.available <= 2 ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+                        {room.available <= 2 ? `Últimas ${room.available} habitaciones disponibles` : `${room.available} habitaciones disponibles`}
                       </span>
                     </div>
                     <button onClick={() => onBook(room)} className="px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm" style={{ background: "#f59e0b", color: "#0c1220" }}>
@@ -3301,8 +3433,11 @@ function HomePage({
       </div>
       <div className="border-b" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-          {[["🛡️", "Cobro digital seguro (PayPhone/DeUna)"], ["✅", "Confirmación instantánea con QR"], ["🔄", "Cancelación flexible con el hotel"], ["🏆", "Tarifa directa sin sobreprecio OTA"], ["💬", "Atención local cantonal en Manta"]].map(([icon, text]) => (
-            <div key={text as string} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 shrink-0"><span>{icon}</span>{text}</div>
+          {["Pago digital seguro", "Confirmación de reserva inmediata", "Cancelación flexible", "Tarifa directa sin comisiones ocultas", "Atención local en Manta"].map(text => (
+            <div key={text} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span>{text}</span>
+            </div>
           ))}
         </div>
       </div>
@@ -3361,10 +3496,14 @@ function HomePage({
           ))}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales."], ["⭐", "Alojamientos Verificados", "Establecimientos registrados y validados: hostales, hoteles y hosterías del cantón Manta."], ["🧾", "Comprobantes Inmediatos", "La plataforma liquida y emite tu comprobante digital de reserva y pago al instante con código QR."]].map(([icon, title, desc]) => (
-            <div key={title as string} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-              <span className="text-2xl">{icon}</span>
-              <h4 className="font-bold text-slate-800 mt-2 mb-1 text-sm">{title}</h4>
+          {[
+            ["Tarifa directa", "Reserva directamente con el establecimiento sin recargos adicionales de intermediarios internacionales."],
+            ["Alojamientos verificados", "Establecimientos registrados y validados en el cantón Manta."],
+            ["Confirmación inmediata", "Comprobante digital emitido al instante con código de reserva para validar a tu llegada."]
+          ].map(([title, desc]) => (
+            <div key={title} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xs mb-3">✓</div>
+              <h4 className="font-bold text-slate-800 mb-1 text-sm">{title}</h4>
               <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
             </div>
           ))}
@@ -3674,7 +3813,7 @@ export default function GuestPage({
                           <span className="text-base">🛎️</span>
                           <div>
                             <p className="font-semibold text-slate-800">Mis Reservas y Viajes</p>
-                            <p className="text-[10px] text-slate-400">Ver vouchers y códigos de check-in</p>
+                            <p className="text-[10px] text-slate-400">Ver vouchers y códigos de reserva</p>
                           </div>
                         </button>
 
@@ -3684,8 +3823,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">👤</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Datos Personales & Check-in</p>
-                            <p className="text-[10px] text-slate-400">Cédula, contacto y preferencias de cama</p>
+                            <p className="font-semibold text-slate-800">Datos Personales del Huésped</p>
+                            <p className="text-[10px] text-slate-400">Cédula, contacto y preferencias de estadía</p>
                           </div>
                         </button>
 

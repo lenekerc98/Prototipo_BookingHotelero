@@ -38,11 +38,17 @@ type ReservationStatus =
   | "pending"
   | "validated"
   | "completed"
-  | "cancelled"
-  | "checkin"
-  | "checkout";
+  | "cancelled";
 
-type RoomStatus = "available" | "occupied";
+export interface RoomTypeQuota {
+  id: string;
+  type: string;
+  totalCupos: number;
+  reservedCupos: number;
+  pricePerNight: number;
+  capacity: number;
+  amenities: string[];
+}
 
 interface Reservation {
   id: string;
@@ -63,25 +69,18 @@ interface Reservation {
   voucherValidatedAt?: string;
 }
 
-interface Room {
-  number: string;
-  type: string;
-  floor: number;
-  status: RoomStatus;
-  pricePerNight: number;
-  capacity: number;
-  amenities: string[];
-  guestName?: string;
-  checkOut?: string;
-}
-
 interface GuestRecord {
   id: string;
   name: string;
   email: string;
   phone: string;
+  docType?: "CEDULA" | "RUC" | "PASAPORTE";
   document: string;
+  razonSocial?: string;
   country: string;
+  city?: string;
+  address?: string;
+  emergencyContact?: string;
   notes: string;
   visits: number;
   totalSpend: number;
@@ -221,27 +220,57 @@ const RESERVATIONS: Reservation[] = [
   },
 ];
 
-const ROOMS: Room[] = [
-  { number: "101", type: "Doble Estándar", floor: 1, status: "occupied", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"], guestName: "Carlos Méndez", checkOut: "2026-08-18" },
-  { number: "102", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
-  { number: "103", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
-  { number: "104", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
-  { number: "105", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
-  { number: "106", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
-  { number: "107", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
-  { number: "108", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
-  { number: "110", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
-  { number: "201", type: "Doble Superior", floor: 2, status: "available", pricePerNight: 85, capacity: 2, amenities: ["WiFi", "TV", "A/C", "Minibar"] },
-  { number: "203", type: "Simple", floor: 2, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
-  { number: "205", type: "Simple", floor: 2, status: "occupied", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"], guestName: "Laura Fernández" },
-  { number: "207", type: "Doble Superior", floor: 2, status: "occupied", pricePerNight: 85, capacity: 2, amenities: ["WiFi", "TV", "A/C", "Minibar"], guestName: "Invitado", checkOut: "2026-08-17" },
-  { number: "208", type: "Simple", floor: 2, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
-  { number: "210", type: "Doble Superior", floor: 2, status: "available", pricePerNight: 85, capacity: 2, amenities: ["WiFi", "TV", "A/C", "Minibar"] },
-  { number: "301", type: "Triple", floor: 3, status: "available", pricePerNight: 110, capacity: 3, amenities: ["WiFi", "TV", "A/C", "Bañera"] },
-  { number: "302", type: "Triple", floor: 3, status: "available", pricePerNight: 110, capacity: 3, amenities: ["WiFi", "TV", "A/C", "Bañera"] },
-  { number: "303", type: "Suite", floor: 3, status: "occupied", pricePerNight: 150, capacity: 4, amenities: ["WiFi", "TV", "A/C", "Jacuzzi", "Minibar", "Vista al mar"], guestName: "VIP Guest", checkOut: "2026-08-19" },
-  { number: "304", type: "Suite", floor: 3, status: "available", pricePerNight: 150, capacity: 4, amenities: ["WiFi", "TV", "A/C", "Jacuzzi", "Minibar", "Vista al mar"] },
+const ROOM_TYPE_QUOTAS: RoomTypeQuota[] = [
+  {
+    id: "simple",
+    type: "Habitación Simple Ejecutiva",
+    totalCupos: 6,
+    reservedCupos: 2,
+    pricePerNight: 55,
+    capacity: 1,
+    amenities: ["WiFi gratis", "Smart TV", "A/C", "Escritorio"],
+  },
+  {
+    id: "doble-estandar",
+    type: "Doble Estándar",
+    totalCupos: 8,
+    reservedCupos: 3,
+    pricePerNight: 70,
+    capacity: 2,
+    amenities: ["WiFi gratis", "Smart TV", "A/C", "Baño privado"],
+  },
+  {
+    id: "doble-superior",
+    type: "Doble Superior con Balcón",
+    totalCupos: 6,
+    reservedCupos: 2,
+    pricePerNight: 85,
+    capacity: 2,
+    amenities: ["WiFi gratis", "Smart TV 50\"", "A/C", "Minibar", "Balcón"],
+  },
+  {
+    id: "triple",
+    type: "Triple Familiar",
+    totalCupos: 4,
+    reservedCupos: 1,
+    pricePerNight: 110,
+    capacity: 3,
+    amenities: ["WiFi gratis", "Smart TV", "A/C", "Bañera", "Caja fuerte"],
+  },
+  {
+    id: "suite",
+    type: "Master Suite Vista al Mar",
+    totalCupos: 4,
+    reservedCupos: 2,
+    pricePerNight: 150,
+    capacity: 4,
+    amenities: ["WiFi gratis", "Smart TV 65\"", "A/C", "Jacuzzi", "Minibar", "Vista al mar"],
+  },
 ];
+
+const totalHotelCupos = ROOM_TYPE_QUOTAS.reduce((s, r) => s + r.totalCupos, 0);
+const totalReservedCupos = ROOM_TYPE_QUOTAS.reduce((s, r) => s + r.reservedCupos, 0);
+const totalAvailableCupos = totalHotelCupos - totalReservedCupos;
 
 const MONTHLY_REVENUE = [
   { month: "Mar", revenue: 14200, occupancy: 58, reservations: 89 },
@@ -256,7 +285,7 @@ const SOURCE_DATA = [
   { name: "Portal AlojaManta", value: 48, color: "#f59e0b" },
   { name: "Directo Web", value: 28, color: "#10b981" },
   { name: "Link PayPhone", value: 15, color: "#3b82f6" },
-  { name: "DeUna QR", value: 9, color: "#ec4899" },
+  { name: "DeUna Móvil", value: 9, color: "#ec4899" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -264,16 +293,9 @@ const SOURCE_DATA = [
 const statusLabel: Record<ReservationStatus, string> = {
   confirmed: "Confirmada",
   pending: "Por Confirmar",
-  validated: "Voucher QR Validado",
+  validated: "Validada",
   completed: "Liquidada",
   cancelled: "Cancelada",
-  checkin: "Voucher QR Validado",
-  checkout: "Liquidada",
-};
-
-const roomStatusLabel: Record<RoomStatus, string> = {
-  available: "Cupo Disponible",
-  occupied: "Cupo Reservado",
 };
 
 function fmt(amount: number) {
@@ -296,25 +318,11 @@ function fmtDate(d: string) {
 
 function StatusBadge({
   status,
-  type = "reservation",
 }: {
   status: string;
-  type?: "reservation" | "room";
 }) {
-  const normalizedStatus =
-    status === "validated"
-      ? "checkin"
-      : status === "completed"
-      ? "checkout"
-      : status;
-  const cls =
-    type === "reservation"
-      ? `badge-${normalizedStatus}`
-      : `badge-${normalizedStatus}`;
-  const label =
-    type === "reservation"
-      ? statusLabel[status as ReservationStatus] || status
-      : roomStatusLabel[status as RoomStatus] || status;
+  const cls = `badge-${status}`;
+  const label = statusLabel[status as ReservationStatus] || status;
   return (
     <span
       className={`mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide ${cls}`}
@@ -324,7 +332,7 @@ function StatusBadge({
   );
 }
 
-// RF-21: Conmutador Rápido de Emergencia IVA 15% / 8% por Decreto Presidencial
+// Conmutador Rápido de Tarifa de IVA 15% / 8% (Feriados)
 function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: string }) {
   const [ivaCfg, setIvaCfgState] = useState(() => getIvaDecretoConfig());
 
@@ -344,12 +352,12 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
     setIvaCfgState(updated);
     addAuditLog({
       usuario: userName,
-      rol: "Administración Tributaria",
-      modulo: "Motor Tributario LORTI (RF-21)",
+      rol: "Administración",
+      modulo: "Motor Tributario",
       accion: enable8 ? "ACTIVAR_IVA_8_FERIADO" : "RESTAURAR_IVA_15_ORDINARIO",
       detalle: enable8
-        ? `Activado IVA reducido 8% por ${updated.decretoReferencia} (${updated.nombreFeriado})`
-        : "Restaurada tarifa ordinaria de IVA 15% en el motor de reservas cantonal",
+        ? `Activada tarifa reducida de IVA 8% (${updated.nombreFeriado})`
+        : "Restaurada tarifa ordinaria de IVA 15%",
     });
   }
 
@@ -357,16 +365,15 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
     <div
       className="rounded-xl border p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3"
       style={{
-        background: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.1)" : "var(--card)",
-        borderColor: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.45)" : "var(--border)",
+        background: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.08)" : "var(--card)",
+        borderColor: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.4)" : "var(--border)",
       }}
     >
       <div className="flex items-start gap-3">
-        <span className="text-xl flex-shrink-0">{ivaCfg.ivaReducido8Activo ? "🇪🇨" : "🏛️"}</span>
         <div className="text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
-              Conmutador Rápido de IVA Turístico (RF-21 · LORTI Ecuador)
+              Tarifa de IVA aplicable
             </span>
             <span
               className={`mono text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
@@ -375,13 +382,13 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
                   : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
               }`}
             >
-              {ivaCfg.ivaReducido8Activo ? "Activo: IVA 8% Decreto Feriado" : "Activo: IVA 15% Ordinario"}
+              {ivaCfg.ivaReducido8Activo ? "Tarifa feriado: IVA 8%" : "Tarifa general: IVA 15%"}
             </span>
           </div>
           <p className="mt-0.5" style={{ color: "var(--muted-foreground)" }}>
             {ivaCfg.ivaReducido8Activo
-              ? `Aplicando reducción temporal al 8% en todo el motor de reservas (${ivaCfg.nombreFeriado} · ${ivaCfg.decretoReferencia}).`
-              : "Aplicando tarifa general vigente de IVA 15% más 10% de Servicio Turístico (Art. 41 Ley de Turismo, exento en Hostales)."}
+              ? `Aplicando reducción temporal al 8% en el motor de reservas (${ivaCfg.nombreFeriado}).`
+              : "Aplicando tarifa de IVA al 15% más 10% de servicio turístico en alojamientos aplicables."}
           </p>
         </div>
       </div>
@@ -396,7 +403,7 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
               : "bg-transparent text-slate-400 border-slate-700 hover:text-white"
           }`}
         >
-          IVA 15% (Ordinario)
+          15% General
         </button>
         <button
           type="button"
@@ -407,7 +414,7 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
               : "bg-transparent text-slate-400 border-slate-700 hover:text-white"
           }`}
         >
-          🇪🇨 IVA 8% (Decreto Feriado)
+          8% Feriado turístico
         </button>
       </div>
     </div>
@@ -552,16 +559,15 @@ function SourceBar() {
 // ─── New Booking Modal ────────────────────────────────────────────────────────
 
 function NewBookingModal({ onClose }: { onClose: () => void }) {
-  const availableRooms = ROOMS.filter((r) => r.status === "available");
   const [form, setForm] = useState({
     guestName: "",
     guestEmail: "",
-    room: "",
+    roomTypeId: ROOM_TYPE_QUOTAS[1].id,
     checkIn: "",
     checkOut: "",
-    adults: "1",
+    adults: "2",
     children: "0",
-    source: "Directo",
+    source: "Directo Web",
     notes: "",
   });
 
@@ -576,8 +582,8 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
     );
   }
 
-  const selectedRoom = availableRooms.find((r) => r.number === form.room);
-  const total = selectedRoom ? selectedRoom.pricePerNight * nights() : 0;
+  const selectedRoomType = ROOM_TYPE_QUOTAS.find((r) => r.id === form.roomTypeId) || ROOM_TYPE_QUOTAS[0];
+  const total = selectedRoomType ? selectedRoomType.pricePerNight * nights() : 0;
 
   return (
     <div
@@ -686,15 +692,17 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
                 borderColor: "var(--border)",
                 color: "var(--foreground)",
               }}
-              value={form.room}
-              onChange={(e) => setForm({ ...form, room: e.target.value })}
+              value={form.roomTypeId}
+              onChange={(e) => setForm({ ...form, roomTypeId: e.target.value })}
             >
-              <option value="">Seleccionar tipo de habitación...</option>
-              {availableRooms.map((r) => (
-                <option key={r.number} value={r.number}>
-                  {r.type} ({fmt(r.pricePerNight)}/noche)
-                </option>
-              ))}
+              {ROOM_TYPE_QUOTAS.map((r) => {
+                const free = r.totalCupos - r.reservedCupos;
+                return (
+                  <option key={r.id} value={r.id}>
+                    {r.type} · {fmt(r.pricePerNight)}/noche ({free} cupo{free === 1 ? "" : "s"} disponible{free === 1 ? "" : "s"} de {r.totalCupos})
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -811,7 +819,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
                 rol: "Operador Reservas / Recepción",
                 modulo: "Bandeja de Reservas",
                 accion: "CREAR_RESERVA_DIRECTA",
-                detalle: `Reserva directa registrada para ${form.guestName || "Huésped"} (${selectedRoom?.type || "Habitación"})`,
+                detalle: `Reserva directa registrada para ${form.guestName || "Huésped"} (${selectedRoomType.type} · Cupo Web)`,
               });
               onClose();
             }}
@@ -821,7 +829,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               color: "var(--primary-foreground)",
             }}
           >
-            Confirmar Reserva y Emitir Voucher QR
+            Confirmar Reserva y Emitir Voucher
           </button>
         </div>
       </div>
@@ -834,20 +842,20 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
 function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
   const [liveAlert, setLiveAlert] = useState<string | null>(null);
   const confirmedUpcoming = RESERVATIONS.filter((r) => r.status === "confirmed" || r.status === "pending");
-  const validatedStays = RESERVATIONS.filter((r) => r.status === "validated" || r.status === "checkin" || r.status === "completed" || r.status === "checkout");
-  const reservedCupos = ROOMS.filter((r) => r.status === "occupied").length;
-  const occupancyPct = Math.round((reservedCupos / ROOMS.length) * 100);
+  const validatedStays = RESERVATIONS.filter((r) => r.status === "validated" || r.status === "completed");
+  const reservedCupos = totalReservedCupos;
+  const occupancyPct = Math.round((reservedCupos / totalHotelCupos) * 100);
 
   function triggerSimulatedBooking() {
     playNewBookingSound();
     const code = `RES-${Math.floor(10000 + Math.random() * 90000)}`;
-    setLiveAlert(`🔔 Nueva reserva web entrante ${code}: Habitación Matrimonial Vista al Mar (2 noches · Pagada vía PayPhone).`);
+    setLiveAlert(`Nueva reserva web recibida ${code}: Habitación Matrimonial Vista al Mar (2 noches · Pagada en línea).`);
     addAuditLog({
       usuario: "Motor de Reservas Web",
-      rol: "Sistema Tiempo Real",
-      modulo: "Notificaciones RF-11",
+      rol: "Sistema",
+      modulo: "Notificaciones",
       accion: "ALERTA_RESERVA_ENTRANTE",
-      detalle: `Notificación sonora y visual emitida para nueva reserva ${code}`,
+      detalle: `Notificación de nueva reserva recibida en tiempo real ${code}`,
     });
   }
 
@@ -856,10 +864,10 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl leading-tight" style={{ color: "var(--foreground)" }}>
-            Dashboard de Reservas & Cupos Web
+            Panel de control
           </h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Extranet de Comercialización y Validación de Vouchers QR (Sin PMS físico)
+            Gestión de reservas y ocupación en tiempo real
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -868,30 +876,29 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             onClick={triggerSimulatedBooking}
             className="px-3.5 py-2 rounded text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1.5"
           >
-            <span>🔔</span> Simular Reserva Web Entrante (RF-11)
+            <span>Probar sonido de notificación</span>
           </button>
           <button
             onClick={onNewBooking}
             className="px-4 py-2 rounded text-sm font-semibold transition-all hover:opacity-90 cursor-pointer"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            + Registrar Reserva Directa
+            + Nueva reserva
           </button>
         </div>
       </div>
 
-      {/* Live audio-visual notification banner (RF-11) */}
+      {/* Live notification banner */}
       {liveAlert && (
-        <div className="p-3.5 rounded-xl border border-emerald-400 bg-emerald-950/80 text-emerald-200 flex items-center justify-between gap-3 text-xs animate-pulse">
+        <div className="p-3.5 rounded-xl border border-emerald-400 bg-emerald-950/80 text-emerald-200 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-base">🔊</span>
             <span className="font-semibold">{liveAlert}</span>
           </div>
-          <button onClick={() => setLiveAlert(null)} className="text-emerald-300 hover:text-white font-bold px-2">✕</button>
+          <button onClick={() => setLiveAlert(null)} className="text-emerald-300 hover:text-white font-bold px-2 cursor-pointer">✕</button>
         </div>
       )}
 
-      {/* Emergency IVA 15% / 8% switch banner (RF-21) */}
+      {/* Conmutador de IVA */}
       <IvaEmergencySwitchBanner />
 
       {/* KPIs */}
@@ -899,7 +906,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
         <KpiCard
           label="Cupos Web Reservados"
           value={`${occupancyPct}%`}
-          sub={`${reservedCupos} de ${ROOMS.length} cupos comercializados`}
+          sub={`${reservedCupos} de ${totalHotelCupos} cupos comercializados`}
           accent
         />
         <KpiCard
@@ -908,14 +915,14 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
           sub="↑ 8.4% vs julio"
         />
         <KpiCard
-          label="Arribos por Validar QR"
+          label="Arribos por Validar"
           value={String(confirmedUpcoming.length)}
           sub="reservas garantizadas próximas"
         />
         <KpiCard
-          label="Vouchers QR Validados"
+          label="Reservas Validadas"
           value={String(validatedStays.length)}
-          sub="reservas efectivas validadas"
+          sub="reservas efectivas registradas"
         />
       </div>
 
@@ -949,10 +956,10 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
                 Cupo Web
               </p>
               <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                {reservedCupos} cupos vendidos
+                {reservedCupos} cupos reservados
               </p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                {ROOMS.filter((r) => r.status === "available").length} cupos libres para venta online
+                {totalAvailableCupos} cupos libres para venta online
               </p>
             </div>
           </div>
@@ -980,7 +987,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Próximos Arribos (Pendientes de Validar Voucher QR)
+              Próximos Arribos (Pendientes de Validación)
             </p>
             <span className="mono text-xs" style={{ color: "var(--primary)" }}>
               {confirmedUpcoming.length} reservas
@@ -1018,7 +1025,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Vouchers QR Validados y Reservas Liquidadas
+              Reservas Validadas y Liquidadas
             </p>
             <span className="mono text-xs" style={{ color: "#6ee7b7" }}>
               {validatedStays.length} reservas
@@ -1032,7 +1039,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
                     {r.guestName}
                   </p>
                   <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    {r.roomType} · {r.source} {r.voucherValidatedAt ? `· QR: ${r.voucherValidatedAt}` : ""}
+                    {r.roomType} · {r.source} {r.voucherValidatedAt ? `· Validada: ${r.voucherValidatedAt}` : ""}
                   </p>
                 </div>
                 <div className="text-right">
@@ -1055,8 +1062,8 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
   const [filter, setFilter] = useState<ReservationStatus | "all">("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Reservation | null>(null);
-  const [qrInput, setQrInput] = useState("");
-  const [qrFeedback, setQrFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [codeQuery, setCodeQuery] = useState("");
+  const [validationFeedback, setValidationFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<HotelInvoice | null>(null);
 
   // Sincronizar reservas creadas por huéspedes en el portal web (hoteldirekt_guest_reservations)
@@ -1121,13 +1128,13 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
     [filter, search, normalizedReservations]
   );
 
-  function handleValidateQr(resIdToValidate: string) {
+  function handleValidateReservation(resIdToValidate: string) {
     const cleanCode = resIdToValidate.trim().toUpperCase();
     const target = normalizedReservations.find(
       r => r.id.toUpperCase() === cleanCode || cleanCode.includes(r.id.toUpperCase())
     );
     if (!target) {
-      setQrFeedback({ type: "err", msg: `No se encontró ninguna reserva con el código o QR "${cleanCode}".` });
+      setValidationFeedback({ type: "err", msg: `No se encontró ninguna reserva con el código "${cleanCode}".` });
       return;
     }
     const nowStr = new Date().toLocaleString("es-EC", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -1140,16 +1147,16 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
     );
     addAuditLog({
       usuario: "Operador Extranet",
-      rol: "Operador Reservas / Recepción",
-      modulo: "Validador Voucher QR (RF-13)",
-      accion: "VALIDAR_VOUCHER_QR",
-      detalle: `Voucher QR de reserva ${target.id} (${target.guestName} · ${target.roomType}) validado correctamente`,
+      rol: "Operador",
+      modulo: "Validador de Reserva",
+      accion: "VALIDAR_RESERVA",
+      detalle: `Voucher de reserva ${target.id} (${target.guestName} · ${target.roomType}) validado`,
     });
-    setQrFeedback({
+    setValidationFeedback({
       type: "ok",
-      msg: `✓ Voucher QR Validado (${nowStr}): ${target.id} · ${target.guestName} (${target.roomType}, ${target.nights} noches).`,
+      msg: `Reserva validada (${nowStr}): ${target.id} · ${target.guestName} (${target.roomType}, ${target.nights} noches).`,
     });
-    setQrInput("");
+    setCodeQuery("");
   }
 
   function handleConfirmPending(r: Reservation) {
@@ -1158,10 +1165,10 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
     );
     addAuditLog({
       usuario: "Operador Extranet",
-      rol: "Operador Reservas / Recepción",
-      modulo: "Bandeja de Reservas (RF-12)",
+      rol: "Operador",
+      modulo: "Bandeja de Reservas",
       accion: "CONFIRMAR_RESERVA",
-      detalle: `Reserva ${r.id} (${r.guestName}) cambiada a estado Confirmada`,
+      detalle: `Reserva ${r.id} (${r.guestName}) confirmada`,
     });
   }
 
@@ -1170,7 +1177,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
     const newId = `RES-${Math.floor(10000 + Math.random() * 89999)}`;
     const simulated: Reservation = {
       id: newId,
-      guestName: "Valeria Andrade (Reserva Web)",
+      guestName: "Valeria Andrade",
       guestEmail: "vandrade@turismo.ec",
       roomNumber: "Cupo Web",
       roomType: "Habitación Matrimonial Queen",
@@ -1182,19 +1189,19 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
       adults: 2,
       children: 0,
       source: "Portal AlojaManta",
-      notes: "Pago acreditado vía PayPhone · Pendiente validar QR al arribo",
+      notes: "Pago acreditado · Pendiente validar voucher al arribo",
     };
     setReservations(items => [simulated, ...items]);
-    setQrFeedback({
+    setValidationFeedback({
       type: "ok",
-      msg: `🔔 ¡Nueva reserva web entrante ${newId} de ${simulated.guestName}! (Alerta sonora RF-11 activada)`,
+      msg: `Nueva reserva web recibida ${newId} (${simulated.guestName}).`,
     });
     addAuditLog({
       usuario: "Motor de Reservas Web",
-      rol: "Sistema Tiempo Real",
-      modulo: "Bandeja de Reservas (RF-11)",
+      rol: "Sistema",
+      modulo: "Bandeja de Reservas",
       accion: "NUEVA_RESERVA_ENTRANTE",
-      detalle: `Reserva entrante ${newId} (${simulated.guestName}) recibida en tiempo real`,
+      detalle: `Reserva entrante ${newId} (${simulated.guestName})`,
     });
   }
 
@@ -1202,7 +1209,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
     { key: "all", label: "Todas" },
     { key: "pending", label: "Por Confirmar" },
     { key: "confirmed", label: "Confirmadas" },
-    { key: "validated", label: "Voucher QR Validado" },
+    { key: "validated", label: "Voucher Validado" },
     { key: "completed", label: "Liquidadas" },
     { key: "cancelled", label: "Canceladas" },
   ];
@@ -1212,10 +1219,10 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-            Bandeja de Reservas & Validación de Voucher QR
+            Bandeja de Reservas
           </h1>
           <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Gestión de reservas entrantes, confirmación de cupos web y validación de Voucher QR al arribo del huésped (Extranet No-PMS).
+            Gestión de reservas entrantes y validación de vouchers de llegada.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -1224,7 +1231,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             onClick={handleSimulateIncomingWebBooking}
             className="px-3.5 py-2 rounded text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1.5"
           >
-            <span>🔔</span> Simular Reserva Entrante (Sonido RF-11)
+            <span>Probar sonido de notificación</span>
           </button>
           <button
             onClick={() => setEditing({ id: "", guestName: "", guestEmail: "", roomNumber: "Cupo Web", roomType: "Doble Estándar", checkIn: "", checkOut: "", nights: 1, status: "confirmed", total: 0, adults: 2, children: 0, source: "Directo Web", notes: "" })}
@@ -1236,35 +1243,32 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
         </div>
       </div>
 
-      {/* RF-13: Validador de Voucher QR en 1 Clic */}
+      {/* Validador de Voucher de Reserva */}
       <div
         className="rounded-xl border p-4 space-y-2.5"
         style={{ background: "var(--card)", borderColor: "rgba(245, 158, 11, 0.35)" }}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">📱</span>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                Validador de Voucher QR y Código de Reserva en 1 Clic (RF-13)
-              </p>
-              <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-                Ingresa o escanea el código del Voucher QR del huésped al llegar al establecimiento para dejar constancia de reserva efectiva.
-              </p>
-            </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-400">
+              Validar reserva por código de confirmación
+            </p>
+            <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+              Ingresa el código (RES-XXXXX) presentado por el huésped para verificar su reserva.
+            </p>
           </div>
           <form
             onSubmit={e => {
               e.preventDefault();
-              if (qrInput.trim()) handleValidateQr(qrInput);
+              if (codeQuery.trim()) handleValidateReservation(codeQuery);
             }}
             className="flex items-center gap-2"
           >
             <input
               type="text"
-              value={qrInput}
-              onChange={e => setQrInput(e.target.value)}
-              placeholder="Ej: RES-003 o código QR..."
+              value={codeQuery}
+              onChange={e => setCodeQuery(e.target.value)}
+              placeholder="Ej: RES-003..."
               className="px-3 py-1.5 rounded border text-xs font-mono outline-none"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             />
@@ -1272,20 +1276,20 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
               type="submit"
               className="px-3.5 py-1.5 rounded text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors cursor-pointer whitespace-nowrap"
             >
-              ✓ Validar Voucher QR
+              Validar
             </button>
           </form>
         </div>
-        {qrFeedback && (
+        {validationFeedback && (
           <div
             className={`p-2.5 rounded-lg text-xs font-medium flex items-center justify-between ${
-              qrFeedback.type === "ok"
+              validationFeedback.type === "ok"
                 ? "bg-emerald-950/70 text-emerald-300 border border-emerald-700"
                 : "bg-red-950/70 text-red-300 border border-red-800"
             }`}
           >
-            <span>{qrFeedback.msg}</span>
-            <button onClick={() => setQrFeedback(null)} className="text-xs font-bold ml-2">✕</button>
+            <span>{validationFeedback.msg}</span>
+            <button onClick={() => setValidationFeedback(null)} className="text-xs font-bold ml-2 cursor-pointer">✕</button>
           </div>
         )}
       </div>
@@ -1363,7 +1367,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                     </span>
                     {r.voucherValidatedAt && (
                       <span className="block mono text-[9px] text-emerald-400">
-                        QR: {r.voucherValidatedAt}
+                        Validada: {r.voucherValidatedAt}
                       </span>
                     )}
                   </td>
@@ -1409,18 +1413,18 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                         <button
                           onClick={() => handleConfirmPending(r)}
                           className="text-[11px] px-2 py-1 rounded font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 cursor-pointer"
-                          title="Confirmar reserva en 1 clic (RF-12)"
+                          title="Confirmar reserva"
                         >
-                          ✓ Confirmar
+                          Confirmar
                         </button>
                       )}
                       {r.status === "confirmed" && (
                         <button
-                          onClick={() => handleValidateQr(r.id)}
+                          onClick={() => handleValidateReservation(r.id)}
                           className="text-[11px] px-2 py-1 rounded font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 cursor-pointer"
-                          title="Validar Voucher QR del huésped en 1 clic (RF-13)"
+                          title="Validar reserva"
                         >
-                          📱 Validar QR
+                          Validar
                         </button>
                       )}
                       <button
@@ -1446,7 +1450,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                         }}
                         className="text-[11px] px-2 py-1 rounded font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 cursor-pointer"
                       >
-                        🧾 Voucher
+                        Voucher
                       </button>
                       <button onClick={() => setEditing({ ...r })} className="text-[11px] px-2 py-1 rounded transition-colors cursor-pointer" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Editar</button>
                     </div>
@@ -1502,7 +1506,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                 <select value={editing.status} onChange={event => setEditing({ ...editing, status: event.target.value as ReservationStatus })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
                   <option value="pending">Por Confirmar</option>
                   <option value="confirmed">Confirmada</option>
-                  <option value="validated">Voucher QR Validado</option>
+                  <option value="validated">Validada</option>
                   <option value="completed">Liquidada</option>
                   <option value="cancelled">Cancelada</option>
                 </select>
@@ -1593,22 +1597,6 @@ function RoomsView({
 
   return (
     <div className="space-y-6">
-      {/* Banner de delimitación conceptual (Sistema de reservas vs PMS) */}
-      <div
-        className="p-4 rounded-xl border flex items-start gap-3"
-        style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.3)" }}
-      >
-        <span className="text-2xl flex-shrink-0">🛏️</span>
-        <div className="text-xs leading-relaxed">
-          <p className="font-bold text-amber-400 text-sm">
-            Portal de Reservas Hoteleras · Manta (Gestión por Tipo de Habitación)
-          </p>
-          <p className="mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Este sistema gestiona la intermediación turística, las <strong>opciones y tipos de habitación que los clientes escogieron</strong> y el inventario de habitaciones publicado en la web. No incluye módulos de aseo ni llaves físicas porque <strong>no es un sistema PMS</strong>.
-          </p>
-        </div>
-      </div>
-
       {/* Cabecera con selector de pestañas */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -1625,8 +1613,7 @@ function RoomsView({
             onClick={onGoToGuestWeb}
             className="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer self-start sm:self-auto"
           >
-            <span>🌐</span>
-            <span>Ver cómo lo ve el cliente en la web</span>
+            <span>Ver vista pública del huésped</span>
           </button>
         )}
       </div>
@@ -1641,8 +1628,7 @@ function RoomsView({
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <span>🧳</span>
-          <span>Tipos de Habitación Reservados</span>
+          <span>Habitaciones reservadas</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
             {hotelReservations.length || clientReservations.length}
           </span>
@@ -1656,8 +1642,7 @@ function RoomsView({
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <span>🏷️</span>
-          <span>Tipos de Habitación en Oferta Web</span>
+          <span>Inventario en venta web</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
             {roomOffers.length}
           </span>
@@ -1671,8 +1656,7 @@ function RoomsView({
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <span>🏨</span>
-          <span>Catálogo de los 116 Alojamientos</span>
+          <span>Catálogo general de alojamientos</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
             {MANTA_HOTELS.length}
           </span>
@@ -1722,7 +1706,9 @@ function RoomsView({
                   color: "var(--foreground)",
                 }}
               />
-              <span className="absolute left-3 top-2.5 text-xs text-slate-400">🔍</span>
+              <span className="absolute left-3 top-2.5 text-xs text-slate-400">
+                <svg className="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
             </div>
 
             <div className="flex gap-1.5">
@@ -1795,14 +1781,14 @@ function RoomsView({
                             Cliente / Huésped
                           </p>
                           <p className="font-semibold text-slate-200 mt-0.5 truncate">
-                            👤 {res.guestName}
+                            {res.guestName}
                           </p>
                           <p className="text-[11px] text-slate-400 truncate">
-                            ✉️ {res.guestEmail}
+                            {res.guestEmail}
                           </p>
                           {res.guestPhone && (
                             <p className="text-[11px] text-slate-400 truncate">
-                              📞 {res.guestPhone}
+                              {res.guestPhone}
                             </p>
                           )}
                         </div>
@@ -1812,13 +1798,13 @@ function RoomsView({
                             Fechas Seleccionadas
                           </p>
                           <p className="font-semibold text-slate-200 mt-0.5">
-                            📅 {fmtDate(res.checkIn)} → {fmtDate(res.checkOut)}
+                            {fmtDate(res.checkIn)} → {fmtDate(res.checkOut)}
                           </p>
                           <p className="text-[11px] text-amber-400">
-                            ⏳ {res.nights} noche{res.nights > 1 ? "s" : ""} reservada{res.nights > 1 ? "s" : ""}
+                            {res.nights} noche{res.nights > 1 ? "s" : ""} reservada{res.nights > 1 ? "s" : ""}
                           </p>
                           <p className="text-[11px] text-slate-400 mt-0.5">
-                            💳 {res.payMethod || "Cobro digital liquidado"}
+                            {res.payMethod || "Cobro digital liquidado"}
                           </p>
                         </div>
                       </div>
@@ -1831,7 +1817,7 @@ function RoomsView({
                     >
                       <div>
                         <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                          Total cobrado por el portal
+                          Total cobrado
                         </p>
                         <p className="mono font-bold text-base text-amber-400">
                           {fmtUsd(res.total)}
@@ -1843,7 +1829,6 @@ function RoomsView({
                           onClick={() => setVoucherRes(res)}
                           className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1 cursor-pointer"
                         >
-                          <span>🧾</span>
                           <span>Ver Voucher</span>
                         </button>
 
@@ -1853,7 +1838,7 @@ function RoomsView({
                             className="px-2.5 py-1.5 rounded-lg text-xs font-medium border text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
                             style={{ borderColor: "rgba(16, 185, 129, 0.4)" }}
                           >
-                            ✓ Llegada
+                            Registrar llegada
                           </button>
                         ) : res.status === "completed" ? (
                           <button
@@ -1872,10 +1857,9 @@ function RoomsView({
             </div>
           ) : (
             <div className="text-center py-12 rounded-xl border" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-              <span className="text-3xl block mb-2">🔍</span>
               <p className="font-semibold text-slate-300">No hay reservas con ese criterio para este hotel</p>
               <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-                Puedes probar con el buscador web o consultar las reservas precargadas de Manta.
+                Puedes probar con otro filtro o consultar las reservas precargadas.
               </p>
             </div>
           )}
@@ -1937,7 +1921,7 @@ function RoomsView({
                     <div>
                       <h3 className="font-bold text-sm text-slate-100">{offer.type}</h3>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        🛏️ {offer.beds} · 👥 Máx. {offer.capacity} persona{offer.capacity > 1 ? "s" : ""} · 📐 {offer.size} m²
+                        {offer.beds} · Capacidad: {offer.capacity} persona{offer.capacity > 1 ? "s" : ""} · {offer.size} m²
                       </p>
                     </div>
 
@@ -2003,9 +1987,9 @@ function RoomsView({
                       addAuditLog({
                         usuario: "Operador Extranet",
                         rol: "Revenue / Admin Hotel",
-                        modulo: "Cupos Web (RF-15)",
+                        modulo: "Gestión de cupos",
                         accion: nextAvail === 0 ? "STOP_SELL_CIERRE_VENTA" : "ABRIR_VENTA_WEB",
-                        detalle: `${nextAvail === 0 ? "Cierre de venta web (Stop Sell)" : "Reapertura de cupos (4)"} en ${offer.type}`,
+                        detalle: `${nextAvail === 0 ? "Pausa de venta web" : "Reapertura de cupos (4)"} en ${offer.type}`,
                       });
                     }}
                     className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
@@ -2013,9 +1997,9 @@ function RoomsView({
                         ? "border-red-800/60 text-red-300 hover:bg-red-950/50"
                         : "border-emerald-700/60 text-emerald-300 hover:bg-emerald-950/50"
                     }`}
-                    title="Cerrar o abrir inmediatamente la venta web de este tipo de habitación (RF-15 Stop Sell)"
+                    title="Pausar o reanudar venta de este tipo de habitación"
                   >
-                    {offer.available > 0 ? "⛔ Stop Sell" : "✓ Abrir Venta"}
+                    {offer.available > 0 ? "Pausar venta" : "Activar venta"}
                   </button>
                 </div>
               </div>
@@ -2244,8 +2228,8 @@ function RevenueView() {
         <KpiCard label="Ocupación media" value={`${avgOccupancy}%`} sub="últimos 6 meses" />
         <KpiCard
           label="RevPAR"
-          value={fmt(Math.round((21600 / (ROOMS.length * 31)) * 100) / 100)}
-          sub="Revenue por cama/plaza disponible"
+          value={fmt(Math.round((21600 / (totalHotelCupos * 31)) * 100) / 100)}
+          sub="Revenue por cupo web disponible"
         />
       </div>
 
@@ -2414,44 +2398,156 @@ function RevenueView() {
 }
 
 function GuestsView({ hotelId }: { hotelId: string }) {
-  const initialGuests: GuestRecord[] = RESERVATIONS.map((r) => ({
-    id: `guest-${r.id}`,
-    name: r.guestName,
-    email: r.guestEmail,
-    phone: "",
-    document: "",
-    country: "Ecuador",
-    notes: "",
-    visits: RESERVATIONS.filter((rr) => rr.guestEmail === r.guestEmail).length,
-    totalSpend: RESERVATIONS.filter((rr) => rr.guestEmail === r.guestEmail).reduce(
-      (s, rr) => s + rr.total,
-      0
-    ),
-    lastVisit: r.checkIn,
-    source: r.source,
-  })).filter(
-    (g, i, arr) => arr.findIndex((gg) => gg.email === g.email) === i
-  );
+  const initialGuests: GuestRecord[] = [
+    {
+      id: "guest-RES-001",
+      name: "Carlos Méndez",
+      email: "cmendez@gmail.com",
+      phone: "+593 99 123 4567",
+      docType: "CEDULA",
+      document: "1314567890",
+      city: "Portoviejo",
+      address: "Av. Manabí y Reales Tamarindos",
+      country: "Ecuador",
+      emergencyContact: "María Méndez (+593 98 444 1122)",
+      notes: "Habitación piso alto, cama matrimonial",
+      visits: 3,
+      totalSpend: 420,
+      lastVisit: "2026-08-15",
+      source: "Portal AlojaManta",
+    },
+    {
+      id: "guest-RES-002",
+      name: "Laura Fernández",
+      email: "lfernandez@hotmail.com",
+      phone: "+57 310 987 6543",
+      docType: "PASAPORTE",
+      document: "CO5892147",
+      city: "Medellín",
+      address: "El Poblado, Cra 43A",
+      country: "Colombia",
+      emergencyContact: "Andrés Fernández (+57 300 123 4567)",
+      notes: "Turista internacional, solicita transfer aeropuerto",
+      visits: 1,
+      totalSpend: 170,
+      lastVisit: "2026-08-16",
+      source: "Booking.com",
+    },
+    {
+      id: "guest-RES-004",
+      name: "Miguel Torres",
+      email: "mtorres@empresa.ec",
+      phone: "+593 98 765 4321",
+      docType: "RUC",
+      document: "1792345678001",
+      razonSocial: "Corporación Torres & Asociados Cía. Ltda.",
+      city: "Quito",
+      address: "Av. República de El Salvador 890",
+      country: "Ecuador",
+      emergencyContact: "Admin Corporativo (+593 2 299 8800)",
+      notes: "Viajero corporativo frecuente, requiere factura con retención",
+      visits: 4,
+      totalSpend: 680,
+      lastVisit: "2026-08-18",
+      source: "Directo Web",
+    },
+    {
+      id: "guest-RES-007",
+      name: "Patricia Ruiz",
+      email: "pruiz@hotmail.com",
+      phone: "+593 99 555 1234",
+      docType: "CEDULA",
+      document: "0921456781",
+      city: "Guayaquil",
+      address: "Samborondón Km 3.5",
+      country: "Ecuador",
+      emergencyContact: "Carlos Ruiz (+593 99 111 2233)",
+      notes: "Viaje familiar con 2 niños, solicita cuna",
+      visits: 2,
+      totalSpend: 495,
+      lastVisit: "2026-08-19",
+      source: "Directo Web",
+    },
+    {
+      id: "guest-RES-008",
+      name: "Daniel Castro",
+      email: "dcastro@outlook.com",
+      phone: "+593 96 333 4455",
+      docType: "CEDULA",
+      document: "1718293041",
+      city: "Quito",
+      address: "González Suárez N24",
+      country: "Ecuador",
+      emergencyContact: "Elena Castro (+593 99 888 7766)",
+      notes: "Ejecutivo, llegada estimada 19:00",
+      visits: 1,
+      totalSpend: 165,
+      lastVisit: "2026-08-20",
+      source: "Portal AlojaManta",
+    },
+  ];
+
   const [guests, setGuests] = usePersistentState<GuestRecord[]>(`hoteldirekt.${hotelId}.guests`, initialGuests);
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<GuestRecord | null>(null);
-  const visibleGuests = guests.filter(guest => `${guest.name} ${guest.email} ${guest.document}`.toLowerCase().includes(search.toLowerCase()));
+
+  const visibleGuests = guests.filter(guest =>
+    `${guest.name} ${guest.email} ${guest.document} ${guest.razonSocial || ""} ${guest.city || ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-          Directorio de Huéspedes (LOPDP)
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+            Directorio de Huéspedes & Ficha de Registro
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Cumplimiento LOPDP Ecuador · Validación de Cédula (10 dígitos), RUC (13 dígitos) y Pasaporte
+          </p>
+        </div>
         <div className="flex gap-3">
           <span className="mono text-xs px-3 py-1.5 rounded" style={{ background: "var(--card)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}>
-            {guests.length} registrados
+            {guests.length} huéspedes registrados
           </span>
-          <button onClick={() => setEditing({ id: "", name: "", email: "", phone: "", document: "", country: "Ecuador", notes: "", visits: 0, totalSpend: 0, lastVisit: new Date().toISOString().split("T")[0], source: "Directo Web" })} className="px-3 py-1.5 rounded text-xs font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Huésped</button>
+          <button
+            onClick={() =>
+              setEditing({
+                id: "",
+                name: "",
+                email: "",
+                phone: "",
+                docType: "CEDULA",
+                document: "",
+                razonSocial: "",
+                city: "Manta",
+                address: "",
+                country: "Ecuador",
+                emergencyContact: "",
+                notes: "",
+                visits: 0,
+                totalSpend: 0,
+                lastVisit: new Date().toISOString().split("T")[0],
+                source: "Directo Web",
+              })
+            }
+            className="px-3 py-1.5 rounded text-xs font-semibold"
+            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+          >
+            + Registrar Huésped
+          </button>
         </div>
       </div>
 
-      <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar por nombre, email o documento..." className="w-full max-w-sm rounded border px-3 py-2 text-sm outline-none" style={{ background: "var(--card)", borderColor: "var(--border)" }} />
+      <input
+        value={search}
+        onChange={event => setSearch(event.target.value)}
+        placeholder="Buscar por nombre, razón social, cédula, RUC, pasaporte o ciudad..."
+        className="w-full max-w-md rounded border px-3 py-2 text-sm outline-none"
+        style={{ background: "var(--card)", borderColor: "var(--border)" }}
+      />
 
       <div
         className="rounded-md border overflow-hidden"
@@ -2460,7 +2556,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
         <table className="w-full text-sm">
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-              {["Huésped", "Contacto", "Documento", "Visitas", "Gasto total", "Última visita", "Acciones"].map(
+              {["Huésped / Razón Social", "Documento", "Ubicación / Contacto", "Visitas", "Gasto total", "Última visita", "Acciones"].map(
                 (h) => (
                   <th
                     key={h}
@@ -2476,27 +2572,52 @@ function GuestsView({ hotelId }: { hotelId: string }) {
           <tbody>
             {visibleGuests.map((g, i) => (
               <tr
-                key={g.email}
+                key={g.id || g.email}
                 className="hover:bg-[var(--secondary)] transition-colors"
                 style={{
-                    borderBottom: i < visibleGuests.length - 1 ? "1px solid var(--border)" : "none",
+                  borderBottom: i < visibleGuests.length - 1 ? "1px solid var(--border)" : "none",
                 }}
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
-                      style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
+                      style={{ background: g.docType === "RUC" ? "#1e293b" : "var(--primary)", color: g.docType === "RUC" ? "#38bdf8" : "var(--primary-foreground)" }}
                     >
-                      {g.name.charAt(0)}
+                      {g.docType === "RUC" ? "🏢" : g.name.charAt(0)}
                     </div>
-                    <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                      {g.name}
-                    </span>
+                    <div>
+                      <p className="font-medium leading-tight" style={{ color: "var(--foreground)" }}>
+                        {g.name}
+                      </p>
+                      {g.razonSocial && (
+                        <p className="text-[11px] text-amber-500 font-medium truncate max-w-[200px]" title={g.razonSocial}>
+                          🏢 {g.razonSocial}
+                        </p>
+                      )}
+                      <p className="text-[11px] text-slate-400">{g.email}</p>
+                    </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}><p>{g.email}</p><p>{g.phone || "Sin teléfono"}</p></td>
-                <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>{g.document || "Pendiente"}</td>
+                <td className="px-4 py-3 text-xs">
+                  <span
+                    className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold mr-1.5"
+                    style={{
+                      background: g.docType === "RUC" ? "#0284c720" : g.docType === "PASAPORTE" ? "#8b5cf620" : "#10b98120",
+                      color: g.docType === "RUC" ? "#38bdf8" : g.docType === "PASAPORTE" ? "#a78bfa" : "#34d399",
+                      border: "1px solid currentColor",
+                    }}
+                  >
+                    {g.docType === "RUC" ? "RUC" : g.docType === "PASAPORTE" ? "PASAPORTE" : "CÉDULA"}
+                  </span>
+                  <span className="mono font-semibold" style={{ color: "var(--foreground)" }}>
+                    {g.document || "Pendiente"}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  <p className="font-medium text-slate-300">📍 {[g.city, g.country].filter(Boolean).join(", ")}</p>
+                  <p className="text-[11px]">{g.phone || "Sin teléfono"}</p>
+                </td>
                 <td className="px-4 py-3 mono text-center">
                   <span
                     className="px-2 py-0.5 rounded text-xs font-semibold"
@@ -2514,28 +2635,212 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                 <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>
                   {fmtDate(g.lastVisit)}
                 </td>
-                <td className="px-4 py-3"><div className="flex gap-1"><button onClick={() => setEditing({ ...g })} className="px-2 py-1 rounded text-xs" style={{ background: "var(--muted)" }}>Editar</button><button onClick={() => { if (confirm(`¿Eliminar a ${g.name}?`)) setGuests(items => items.filter(item => item.id !== g.id)); }} className="px-2 py-1 rounded border text-xs" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button></div></td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-1">
+                    <button onClick={() => setEditing({ ...g })} className="px-2 py-1 rounded text-xs" style={{ background: "var(--muted)" }}>Editar</button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Eliminar a ${g.name}?`)) setGuests(items => items.filter(item => item.id !== g.id));
+                      }}
+                      className="px-2 py-1 rounded border text-xs"
+                      style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3,7,18,.78)" }}>
-          <form onSubmit={event => { event.preventDefault(); const saved = { ...editing, id: editing.id || `guest-${Date.now()}` }; setGuests(items => items.some(item => item.id === saved.id) ? items.map(item => item.id === saved.id ? saved : item) : [saved, ...items]); setEditing(null); }} className="w-full max-w-xl rounded-xl border p-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <div className="flex justify-between mb-5"><div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Ficha del huésped</p><h2 className="text-xl">{editing.id ? "Editar huésped" : "Nuevo huésped"}</h2></div><button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }}>×</button></div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Nombre completo" value={editing.name} onChange={name => setEditing({ ...editing, name })} required />
-              <Field label="Email" type="email" value={editing.email} onChange={email => setEditing({ ...editing, email })} required />
-              <Field label="Teléfono" value={editing.phone} onChange={phone => setEditing({ ...editing, phone })} />
-              <Field label="DNI / Pasaporte" value={editing.document} onChange={document => setEditing({ ...editing, document })} />
-              <Field label="País" value={editing.country} onChange={country => setEditing({ ...editing, country })} />
-              <Field label="Canal preferido" value={editing.source} onChange={source => setEditing({ ...editing, source })} />
-              <Field label="Visitas" type="number" value={String(editing.visits)} onChange={visits => setEditing({ ...editing, visits: Number(visits) })} />
-              <Field label="Gasto total" type="number" value={String(editing.totalSpend)} onChange={totalSpend => setEditing({ ...editing, totalSpend: Number(totalSpend) })} />
-              <div className="sm:col-span-2"><Field label="Notas" value={editing.notes} onChange={notes => setEditing({ ...editing, notes })} /></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" style={{ background: "rgba(3,7,18,.78)" }}>
+          <form
+            onSubmit={event => {
+              event.preventDefault();
+              // Validations
+              if (editing.docType === "CEDULA" && editing.document && !/^\d{10}$/.test(editing.document)) {
+                alert("La Cédula ecuatoriana debe tener exactamente 10 dígitos numéricos.");
+                return;
+              }
+              if (editing.docType === "RUC") {
+                if (editing.document && !/^\d{13}$/.test(editing.document)) {
+                  alert("El RUC debe tener exactamente 13 dígitos numéricos.");
+                  return;
+                }
+                if (!editing.razonSocial?.trim()) {
+                  alert("Para huéspedes con RUC, la Razón Social es obligatoria para la facturación.");
+                  return;
+                }
+              }
+              const saved = { ...editing, id: editing.id || `guest-${Date.now()}` };
+              setGuests(items => items.some(item => item.id === saved.id) ? items.map(item => item.id === saved.id ? saved : item) : [saved, ...items]);
+              setEditing(null);
+            }}
+            className="w-full max-w-xl rounded-xl border p-6 my-8"
+            style={{ background: "var(--card)", borderColor: "var(--border)" }}
+          >
+            <div className="flex justify-between mb-4">
+              <div>
+                <p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Ficha de Registro de Huésped (LOPDP)</p>
+                <h2 className="text-xl font-bold">{editing.id ? "Editar datos del huésped" : "Nuevo registro de huésped"}</h2>
+              </div>
+              <button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }} className="text-lg">×</button>
             </div>
-            <div className="flex justify-end gap-2 mt-6"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Guardar huésped</button></div>
+
+            {/* Document type selector */}
+            <div className="mb-4">
+              <label className="block text-xs mb-1.5 font-medium" style={{ color: "var(--muted-foreground)" }}>
+                Tipo de identificación oficial:
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "CEDULA", label: "Cédula (10 dig.)", desc: "Nacional ecuatoriana" },
+                  { id: "RUC", label: "RUC (13 dig.)", desc: "Empresas / Jurídico" },
+                  { id: "PASAPORTE", label: "Pasaporte", desc: "Extranjero / Turista" },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setEditing({
+                        ...editing,
+                        docType: tab.id as "CEDULA" | "RUC" | "PASAPORTE",
+                        document: "",
+                        country: tab.id === "CEDULA" ? "Ecuador" : editing.country,
+                      });
+                    }}
+                    className="p-2.5 rounded-lg border text-left transition-all"
+                    style={{
+                      background: editing.docType === tab.id ? "rgba(245, 158, 11, 0.12)" : "var(--background)",
+                      borderColor: editing.docType === tab.id ? "var(--primary)" : "var(--border)",
+                    }}
+                  >
+                    <p className="font-semibold text-xs" style={{ color: editing.docType === tab.id ? "var(--primary)" : "var(--foreground)" }}>
+                      {tab.label}
+                    </p>
+                    <p className="text-[10px] text-slate-400">{tab.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {/* Document number */}
+              <div>
+                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
+                  {editing.docType === "CEDULA" ? "Número de Cédula (10 dígitos)" : editing.docType === "RUC" ? "Número de RUC (13 dígitos)" : "Número de Pasaporte (Alfanumérico)"} *
+                </label>
+                <input
+                  className="w-full px-3 py-2 rounded border text-sm outline-none font-mono"
+                  style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+                  value={editing.document}
+                  onChange={e => {
+                    let val = e.target.value;
+                    if (editing.docType === "CEDULA") val = val.replace(/\D/g, "").slice(0, 10);
+                    else if (editing.docType === "RUC") val = val.replace(/\D/g, "").slice(0, 13);
+                    else val = val.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
+                    setEditing({ ...editing, document: val });
+                  }}
+                  placeholder={editing.docType === "CEDULA" ? "Ej. 1314567890" : editing.docType === "RUC" ? "Ej. 1792345678001" : "Ej. PAS982341"}
+                  required
+                />
+              </div>
+
+              {/* Razón Social if RUC */}
+              {editing.docType === "RUC" ? (
+                <div>
+                  <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
+                    Razón Social de la Empresa *
+                  </label>
+                  <input
+                    className="w-full px-3 py-2 rounded border text-sm outline-none"
+                    style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+                    value={editing.razonSocial || ""}
+                    onChange={e => setEditing({ ...editing, razonSocial: e.target.value })}
+                    placeholder="Ej. Corporación Torres Cía. Ltda."
+                    required
+                  />
+                </div>
+              ) : (
+                <Field
+                  label="Nacionalidad / País emisor"
+                  value={editing.country}
+                  onChange={country => setEditing({ ...editing, country })}
+                  required
+                />
+              )}
+
+              <Field
+                label="Nombres y Apellidos completos"
+                value={editing.name}
+                onChange={name => setEditing({ ...editing, name })}
+                required
+              />
+              <Field
+                label="Correo electrónico"
+                type="email"
+                value={editing.email}
+                onChange={email => setEditing({ ...editing, email })}
+                required
+              />
+              <Field
+                label="Teléfono / Celular (WhatsApp)"
+                value={editing.phone}
+                onChange={phone => setEditing({ ...editing, phone })}
+                required
+              />
+
+              {editing.docType === "RUC" && (
+                <Field
+                  label="País fiscal"
+                  value={editing.country}
+                  onChange={country => setEditing({ ...editing, country })}
+                  required
+                />
+              )}
+
+              <Field
+                label="Ciudad de residencia"
+                value={editing.city || ""}
+                onChange={city => setEditing({ ...editing, city })}
+              />
+              <Field
+                label="Dirección de domicilio / tributaria"
+                value={editing.address || ""}
+                onChange={address => setEditing({ ...editing, address })}
+              />
+
+              <div className="sm:col-span-2">
+                <Field
+                  label="Contacto de emergencia (Nombre y teléfono)"
+                  value={editing.emergencyContact || ""}
+                  onChange={emergencyContact => setEditing({ ...editing, emergencyContact })}
+                />
+              </div>
+
+              <Field label="Canal preferido" value={editing.source} onChange={source => setEditing({ ...editing, source })} />
+              <Field label="Visitas acumuladas" type="number" value={String(editing.visits)} onChange={visits => setEditing({ ...editing, visits: Number(visits) })} />
+              
+              <div className="sm:col-span-2">
+                <Field
+                  label="Preferencias de alojamiento / Notas especiales"
+                  value={editing.notes}
+                  onChange={notes => setEditing({ ...editing, notes })}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                Cancelar
+              </button>
+              <button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+                Guardar Huésped
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -2648,12 +2953,9 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
 
       {/* Operational model banner */}
       <div className="p-3.5 rounded-xl border flex items-center justify-between gap-3 text-xs" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.25)" }}>
-        <div className="flex items-center gap-2.5">
-          <span className="text-xl flex-shrink-0">💳</span>
-          <div>
-            <p className="font-bold text-amber-400">Plataforma de Cobros Digitales y Liquidación de Reservas</p>
-            <p className="text-slate-400 mt-0.5">La plataforma procesa y certifica los cobros y anticipos digitales en tiempo real (PayPhone, DeUna y Kushki), emitiendo los comprobantes oficiales de reserva con código QR para el huésped y recepción.</p>
-          </div>
+        <div>
+          <p className="font-bold text-amber-400">Cobros digitales y liquidación de estancias</p>
+          <p className="text-slate-400 mt-0.5">Gestión de pagos recibidos por pasarela digital con comprobantes y vouchers asociados a cada reserva.</p>
         </div>
       </div>
 
@@ -2704,17 +3006,17 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
                     <td className="px-4 py-3">
                       {inv.hotelInvoiceNumber ? (
                         <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1 w-fit">
-                          <span>✓</span> #{inv.hotelInvoiceNumber}
+                          #{inv.hotelInvoiceNumber}
                         </span>
                       ) : (
                         <span className="mono text-[10px] font-medium px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-800/60 flex items-center gap-1 w-fit">
-                          <span>⚠️</span> Pendiente Confirmar
+                          Pendiente
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <button onClick={() => setSelected(inv)} className="text-xs px-2.5 py-1 rounded font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer whitespace-nowrap">
-                        Ver Comprobante de Pago
+                        Ver Comprobante
                       </button>
                     </td>
                   </tr>
@@ -2824,7 +3126,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
       if (p.method.includes("PayPhone")) key = "PayPhone Ecuador";
       else if (p.method.includes("Kushki")) key = "Kushki Pagos";
       else if (p.method.includes("Efectivo")) key = "Efectivo en recepción";
-      else if (p.method.includes("DeUna")) key = "Transferencia DeUna / QR";
+      else if (p.method.includes("DeUna")) key = "Transferencia DeUna / App";
       else if (p.method.includes("Transferencia")) key = "Transferencia bancaria";
       else if (p.method.includes("Booking")) key = "OTA (Booking / Expedia)";
 
@@ -2865,7 +3167,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
           }}
           className="px-4 py-2.5 rounded-lg font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-lg shadow-amber-500/20 flex items-center gap-2 self-start sm:self-auto cursor-pointer"
         >
-          <span>🔗</span> Crear Link de Pago
+          + Crear link de pago
         </button>
       </div>
 
@@ -2926,7 +3228,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
                       className="px-2 py-1 rounded text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors flex items-center gap-1 cursor-pointer"
                       title="Generar link de pago para este cliente"
                     >
-                      <span>🔗</span> Link
+                      Link
                     </button>
                   </div>
                 </div>
@@ -2965,10 +3267,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
                   </td>
                   <td className="px-4 py-3 mono font-semibold text-amber-400">{fmtUsd(p.amount)}</td>
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    <span className="flex items-center gap-1.5">
-                      {p.method.includes("PayPhone") ? "📱" : p.method.includes("Kushki") ? "💳" : p.method.includes("DeUna") ? "📲" : "🏦"}
-                      {p.method}
-                    </span>
+                    {p.method}
                   </td>
                   <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>{fmtDate(p.date)}</td>
                   <td className="px-4 py-3"><span className="mono text-[10px] px-2 py-0.5 rounded uppercase font-medium" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
@@ -2981,10 +3280,10 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
                         }}
                         className="text-xs px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors flex items-center gap-1 cursor-pointer"
                       >
-                        <span>🔗</span> Enviar Link
+                        Enviar link
                       </button>
                     ) : (
-                      <span className="text-[11px] text-emerald-400 font-medium">✓ Pagado</span>
+                      <span className="text-[11px] text-emerald-400 font-medium">Pagado</span>
                     )}
                   </td>
                 </tr>
@@ -3273,17 +3572,100 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
 
 const ALL_ROLES: AdminRole[] = ["superadmin", "admin", "manager", "receptionist"];
 
-const NAV_ITEMS: { view: View; label: string; icon: string; divider?: boolean; roles: AdminRole[] }[] = [
-  { view: "hotels", label: "Catastro Hotelero (116)", icon: "🏨", roles: ["superadmin"] },
-  { view: "users", label: "Usuarios y accesos", icon: "👤", roles: ["superadmin", "admin"], divider: true },
-  { view: "dashboard", label: "Dashboard Reservas", icon: "📊", roles: ["superadmin", "admin", "manager"], divider: true },
-  { view: "rooms", label: "Tipos de Habitación", icon: "🛏️", roles: ALL_ROLES },
-  { view: "reservations", label: "Bandeja de Reservas", icon: "📑", roles: ALL_ROLES },
-  { view: "guests", label: "Directorio Huéspedes", icon: "👥", roles: ["superadmin", "admin", "receptionist"] },
-  { view: "billing", label: "Comprobantes de Pago", icon: "🧾", roles: ["superadmin", "admin", "receptionist"], divider: true },
-  { view: "payments", label: "Pasarela & Links de Pago", icon: "💳", roles: ["superadmin", "admin", "receptionist"] },
-  { view: "rates", label: "Tarifas por Temporada", icon: "🏷️", roles: ["superadmin", "admin", "manager"] },
-  { view: "revenue", label: "Métricas & RevPAR", icon: "📈", roles: ["superadmin", "admin", "manager"] },
+function NavIcon({ view }: { view: View }) {
+  const common = "w-4 h-4 stroke-current";
+  switch (view) {
+    case "hotels":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1" />
+        </svg>
+      );
+    case "users":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+    case "dashboard":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="9" rx="1" />
+          <rect x="14" y="3" width="7" height="5" rx="1" />
+          <rect x="14" y="12" width="7" height="9" rx="1" />
+          <rect x="3" y="16" width="7" height="5" rx="1" />
+        </svg>
+      );
+    case "rooms":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9" />
+        </svg>
+      );
+    case "reservations":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4" />
+        </svg>
+      );
+    case "guests":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="7" r="4" />
+          <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
+        </svg>
+      );
+    case "billing":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <line x1="10" y1="9" x2="8" y2="9" />
+        </svg>
+      );
+    case "payments":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" />
+          <line x1="1" y1="10" x2="23" y2="10" />
+        </svg>
+      );
+    case "rates":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+          <line x1="7" y1="7" x2="7.01" y2="7" />
+        </svg>
+      );
+    case "revenue":
+      return (
+        <svg className={common} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+const NAV_ITEMS: { view: View; label: string; divider?: boolean; roles: AdminRole[] }[] = [
+  { view: "hotels", label: "Catastro Hotelero", roles: ["superadmin"] },
+  { view: "users", label: "Usuarios y accesos", roles: ["superadmin", "admin"], divider: true },
+  { view: "dashboard", label: "Panel general", roles: ["superadmin", "admin", "manager"], divider: true },
+  { view: "rooms", label: "Tipos de habitación", roles: ALL_ROLES },
+  { view: "reservations", label: "Bandeja de reservas", roles: ALL_ROLES },
+  { view: "guests", label: "Directorio de huéspedes", roles: ["superadmin", "admin", "receptionist"] },
+  { view: "billing", label: "Comprobantes y vouchers", roles: ["superadmin", "admin", "receptionist"], divider: true },
+  { view: "payments", label: "Pasarela y cobros", roles: ["superadmin", "admin", "receptionist"] },
+  { view: "rates", label: "Tarifas por temporada", roles: ["superadmin", "admin", "manager"] },
+  { view: "revenue", label: "Métricas e ingresos", roles: ["superadmin", "admin", "manager"] },
 ];
 
 // ─── Platform hotels data ─────────────────────────────────────────────────────
@@ -3497,7 +3879,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               className="px-3 py-2 rounded text-xs font-semibold border flex items-center gap-1.5 transition-colors hover:bg-amber-500/10 cursor-pointer"
               style={{ borderColor: "rgba(245, 158, 11, 0.4)", color: "#f59e0b" }}
             >
-              <span>🔄</span> Recargar 116 Hoteles Oficiales
+              Restablecer catálogo oficial (116)
             </button>
           )}
           {canDelete && (
@@ -3517,7 +3899,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
         <KpiCard label="Alojamientos registrados" value={String(activeCount)} sub={`${hotels.length} en el Catastro Cantonal 2026`} />
         <KpiCard label="Revenue plataforma (Ago)" value={fmtUsd(totalRevenue)} sub="reservado en USD Manta" accent />
         <KpiCard label="Ocupación media cantonal" value={`${avgOccupancy}%`} sub="red oficial de Manta" />
-        <KpiCard label="Capacidad total de camas" value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="plazas de alojamiento cantonal" />
+        <KpiCard label="Capacidad de plazas de hospedaje" value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="plazas autorizadas en catastro" />
       </div>
 
       {/* RF-21: Conmutador Rápido de Emergencia IVA 15% / 8% por Decreto Presidencial */}
@@ -3531,7 +3913,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               type="text"
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
-              placeholder="🔍 Buscar por nombre de hotel, sector, dirección, propietario o RUC..."
+              placeholder="Buscar por nombre de hotel, sector, dirección, propietario o RUC..."
               className="w-full rounded-lg border px-3 py-2 text-xs outline-none"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             />
@@ -3637,7 +4019,11 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                         {h.gallery?.[0] ? (
                           <img src={h.gallery[0]} alt="" className="w-12 h-10 rounded object-cover flex-shrink-0" />
                         ) : (
-                          <div className="w-12 h-10 rounded bg-slate-800 flex items-center justify-center text-sm flex-shrink-0">🏨</div>
+                          <div className="w-12 h-10 rounded bg-slate-800 flex items-center justify-center text-slate-400 flex-shrink-0">
+                            <svg className="w-5 h-5 stroke-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                              <path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1" />
+                            </svg>
+                          </div>
                         )}
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate" style={{ color: "var(--foreground)" }}>{h.name}</p>
@@ -3787,7 +4173,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                   <option value="active">Activo</option><option value="paused">Pausado</option><option value="pending">Pendiente</option>
                 </select>
               </div>
-              <Field label="Capacidad de Camas / Plazas" type="number" value={String(editing.rooms)} onChange={rooms => setEditing({ ...editing, rooms: Number(rooms) })} required />
+              <Field label="Capacidad de Habitaciones / Plazas" type="number" value={String(editing.rooms)} onChange={rooms => setEditing({ ...editing, rooms: Number(rooms) })} required />
               <div>
                 <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Categoría Estrellas (1–5)</label>
                 <select value={editing.stars} onChange={e => setEditing({ ...editing, stars: Math.min(5, Math.max(1, Number(e.target.value))) as 1 | 2 | 3 | 4 | 5 })} className="w-full rounded border px-3 py-2.5 text-sm outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
@@ -3857,9 +4243,9 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p className="mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: "var(--primary)" }}>Control de acceso RBAC & Auditoría LOPDP</p>
-          <h1 className="text-2xl">Usuarios, Permisos y Bitácora de Auditoría</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>Asigna cada cuenta a una propiedad, limita su acceso por rol y supervisa la bitácora inalterable de operaciones (RF-29, RF-30).</p>
+          <p className="mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: "var(--primary)" }}>Control de accesos y seguridad</p>
+          <h1 className="text-2xl">Usuarios, Permisos y Registro de Auditoría</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>Asigna cada cuenta a una propiedad, gestiona permisos por rol y revisa el registro de actividad.</p>
         </div>
         <button onClick={startNewUser} className="px-4 py-2.5 rounded text-sm font-semibold cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Crear usuario</button>
       </div>
@@ -3868,7 +4254,7 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         <KpiCard label="Usuarios" value={String(users.length)} sub="cuentas registradas" />
         <KpiCard label="Activos" value={String(activeUsers)} sub="con acceso habilitado" accent />
         <KpiCard label="Invitaciones" value={String(users.filter(u => u.status === "invited").length)} sub="pendientes de aceptar" />
-        <KpiCard label="Eventos Auditados" value={String(auditLogs.length)} sub="bitácora LOPDP inalterable" />
+        <KpiCard label="Eventos Auditados" value={String(auditLogs.length)} sub="registros de actividad" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
@@ -3911,29 +4297,29 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         </div>
 
         <div className="rounded-md border p-4 h-fit" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>Permisos por rol (RBAC · RF-29)</p>
+          <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>Permisos por rol</p>
           {[
-            ["Superadministrador (Cantonal)", "Acceso total a los 116 alojamientos de Manta, conmutador IVA 15%/8%, auditoría LOPDP, catastro y métricas consolidadas."],
-            ["Administrador de Hotel", "Control de su establecimiento, configuración del 10% de servicio (Art. 41), liquidaciones de pasarela y su equipo."],
-            ["Revenue Manager", "Control de tarifas por temporada, planes tarifarios, apertura/cierre de venta web (Stop Sell) y cupos disponibles."],
-            ["Operador Reservas / Recepción", "Bandeja de reservas en tiempo real, validación de Voucher QR en 1 clic al arribo del huésped, links de pago y comprobantes digitales (Sin PMS físico)."],
+            ["Superadministrador", "Acceso a todos los establecimientos, configuración de tarifas de IVA y catálogo general."],
+            ["Administrador de Hotel", "Gestión de su establecimiento, configuración de servicios adicionales y equipo."],
+            ["Revenue Manager", "Gestión de tarifas por temporada, planes tarifarios y disponibilidad de cupos."],
+            ["Operador / Recepción", "Bandeja de reservas, validación de llegadas por código y emisión de comprobantes."],
           ].map(([role, description]) => <div key={role} className="pb-3 mb-3 border-b last:border-0 last:mb-0 last:pb-0" style={{ borderColor: "var(--border)" }}><p className="text-xs font-semibold">{role}</p><p className="text-[11px] mt-1 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{description}</p></div>)}
         </div>
       </div>
 
-      {/* RF-30: Bitácora Inalterable de Auditoría (LOPDP Ecuador) */}
+      {/* Registro de Auditoría */}
       <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
           <div>
-            <p className="text-sm font-semibold flex items-center gap-2" style={{ color: "var(--foreground)" }}>
-              <span>🛡️</span> Bitácora Inalterable de Auditoría del Sistema (RF-30 · LOPDP Ecuador)
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+              Registro de actividad del sistema
             </p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              Registro cronológico automático de cambios tributarios (IVA 15%/8%), validaciones de Voucher QR, cierres de cupo (Stop Sell) y reservas.
+              Historial cronológico de cambios de tarifa, validaciones de voucher y nuevas reservas.
             </p>
           </div>
           <span className="mono text-[10px] px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-            Registro Activo · Solo Lectura
+            Solo lectura
           </span>
         </div>
         <div className="overflow-x-auto max-h-72">
@@ -4088,8 +4474,7 @@ export default function App() {
             onClick={() => setAppMode("guest")}
             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-xs"
           >
-            <span>🌐</span>
-            <span>Ver Web de Huéspedes</span>
+            <span>Ver portal de huéspedes</span>
           </button>
         </div>
 
@@ -4132,8 +4517,10 @@ export default function App() {
                   borderLeft: view === item.view ? "2px solid var(--primary)" : "2px solid transparent",
                 }}
               >
-                <span className="mono w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold leading-none" style={{ background: "var(--muted)" }}>{item.icon}</span>
-                {item.label}
+                <span className="w-6 h-6 rounded flex items-center justify-center text-slate-400 group-hover:text-amber-400" style={{ background: "var(--muted)" }}>
+                  <NavIcon view={item.view} />
+                </span>
+                <span className="font-medium text-xs">{item.label}</span>
               </button>
             </div>
           ))}

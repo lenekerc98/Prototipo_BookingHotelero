@@ -5,7 +5,7 @@
 * **Normativa de Referencia:** IEEE 830 / ISO/IEC 25010 / Art. 41 Ley de Turismo de Ecuador (Tasa de Servicio 10%) / LOPDP
 * **Ámbito Territorial:** Cantón Manta, Provincia de Manabí, Ecuador (Catastro Oficial de 116 establecimientos activos)
 * **Fecha de Emisión:** Octubre 2026 (Versión 4.0 - Modelo Extranet y Motor de Reservas Puro sin PMS)
-* **Propósito del Sistema:** Motor de reservas y cotización online por tipos de habitación y cupos, confirmación de abonos con pasarelas digitales locales (PayPhone, DeUna, Kushki), validación/canje de vouchers digitales con código QR, gestión dinámica de tarifas/temporadas (conmutador IVA 15% / 8% por Decreto) y gobernanza cantonal multi-tenant para los alojamientos de Manta.
+* **Propósito del Sistema:** Motor de reservas y cotización online por tipos de habitación y cupos, confirmación de abonos con pasarelas digitales locales (PayPhone, DeUna, Kushki), validación de vouchers digitales por código único de confirmación (`RES-XXXX`), gestión dinámica de tarifas/temporadas (conmutador IVA 15% / 8% por Decreto) y gobernanza cantonal multi-tenant para los alojamientos de Manta.
 * **Delimitación Conceptual (No-PMS):** El sistema **NO es un PMS interno** (no incluye procesos de *check-in/check-out* de habitaciones físicas numeradas, entrega de llaves, estados de limpieza/aseo ni mantenimiento operativo), ni emite facturas electrónicas del SRI (proceso contable interno de cada hotel).
 
 ---
@@ -19,15 +19,15 @@
 | **ACT-01** | **Superadministrador (Superadmin Cantonal)** | Máxima autoridad de gobernanza turística cantonal. Gestiona el catastro oficial de alojamientos de Manta (116 establecimientos activos: 76 hostales, 39 hoteles y 1 hostería), modalidades, categorías por estrellas y roles; supervisa tableros consolidados de reservas y activa decretos globales de IVA al 8% en feriados turísticos. |
 | **ACT-02** | **Administrador del Hotel (Admin Hotel)** | Responsable comercial y administrativo del establecimiento. Configura datos comerciales de su hotel, personal interno (encargados de reservas y revenue managers) y opera el interruptor para activar o desactivar la tasa del 10% de servicio turístico en la cotización web (Art. 41 Ley de Turismo). |
 | **ACT-03** | **Encargado de Tarifas y Cupos (Revenue Manager)** | Responsable comercial de disponibilidad. Administra tipos de habitación ofertados, cupos disponibles para venta web, temporadas, planes tarifarios y el conmutador rápido de emergencia para cotizaciones con IVA al 8% ante decretos presidenciales de última hora. |
-| **ACT-04** | **Operador de Reservas / Recepción** | Personal encargado de la bandeja de reservas del hotel. Recibe reservas entrantes en tiempo real con alertas visuales y sonoras; confirma reservas en 1 clic; **valida y canjea el Voucher Digital con código QR** cuando el huésped hace efectiva su reserva; genera enlaces de cobro digital (PayPhone/DeUna) y registra el número de recibo interno del hotel para conciliación. |
-| **ACT-05** | **Cliente / Huésped (Usuario Público)** | Turista nacional o extranjero. Consulta disponibilidad por tipos de habitación, selecciona fechas de entrada y salida, compara planes de tarifa y servicios adicionales, observa el desglose transparente (IVA 15%/8% + 10% servicio si aplica), reserva como invitado (*Guest Checkout*) o con cuenta y descarga su Voucher Digital con código QR. |
+| **ACT-04** | **Operador de Reservas / Recepción** | Personal encargado de la bandeja de reservas del hotel. Recibe reservas entrantes en tiempo real con alertas visuales y sonoras; confirma reservas en 1 clic; **valida y registra el Voucher Digital por código de reserva** cuando el huésped se presenta a efectivizar su estadía; genera enlaces de cobro digital (PayPhone/DeUna) y registra el número de recibo interno del hotel para conciliación. |
+| **ACT-05** | **Cliente / Huésped (Usuario Público)** | Turista nacional o extranjero. Consulta disponibilidad por tipos de habitación, selecciona fechas de entrada y salida, compara planes de tarifa y servicios adicionales, observa el desglose transparente (IVA 15%/8% + 10% servicio si aplica), reserva como invitado (*Guest Checkout*) o con cuenta y descarga su Voucher Digital con código de confirmación. |
 
 ### 1.2 Actores Externos (Sistemas e Interfaces Integradas)
 
 | Actor Externo | Tipo de Interfaz | Función en el Ecosistema |
 | :--- | :--- | :--- |
-| **EXT-01: Pasarelas de Pago Digitales (PayPhone / DeUna / Kushki)** | API REST / Webhooks | Procesamiento de cobros digitales en USD mediante tarjetas de crédito/débito y transferencias directas con código QR, retornando confirmación inmediata de pago. |
-| **EXT-02: Servicio de Notificaciones (WhatsApp API / Email SMTP)** | Web Service REST / SMTP | Despacho automático de vouchers de confirmación con código QR al huésped y enlaces de cobro. |
+| **EXT-01: Pasarelas de Pago Digitales (PayPhone / DeUna / Kushki)** | API REST / Webhooks | Procesamiento de cobros digitales en USD mediante tarjetas de crédito/débito y transferencias directas móviles, retornando confirmación inmediata de pago. |
+| **EXT-02: Servicio de Notificaciones (WhatsApp API / Email SMTP)** | Web Service REST / SMTP | Despacho automático de vouchers de confirmación y enlaces de cobro al huésped. |
 
 ---
 
@@ -43,18 +43,18 @@
 * **RF-06 (Servicios Complementarios de Alojamiento - Extras Opcionales):** Selección opcional de servicios asociados a la reserva: *Traslado Aeropuerto Eloy Alfaro de Manta $\leftrightarrow$ Hotel*, *Cama supletoria*, *Cuna para bebé* o *Salida extendida*. Se excluyen tours o paquetes externos al hospedaje.
 * **RF-07 (Localización Geográfica Cantonal y Puntos de Interés de Manta):** Mapa interactivo con ubicación en las 7 parroquias de Manta (Manta Matriz, Tarqui, Los Esteros, San Mateo, Eloy Alfaro, Santa Marianita y San Lorenzo) y tiempos estimados de traslado hacia atractivos clave (Aeropuerto Eloy Alfaro, Terminal Terrestre, Playa El Murciélago y Mall del Pacífico).
 * **RF-08 (Reseñas y Calificaciones Verificadas por Subcriterios):** Puntuación del alojamiento y desglose de valoraciones de huéspedes verificados en escala de 1 a 10 por: *Limpieza, Ubicación, Atención del Personal, Relación Calidad-Precio y Conectividad WiFi*.
-* **RF-09 (Emisión de Voucher Digital de Reserva con Código QR):** Generación inmediata del comprobante oficial de reserva y pago con código único (`#RES-XXXX`), desglose económico, estado de acreditación y código QR escaneable para validación en el hotel.
+* **RF-09 (Emisión de Voucher Digital de Reserva con Código Único):** Generación inmediata del comprobante oficial de reserva y pago con código único de confirmación (`#RES-XXXX`), desglose económico, PIN de verificación y estado de acreditación para su validación en el hotel.
 
 ---
 
 ### Módulo 2: Bandeja de Reservas del Hotel y Validación de Vouchers (Extranet No-PMS)
 
-* **RF-10 (Bandeja de Reservas Entrantes en Tiempo Real):** Pantalla centralizada del hotel que clasifica las reservas según su ciclo comercial: `Por Confirmar`, `Confirmada`, `Voucher Validado`, `Liquidada / Completada` y `Cancelada`.
+* **RF-10 (Bandeja de Reservas Entrantes en Tiempo Real):** Pantalla centralizada del hotel que clasifica las reservas según su ciclo comercial: `Por Confirmar`, `Confirmada`, `Validada`, `Liquidada / Completada` y `Cancelada`.
 * **RF-11 (Sistema de Alertas Visuales y Sonoras Inmediatas):** Notificación visual destacada y alerta sonora en el panel del operador del hotel al ingresar una nueva reserva desde el motor público web.
 * **RF-12 (Confirmación Ágil de Reserva en 1 Clic):** Verificación de los datos de la reserva entrante y confirmación inmediata en 1 solo clic, descontando automáticamente el cupo web del tipo de habitación contratado.
-* **RF-13 (Validación y Canje de Voucher Digital con Código QR):** Buscador y validador rápido de códigos de reserva/QR (`#RES-XXXX`) para que el hotel registre en 1 clic que el huésped presentó su voucher y **efectivizó su reserva** (`Voucher Validado`), sin requerir procesos de check-in/check-out físico ni asignación de número de cuarto.
+* **RF-13 (Validación de Reserva por Código de Confirmación):** Buscador y validador rápido de códigos de reserva (`#RES-XXXX`) para que el hotel registre en 1 clic que el huésped presentó su voucher y **efectivizó su estadía** (`Validada`), sin requerir procesos de check-in/check-out físico ni asignación de número de cuarto.
 * **RF-14 (Conciliación con Recibo Externo del Establecimiento):** Ficha de liquidación donde el hotel puede copiar en 1 clic los datos fiscales del titular y registrar el número de comprobante/recibo emitido en su propio sistema contable externo.
-* **RF-15 (Generación de Links de Cobro Digital):** Creación de enlaces de pago seguro (PayPhone / DeUna / Kushki) con código QR y envío directo por WhatsApp o correo para reservas con pago pendiente.
+* **RF-15 (Generación de Links de Cobro Digital):** Creación de enlaces de pago seguro (PayPhone / DeUna / Kushki) y envío directo por WhatsApp o correo para reservas con pago pendiente.
 * **RF-16 (Liberación Automática de Cupos por Cancelación):** Al marcarse una reserva como `Cancelada` (por el huésped dentro del plazo flexible o por el hotel ante falta de pago), el sistema reintegra automáticamente el cupo al inventario de venta web.
 * **RF-17 (Directorio Histórico de Clientes de Reserva):** Registro y búsqueda rápida de titulares de reservas por cédula/pasaporte, nombre o correo electrónico, mostrando cantidad de reservas acumuladas e inversión total.
 
@@ -72,7 +72,7 @@
 ### Módulo 4: Cobros Digitales y Pasarelas de Pago
 
 * **RF-22 (Procesamiento de Pagos Digitales Locales e Internacionales):** Cobro directo en USD mediante tarjetas de crédito/débito (PayPhone, Kushki, Datafast, Stripe).
-* **RF-23 (Cobro Inmediato con Código QR y Transferencias):** Cobro instantáneo mediante código QR y transferencia bancaria con DeUna (Banco Pichincha).
+* **RF-23 (Cobro Inmediato Móvil y Transferencias):** Cobro instantáneo mediante app móvil y transferencia bancaria con DeUna (Banco Pichincha).
 * **RF-24 (Conciliación Automática vía Webhooks / Simulación en Vivo):** Actualización inmediata del estado del pago (`Completado`) y acreditación automática en el comprobante de la reserva.
 
 ---
@@ -97,7 +97,7 @@
 
 * **RNF-01 (Tiempo de Respuesta en Cotizaciones):** La búsqueda de disponibilidad de cupos y desglose tributario debe responder en **menos de 1.0 segundo**.
 * **RNF-02 (Concurrencia en Temporadas Altas):** Capacidad para soportar al menos **150 usuarios concurrentes simultáneos** durante feriados nacionales y eventos en Manta.
-* **RNF-03 (Usabilidad en Gestión de Reservas):** La confirmación de una reserva o la validación de un Voucher QR debe completarse en **máximo 2 clics**.
+* **RNF-03 (Usabilidad en Gestión de Reservas):** La confirmación de una reserva o la validación de un Voucher por código debe completarse en **máximo 2 clics**.
 * **RNF-04 (Diseño Responsivo Multidispositivo y Temas Claro/Oscuro):** Portal público mobile-first (360px a 430px) y panel extranet adaptable con soporte de modo claro y oscuro.
 * **RNF-05 (Seguridad Criptográfica):** Comunicaciones bajo **HTTPS / TLS 1.3** y contraseñas almacenadas con **Argon2id o BCrypt**.
 * **RNF-06 (Tokenización y Cumplimiento PCI-DSS):** Enlaces de cobro con tokens únicos y expiración temporal; el sistema jamás almacena códigos CVV ni datos sensibles de tarjetas.
@@ -113,9 +113,9 @@
 | Módulo / Funcionalidad | Superadmin | Admin Hotel | Revenue Manager | Operador Reservas / Recepción | Huésped |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Buscar habitaciones, cotizar y elegir planes/extras (RF-01 al RF-08)** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Reservar (con Cuenta o Guest Checkout) y Voucher QR (RF-02, RF-09)** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Reservar (con Cuenta o Guest Checkout) y Voucher (RF-02, RF-09)** | ✅ | ✅ | ❌ | ❌ | ✅ |
 | **Bandeja de Reservas y Alertas en Tiempo Real (RF-10, RF-11)** | ✅ (Todo Manta) | ✅ (Su hotel) | 👁️ (Lectura) | ✅ (Operativo) | ❌ |
-| **Confirmar Reserva y Validar Voucher QR en 1 clic (RF-12, RF-13, RF-16)** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Confirmar Reserva y Validar Voucher en 1 clic (RF-12, RF-13, RF-16)** | ✅ | ✅ | ❌ | ✅ | ❌ |
 | **Conciliar Recibo Externo y Copiar Ficha Cliente (RF-14)** | ✅ | ✅ | ❌ | ✅ | ❌ |
 | **Generar Link de Cobro Digital y Simular/Conciliar Pago (RF-15, RF-22..24)** | ✅ | ✅ | ❌ | ✅ | ❌ |
 | **Directorio de Clientes de Reserva (RF-17)** | ✅ | ✅ | ❌ | ✅ | ❌ |

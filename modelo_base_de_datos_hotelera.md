@@ -103,7 +103,7 @@ erDiagram
         string estado
         numeric total_reserva_usd
         numeric saldo_pendiente_usd
-        string codigo_voucher_qr
+        string codigo_voucher_confirmacion
     }
 
     PAGO {
@@ -145,10 +145,10 @@ erDiagram
 * `canal_venta`: `id_canal` (PK), nombre, comision_porcentaje, es_directo.
 
 ### Módulo 6: Huéspedes y Protección de Datos (LOPDP)
-* `huesped`: `id_huesped` (PK), tipo_documento, numero_documento, nombres, apellidos, email, telefono_whatsapp, direccion, acepta_politica_privacidad, fecha_consentimiento_lopdp, visitas_acumuladas.
+* `huesped`: `id_huesped` (PK), tipo_documento (CEDULA, RUC, PASAPORTE), numero_documento (validado por tipo), nombres, apellidos, razon_social (obligatorio para RUC), pais_origen, nacionalidad, ciudad, direccion, email, telefono_whatsapp, fecha_nacimiento, idioma_preferido, contacto_emergencia_nombre, contacto_emergencia_telefono, preferencias_alojamiento, acepta_politica_privacidad, fecha_consentimiento_lopdp, reservas_acumuladas, noches_acumuladas, gasto_total_acumulado_usd.
 
 ### Módulo 7: Reservas y Operación de Mostrador
-* `reserva`: `id_reserva` (PK), `id_hotel` (FK), `id_huesped` (FK), `id_canal` (FK), fecha_checkin, fecha_checkout, numero_noches, adultos, ninos, estado, subtotal_hospedaje_usd, base_imponible_total, porcentaje_iva_aplicado, monto_iva_usd, aplico_tasa_servicio_10, monto_servicio_10_usd, total_reserva_usd, saldo_pendiente_usd, codigo_voucher_qr, `id_recepcionista_checkin` (FK), `id_recepcionista_checkout` (FK).
+* `reserva`: `id_reserva` (PK), `id_hotel` (FK), `id_huesped` (FK), `id_canal` (FK), fecha_entrada, fecha_salida, numero_noches, adultos, ninos, estado, subtotal_hospedaje_usd, base_imponible_total, porcentaje_iva_aplicado, monto_iva_usd, aplico_tasa_servicio_10, monto_servicio_10_usd, total_reserva_usd, saldo_pendiente_usd, codigo_voucher_confirmacion, voucher_validado, fecha_validacion_voucher, `id_usuario_valida_voucher` (FK).
 * `reserva_detalle_habitacion`: `id_reserva_detalle` (PK), `id_reserva` (FK), `id_tipo_habitacion` (FK), `id_plan_tarifa` (FK), `id_habitacion` (FK asignada manualmente por recepción en mostrador), `id_usuario_asigna` (FK), tarifa_noche_pactada, subtotal_habitacion.
 * `reserva_servicio_adicional`: `id_servicio_adicional` (PK), `id_reserva` (FK), tipo_servicio, descripcion, costo_usd, es_cortesia.
 

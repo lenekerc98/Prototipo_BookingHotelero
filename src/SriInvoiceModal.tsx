@@ -156,12 +156,12 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
           }}
         >
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold text-sm tracking-wide text-amber-400">Comprobante de Pago Digital</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+            <span className="font-semibold text-sm tracking-wide text-amber-400">Comprobante de reserva</span>
             <span className="text-slate-400">·</span>
-            <span className="font-mono text-slate-300">Pasarela PayPhone / DeUna</span>
+            <span className="font-mono text-slate-300">Pago en línea</span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-950 text-emerald-300 border border-emerald-800">
-              ✓ Cobro Aprobado
+              Pago confirmado
             </span>
           </div>
 
@@ -174,7 +174,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   viewTab === "voucher" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-300 hover:text-white"
                 }`}
               >
-                🧾 Voucher de Pago (Huésped)
+                Voucher de reserva
               </button>
               <button
                 onClick={() => setViewTab("reception")}
@@ -182,14 +182,14 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   viewTab === "reception" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-300 hover:text-white"
                 }`}
               >
-                🏨 Ficha y Datos del Huésped
+                Datos del huésped
               </button>
             </div>
 
             <button
               onClick={onClose}
               className="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-base cursor-pointer"
-              title="Cerrar modal"
+              title="Cerrar"
             >
               ×
             </button>
@@ -198,25 +198,22 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
 
         {/* Notice: Comprobante digital de reserva y liquidación */}
         <div className="px-5 py-2.5 bg-amber-50 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-950">
-          <div className="flex items-center gap-2">
-            <span className="text-base">🏛️</span>
-            <div>
-              <p className="font-bold text-[11px] leading-tight">
-                Comprobante de Reserva y Liquidación: Hotel {hotelMeta.nombreComercial} (RUC: {hotelMeta.ruc})
-              </p>
-              <p className="text-[10px] text-amber-800 mt-0.5">
-                La plataforma procesa y certifica la reserva y el pago online. El hotel entrega las llaves y el recibo al huésped en recepción.
-              </p>
-            </div>
+          <div>
+            <p className="font-bold text-[11px] leading-tight">
+              {hotelMeta.nombreComercial} · RUC: {hotelMeta.ruc}
+            </p>
+            <p className="text-[10px] text-amber-800 mt-0.5">
+              Reserva garantizada con pago confirmado. Presenta este comprobante o su código de reserva a tu llegada.
+            </p>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {savedHotelInvoice ? (
-              <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                <span>✓</span> Recibo Hotel: #{savedHotelInvoice}
+              <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Recibo hotel: #{savedHotelInvoice}
               </span>
             ) : (
               <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-400">
-                Recibo Hotel: Pendiente en Recepción
+                Recibo: Pendiente de entrega
               </span>
             )}
           </div>
@@ -230,16 +227,16 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
             <div className="max-w-2xl mx-auto rounded-2xl border bg-white shadow-md overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
               {/* Voucher header */}
               <div className="p-6 text-center border-b relative" style={{ background: "linear-gradient(135deg, #0c1220 0%, #1e3a5f 100%)", color: "#ffffff" }}>
-                <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center text-xl mx-auto mb-2">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center font-bold text-lg mx-auto mb-2">
                   ✓
                 </div>
-                <p className="mono text-[10px] uppercase tracking-widest text-amber-400 font-bold">Comprobante Oficial de Pago Digital</p>
+                <p className="mono text-[10px] uppercase tracking-widest text-amber-400 font-bold">Voucher de Reserva Garantizada</p>
                 <h2 className="text-2xl font-bold mt-1 text-white" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</h2>
                 <p className="text-xs text-slate-300">{hotelMeta.razonSocial} · RUC: {hotelMeta.ruc}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">📍 {hotelMeta.dirMatriz} · Manta, Ecuador</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">{hotelMeta.dirMatriz} · Manta, Ecuador</p>
 
                 <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs text-slate-200">
-                  <span>Autorización Pasarela:</span>
+                  <span>Autorización pasarela:</span>
                   <span className="font-mono font-bold text-amber-300">{authCode}</span>
                 </div>
               </div>
@@ -262,9 +259,8 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400">Método de Pago</span>
-                    <p className="font-medium text-slate-700 flex items-center gap-1">
-                      <span>💳</span>
-                      <span>{invoice.payMethod}</span>
+                    <p className="font-medium text-slate-700">
+                      {invoice.payMethod}
                     </p>
                   </div>
                 </div>
@@ -272,25 +268,25 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 {/* Guest and Stay Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
-                    <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <span>👤</span> Datos del Huésped
+                    <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
+                      Datos del huésped
                     </p>
                     <div className="space-y-1 text-slate-600">
                       <p><strong className="text-slate-800">Nombre:</strong> {invoice.guest}</p>
-                      <p><strong className="text-slate-800">C.I. / Pasaporte / RUC:</strong> <span className="font-mono">{clientDoc}</span></p>
+                      <p><strong className="text-slate-800">Identificación:</strong> <span className="font-mono">{clientDoc}</span></p>
                       <p><strong className="text-slate-800">Email:</strong> {clientEmail}</p>
                       <p><strong className="text-slate-800">Teléfono:</strong> {clientPhone}</p>
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
-                    <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <span>🛏️</span> Detalle de la Estancia Reservada
+                    <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
+                      Detalle de la estancia
                     </p>
                     <div className="space-y-1 text-slate-600">
-                      <p><strong className="text-slate-800">Tipo de Habitación:</strong> {roomDescription}</p>
-                      <p><strong className="text-slate-800">Fecha de Entrada (Arribo):</strong> <span className="font-mono">{invoice.checkIn} (desde 14:00h)</span></p>
-                      <p><strong className="text-slate-800">Fecha de Salida:</strong> <span className="font-mono">{invoice.checkOut} (hasta 12:00h)</span></p>
+                      <p><strong className="text-slate-800">Habitación:</strong> {roomDescription}</p>
+                      <p><strong className="text-slate-800">Entrada:</strong> <span className="font-mono">{invoice.checkIn} (desde 14:00h)</span></p>
+                      <p><strong className="text-slate-800">Salida:</strong> <span className="font-mono">{invoice.checkOut} (hasta 12:00h)</span></p>
                       <p><strong className="text-slate-800">Duración:</strong> {invoice.nights} noche{invoice.nights > 1 ? "s" : ""}</p>
                     </div>
                   </div>
@@ -310,7 +306,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                     <tbody className="divide-y divide-slate-100">
                       <tr>
                         <td className="px-3.5 py-2.5 font-medium text-slate-800">
-                          Servicio de Hospedaje ({roomDescription})
+                          Alojamiento ({roomDescription})
                         </td>
                         <td className="px-3.5 py-2.5 text-center font-mono">{invoice.nights}</td>
                         <td className="px-3.5 py-2.5 text-right font-mono">{fmtUsd(unitPrice)}</td>
@@ -321,28 +317,28 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
 
                   <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-col items-end gap-1 font-mono text-xs">
                     <div className="flex justify-between w-72 text-slate-600">
-                      <span>Subtotal Neto Hospedaje:</span>
+                      <span>Subtotal neto:</span>
                       <span>{fmtUsd(subtotal15)}</span>
                     </div>
                     <div className="flex justify-between w-72 text-slate-600">
                       <span>
-                        IVA {ivaPct}% {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}:
+                        IVA {ivaPct}% {ivaPct === 8 ? "(Tarifa feriado)" : ""}:
                       </span>
                       <span className={ivaPct === 8 ? "text-emerald-700 font-bold" : ""}>{fmtUsd(ivaAmount)}</span>
                     </div>
                     {hasService10 ? (
                       <div className="flex justify-between w-72 text-slate-600">
-                        <span>10% Servicio Turístico (Art. 41 Ley Turismo):</span>
+                        <span>10% Servicio turístico:</span>
                         <span>{fmtUsd(servicio10)}</span>
                       </div>
                     ) : (
                       <div className="flex justify-between w-72 text-slate-400 text-[11px]">
-                        <span>10% Servicio Turístico (Exento Hostal):</span>
+                        <span>10% Servicio turístico:</span>
                         <span>$0.00</span>
                       </div>
                     )}
                     <div className="flex justify-between w-72 pt-2 mt-1 border-t border-slate-300 font-bold text-slate-900 text-sm">
-                      <span>TOTAL LIQUIDADO (USD):</span>
+                      <span>Total pagado (USD):</span>
                       <span className="text-amber-600">{fmtUsd(computedTotal)}</span>
                     </div>
                   </div>
@@ -350,28 +346,28 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
 
                 {/* Fiscal Note Box */}
                 <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 leading-relaxed text-[11px]">
-                  <p className="font-bold flex items-center gap-1.5 mb-1 text-xs">
-                    <span>📌</span> Comprobante Digital de Reserva y Pago
+                  <p className="font-bold mb-1 text-xs">
+                    Información de llegada
                   </p>
                   <p>
-                    Este voucher certifica su reserva garantizada y pago en línea. <strong>Presente el código QR al arribar a {hotelMeta.nombreComercial}</strong> para validar su reserva y recibir el comprobante contable oficial del establecimiento.
+                    Presenta este voucher digital o código de confirmación al llegar a <strong>{hotelMeta.nombreComercial}</strong> para validar tu reserva y coordinar los detalles de tu estancia.
                   </p>
                 </div>
 
-                {/* QR Code and Barcode */}
+                {/* Official Confirmation Badge and Barcode */}
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 p-1 rounded-lg border border-slate-300 bg-white flex items-center justify-center">
-                      <div className="grid grid-cols-6 gap-0.5 w-12 h-12">
-                        {Array.from({ length: 36 }).map((_, i) => (
-                          <div key={i} className="rounded-xs" style={{ background: (i % 2 === 0 || i % 5 === 0) ? "#0c1220" : "transparent" }} />
-                        ))}
-                      </div>
+                    <div className="px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-50 text-center min-w-[120px]">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Confirmación</span>
+                      <p className="font-mono font-bold text-slate-900 text-sm tracking-wider">RES-{seqDigits}</p>
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800 text-[11px]">Código QR de Validación</p>
-                      <p className="text-[10px] text-slate-400">Presenta este código en la recepción del hotel.</p>
-                      <p className="font-mono text-[10px] text-emerald-700 font-semibold mt-0.5">ESTADO: PAGADO EN LÍNEA</p>
+                      <p className="font-bold text-slate-800 text-[11px]">Voucher de reserva garantizada</p>
+                      <p className="text-[10px] text-slate-500">Válido en la recepción del hotel</p>
+                      <p className="font-mono text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                        ESTADO: CONFIRMADO
+                      </p>
                     </div>
                   </div>
                   <div className="w-full sm:w-auto">
@@ -389,16 +385,16 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               <div className="p-4 rounded-xl border bg-white shadow-sm" style={{ borderColor: "#cbd5e1" }}>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                      <span>🧾</span> Registro de Recibo / Liquidación del Hotel
+                    <h3 className="font-bold text-slate-900 text-sm">
+                      Número de recibo o factura del hotel
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Ingrese aquí el número de recibo o comprobante interno asignado por recepción para este huésped.
+                      Ingresa el número de recibo o comprobante asignado en recepción para este huésped.
                     </p>
                   </div>
                   {savedHotelInvoice && (
                     <span className="mono text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      ✓ Registrado
+                      Registrado
                     </span>
                   )}
                 </div>
@@ -417,7 +413,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                       type="submit"
                       className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
                     >
-                      Guardar Nº Recibo
+                      Guardar
                     </button>
                     {savedHotelInvoice && (
                       <button
@@ -433,7 +429,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
                     <div>
                       <p className="text-xs font-bold text-emerald-900">
-                        Nº Recibo del Hotel Registrado:
+                        Nº de comprobante del hotel:
                       </p>
                       <p className="font-mono text-sm font-bold text-emerald-700">
                         #{savedHotelInvoice}
@@ -454,53 +450,52 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               <div className="p-4 rounded-xl border bg-white shadow-sm space-y-3" style={{ borderColor: "#cbd5e1" }}>
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                    Datos del Huésped Registrados en la Reserva
+                    Datos del huésped
                   </h4>
                   <button
                     onClick={handleCopyGuestBillingData}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span>{copiedData ? "✓ Copiado" : "📋"}</span>
-                    <span>{copiedData ? "¡Datos copiados al portapapeles!" : "Copiar Ficha del Huésped"}</span>
+                    <span>{copiedData ? "✓ Copiado" : "Copiar datos"}</span>
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Razón Social / Huésped</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Nombre completo</span>
                     <p className="font-bold text-slate-800 text-sm select-all">{invoice.guest}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Cédula / RUC / Pasaporte</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Identificación</span>
                     <p className="font-mono font-bold text-slate-800 text-sm select-all">{clientDoc}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Correo Electrónico de Contacto</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Correo electrónico</span>
                     <p className="font-medium text-slate-700 select-all">{clientEmail}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Teléfono de Contacto</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Teléfono</span>
                     <p className="font-medium text-slate-700 select-all">{clientPhone}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 sm:col-span-2">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Dirección del Cliente</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Dirección</span>
                     <p className="font-medium text-slate-700 select-all">{clientAddress}</p>
                   </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-slate-100 border border-slate-200 text-xs">
-                  <p className="font-bold text-slate-800 mb-1">Desglose Referencial para el Software Contable Externo del Hotel:</p>
+                  <p className="font-bold text-slate-800 mb-1">Resumen de cobro:</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="p-2 rounded bg-white">
-                      <p className="text-[10px] text-slate-400">Subtotal Base ({ivaPct}%)</p>
+                      <p className="text-[10px] text-slate-400">Subtotal</p>
                       <p className="font-mono font-bold text-slate-800">{fmtUsd(subtotal15)}</p>
                     </div>
                     <div className="p-2 rounded bg-white">
-                      <p className="text-[10px] text-slate-400">IVA {ivaPct}%</p>
+                      <p className="text-[10px] text-slate-400">IVA ({ivaPct}%)</p>
                       <p className="font-mono font-bold text-slate-800">{fmtUsd(ivaAmount)}</p>
                     </div>
                     <div className="p-2 rounded bg-white">
-                      <p className="text-[10px] text-slate-400">10% Servicio Turístico</p>
+                      <p className="text-[10px] text-slate-400">10% Servicio</p>
                       <p className="font-mono font-bold text-slate-800">{fmtUsd(servicio10)}</p>
                     </div>
                   </div>
@@ -514,7 +509,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
         {/* Modal footer */}
         <div className="px-6 py-3.5 border-t flex flex-wrap items-center justify-between gap-3 bg-white" style={{ borderColor: "#cbd5e1" }}>
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span>🛡️ Transacción procesada por pasarela segura</span>
+            <span>Transacción procesada de forma segura</span>
             <span>·</span>
             <span className="mono">{authCode}</span>
           </div>
@@ -524,7 +519,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               onClick={handlePrint}
               className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-300 hover:bg-slate-100 text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              <span>🖨️</span> Imprimir Comprobante
+              Imprimir comprobante
             </button>
             <button
               onClick={onClose}

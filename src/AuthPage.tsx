@@ -35,7 +35,7 @@ const ROLE_LABELS: Record<AdminRole, { label: string; color: string; bg: string;
   superadmin: { label: "Superadmin Cantonal", color: "#b45309", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.35)", desc: "116 hoteles de Manta" },
   admin: { label: "Administrador de Hotel", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.35)", desc: "Switch 10% y equipo de su hotel" },
   manager: { label: "Revenue Manager", color: "#2563eb", bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.35)", desc: "Tarifas, cupos web e IVA 8%" },
-  receptionist: { label: "Operador Reservas / Recepción", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc: "Bandeja, Vouchers QR y pagos" },
+  receptionist: { label: "Operador Reservas / Recepción", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc: "Bandeja, validación y cobros" },
 };
 
 export default function AuthPage({
@@ -99,8 +99,7 @@ export default function AuthPage({
               className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-slate-100 hover:border-slate-300 cursor-pointer flex items-center gap-1.5 shadow-2xs"
               style={{ background: "var(--card)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              <span>🌐</span>
-              <span className="hidden sm:inline">Web de Huéspedes</span>
+              <span>Portal de Huéspedes</span>
             </button>
           )}
 
@@ -111,8 +110,7 @@ export default function AuthPage({
               style={{ background: "var(--card)", borderColor: "var(--border)", color: "var(--foreground)" }}
               title="Cambiar tema claro / oscuro"
             >
-              <span>{theme === "dark" ? "☀️" : "🌙"}</span>
-              <span className="hidden sm:inline">{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+              <span>{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
             </button>
           )}
         </div>
@@ -132,7 +130,6 @@ export default function AuthPage({
                 boxShadow: tab === "guest" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
               }}
             >
-              <span>👤</span>
               <span>Soy cliente</span>
             </button>
             <button
@@ -145,7 +142,6 @@ export default function AuthPage({
                 boxShadow: tab === "admin" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
               }}
             >
-              <span>🏨</span>
               <span>Acceso hotel</span>
             </button>
           </div>
@@ -234,7 +230,6 @@ export default function AuthPage({
                       className="flex-1 py-2 rounded-xl border text-xs font-semibold transition-all hover:bg-slate-100 cursor-pointer flex items-center justify-center gap-1.5"
                       style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
                     >
-                      <span>{p === "Google" ? "🌐" : "🍎"}</span>
                       <span>{p}</span>
                     </button>
                   ))}

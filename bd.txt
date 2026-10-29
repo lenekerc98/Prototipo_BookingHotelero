@@ -3,7 +3,7 @@
 -- CANTÓN MANTA, MANABÍ, ECUADOR (ARQUITECTURA MULTI-TENANT - EXTRANET & MOTOR WEB)
 -- CÓDIGO ÚNICO DE PROYECTO (CUP): 91880000.0000.390820
 -- CONVENCIÓN: TODAS LAS CLAVES E IDENTIFICADORES INICIAN CON 'id_'
--- ALCANCE: Motor de Reservas por Cupos, Bandeja Extranet, Validación de Vouchers QR,
+-- ALCANCE: Motor de Reservas por Cupos, Bandeja Extranet, Validación de Vouchers Digitales,
 --          Tarifas/Temporadas (IVA 15%/8% Decreto), Tasa 10% Servicio, Pagos y Superadmin
 -- EXCLUSIONES: No es un PMS (no incluye check-in/check-out físico, ni llaves, ni
 --              habitaciones físicas numeradas, ni aseo/mantenimiento) y No incluye
@@ -135,8 +135,8 @@ INSERT INTO rol (id_rol, nombre, descripcion) VALUES
 ('SUPERADMIN', 'Superadministrador Cantonal', 'Control del catastro de Manta, reportes cantonales y alertas globales de IVA 8%'),
 ('ADMIN_HOTEL', 'Administrador de Hotel', 'Gestor general del establecimiento, switch de tasa del 10% y equipo'),
 ('REVENUE_MANAGER', 'Revenue Manager', 'Encargado de tarifas, temporadas, cupos por tipo de habitación y conmutador IVA 8%'),
-('RECEPCIONISTA', 'Operador de Reservas / Recepción', 'Gestión de bandeja de reservas entrantes, confirmación en 1 clic, validación de Voucher QR y links de cobro'),
-('HUESPED', 'Cliente / Huésped', 'Usuario externo para consulta, cotización, reserva y descarga de voucher QR');
+('RECEPCIONISTA', 'Operador de Reservas / Recepción', 'Gestión de bandeja de reservas entrantes, confirmación en 1 clic, validación de Voucher por código y links de cobro'),
+('HUESPED', 'Cliente / Huésped', 'Usuario externo para consulta, cotización, reserva y descarga de voucher de confirmación');
 
 CREATE TABLE usuario (
     id_usuario UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -264,29 +264,71 @@ CREATE TABLE huesped (
     id_huesped UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tipo_documento VARCHAR(15) NOT NULL CHECK (tipo_documento IN ('CEDULA', 'RUC', 'PASAPORTE')),
     numero_documento VARCHAR(25) NOT NULL,
+    
+    -- Nombres y Razón Social (para empresas o personas naturales con RUC)
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
+    razon_social VARCHAR(180),   -- Obligatorio si tipo_documento = 'RUC' (Empresas o personas con RUC comercial)
+    nombre_comercial VARCHAR(150),
+    
+    -- Localización y Datos Geográficos
+    pais_origen VARCHAR(60) NOT NULL DEFAULT 'Ecuador',
+    nacionalidad VARCHAR(60) NOT NULL DEFAULT 'Ecuatoriana',
+    ciudad VARCHAR(80) NOT NULL DEFAULT 'Manta',
+    provincia_estado VARCHAR(80),
+    direccion VARCHAR(255) NOT NULL,
+    codigo_postal VARCHAR(15),
+    
+    -- Contacto Directo y Notificaciones
     email VARCHAR(120) NOT NULL,
     telefono_whatsapp VARCHAR(30) NOT NULL,
-    pais_origen VARCHAR(60) NOT NULL DEFAULT 'Ecuador',
-    ciudad VARCHAR(80),
-    direccion VARCHAR(255),
+    
+    -- Datos de Capacidad Legal y Perfil Hotelero
+    fecha_nacimiento DATE,
+    idioma_preferido VARCHAR(10) NOT NULL DEFAULT 'es' CHECK (idioma_preferido IN ('es', 'en', 'fr', 'de')),
+    
+    -- Contacto de Emergencia (Estándar de Seguridad Turística)
+    contacto_emergencia_nombre VARCHAR(120),
+    contacto_emergencia_telefono VARCHAR(30),
+    
+    -- Preferencias de Alojamiento y Accesibilidad
+    preferencias_alojamiento JSONB DEFAULT '{"tipo_cama": "INDIFERENTE", "accesibilidad_reducida": false}',
     es_invitado_guest_checkout BOOLEAN NOT NULL DEFAULT FALSE,
     
     -- Cumplimiento Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)
     acepta_politica_privacidad BOOLEAN NOT NULL DEFAULT TRUE,
+    acepta_comunicaciones_marketing BOOLEAN NOT NULL DEFAULT FALSE,
     fecha_consentimiento_lopdp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     es_anonimizado BOOLEAN NOT NULL DEFAULT FALSE,
     fecha_anonimizacion TIMESTAMP WITH TIME ZONE,
     
+    -- Fidelidad y Recurrencia en la Red Hotelera de Manta
     reservas_acumuladas INT NOT NULL DEFAULT 1,
+    noches_acumuladas INT NOT NULL DEFAULT 0,
+    gasto_total_acumulado_usd NUMERIC(12,2) NOT NULL DEFAULT 0.00,
+    
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(tipo_documento, numero_documento)
+    
+    UNIQUE(tipo_documento, numero_documento),
+    
+    -- Validaciones de Integridad según Tipo de Documento:
+    -- 1. Cédula ecuatoriana: exactamente 10 dígitos numéricos
+    CONSTRAINT chk_documento_cedula CHECK (
+        tipo_documento != 'CEDULA' OR numero_documento ~ '^[0-9]{10}$'
+    ),
+    -- 2. RUC ecuatoriano: exactamente 13 dígitos numéricos terminados en 001 y razón social obligatoria
+    CONSTRAINT chk_documento_ruc CHECK (
+        tipo_documento != 'RUC' OR (numero_documento ~ '^[0-9]{13}$' AND razon_social IS NOT NULL)
+    ),
+    -- 3. Pasaporte internacional: alfanumérico de 6 a 20 caracteres (sin espacios ni símbolos)
+    CONSTRAINT chk_documento_pasaporte CHECK (
+        tipo_documento != 'PASAPORTE' OR numero_documento ~ '^[A-Z0-9]{6,20}$'
+    )
 );
 
 -- -----------------------------------------------------------------------------
--- 7. RESERVAS Y VALIDACIÓN DE VOUCHERS DIGITALES QR (MODELO EXTRANET NO-PMS)
+-- 7. RESERVAS Y VALIDACIÓN DE VOUCHERS DIGITALES (MODELO EXTRANET NO-PMS)
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE reserva (
@@ -320,8 +362,8 @@ CREATE TABLE reserva (
     total_reserva_usd NUMERIC(12,2) NOT NULL,
     saldo_pendiente_usd NUMERIC(12,2) NOT NULL,
     
-    -- Voucher Digital con Código QR y Trazabilidad de Canje
-    codigo_voucher_qr VARCHAR(100) NOT NULL UNIQUE,
+    -- Voucher Digital con Código de Confirmación y Trazabilidad de Canje
+    codigo_voucher_confirmacion VARCHAR(100) NOT NULL UNIQUE,
     voucher_validado BOOLEAN NOT NULL DEFAULT FALSE,
     fecha_validacion_voucher TIMESTAMP WITH TIME ZONE,
     id_usuario_valida_voucher UUID REFERENCES usuario(id_usuario),
@@ -361,14 +403,14 @@ CREATE TABLE reserva_servicio_adicional (
 CREATE TABLE metodo_pago (
     id_metodo_pago VARCHAR(40) PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL,
-    tipo_procesamiento VARCHAR(30) NOT NULL -- 'PASARELA_DIGITAL', 'TRANSFERENCIA_QR', 'PAGO_EN_HOTEL'
+    tipo_procesamiento VARCHAR(30) NOT NULL -- 'PASARELA_DIGITAL', 'TRANSFERENCIA_MOVIL', 'PAGO_EN_HOTEL'
 );
 
 INSERT INTO metodo_pago (id_metodo_pago, nombre, tipo_procesamiento) VALUES
 ('PAYPHONE_EC', 'PayPhone Ecuador (Visa/Mastercard)', 'PASARELA_DIGITAL'),
-('DEUNA_PICHINCHA', 'DeUna Banco Pichincha (QR / Débito)', 'TRANSFERENCIA_QR'),
+('DEUNA_PICHINCHA', 'DeUna Banco Pichincha (App / Débito)', 'TRANSFERENCIA_MOVIL'),
 ('KUSHKI_EC', 'Kushki Pagos (Tarjetas / Transferencias)', 'PASARELA_DIGITAL'),
-('TRANSFERENCIA_BANCARIA', 'Transferencia Bancaria Directa', 'TRANSFERENCIA_QR'),
+('TRANSFERENCIA_BANCARIA', 'Transferencia Bancaria Directa', 'TRANSFERENCIA_MOVIL'),
 ('PAGO_EN_ALOJAMIENTO', 'Pago Directo en el Alojamiento', 'PAGO_EN_HOTEL');
 
 CREATE TABLE pago (
@@ -410,7 +452,7 @@ CREATE INDEX idx_tipo_habitacion_hotel ON tipo_habitacion(id_hotel);
 CREATE INDEX idx_cupo_fecha_tipo ON cupo_fecha_tipo_habitacion(id_tipo_habitacion, fecha);
 CREATE INDEX idx_reserva_hotel_fechas ON reserva(id_hotel, fecha_entrada, fecha_salida);
 CREATE INDEX idx_reserva_estado ON reserva(id_hotel, estado);
-CREATE INDEX idx_reserva_voucher_qr ON reserva(codigo_voucher_qr);
+CREATE INDEX idx_reserva_voucher_confirmacion ON reserva(codigo_voucher_confirmacion);
 CREATE INDEX idx_pago_reserva ON pago(id_reserva);
 CREATE INDEX idx_link_pago_token ON link_pago(token_hash);
 CREATE INDEX idx_auditoria_hotel_fecha ON bitacora_auditoria(id_hotel, fecha_hora DESC);

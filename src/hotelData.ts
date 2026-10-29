@@ -980,7 +980,7 @@ export interface AuditLogEntry {
   role: string;
   hotelId: string;
   hotelName: string;
-  module: "RESERVAS" | "VOUCHERS_QR" | "TARIFAS_IVA" | "SERVICIO_10" | "PAGOS" | "USUARIOS_LOPDP";
+  module: "RESERVAS" | "VOUCHERS" | "TARIFAS_IVA" | "SERVICIO_10" | "PAGOS" | "USUARIOS_LOPDP";
   action: string;
   detail: string;
   ip: string;
@@ -994,9 +994,9 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
     role: "Operador de Reservas",
     hotelId: "hotel-voyager-manta",
     hotelName: "Hotel Voyager Manta",
-    module: "VOUCHERS_QR",
-    action: "VALIDAR_VOUCHER_QR",
-    detail: "Voucher #RES-8941 (Miguel Torres) validado y canjeado sin fricción",
+    module: "VOUCHERS",
+    action: "VALIDAR_VOUCHER",
+    detail: "Voucher #RES-8941 (Miguel Torres) validado por código de confirmación",
     ip: "186.46.120.44",
   },
   {

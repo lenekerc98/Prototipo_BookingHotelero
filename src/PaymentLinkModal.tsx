@@ -29,7 +29,7 @@ const GATEWAYS = [
   { id: "payphone", name: "PayPhone Ecuador", tag: "Recomendado EC", icon: "📱", desc: "Cobro con tarjeta y App PayPhone" },
   { id: "kushki", name: "Kushki Pagos", tag: "Ecuador / Latam", icon: "💳", desc: "Tarjetas y transferencias bancarias" },
   { id: "datafast", name: "Datafast / Dataweb", tag: "Diners/Visa/MC", icon: "🏦", desc: "Botón de pagos multicrédito" },
-  { id: "deuna", name: "DeUna (Banco Pichincha)", tag: "Transferencia QR", icon: "📲", desc: "Cobro instantáneo sin comisiones altas" },
+  { id: "deuna", name: "DeUna (Banco Pichincha)", tag: "Transferencia Móvil", icon: "📲", desc: "Cobro instantáneo sin comisiones altas" },
   { id: "placetopay", name: "Placetopay", tag: "Produbanco/Pichincha", icon: "🌐", desc: "Pasarela bancaria regional" },
   { id: "stripe", name: "Tarjeta Internacional (Stripe)", tag: "Internacional", icon: "💳", desc: "Visa, Mastercard, Amex del exterior" },
   { id: "paypal", name: "PayPal", tag: "Turistas Globales", icon: "🅿️", desc: "Pago en USD directo desde cuenta PayPal" },
@@ -395,25 +395,17 @@ export default function PaymentLinkModal({
                   </button>
                 </div>
 
-                {/* QR Code and Simulation */}
+                {/* Gateway Simulation */}
                 <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    {/* Visual QR SVG representation */}
-                    <div className="w-16 h-16 rounded-lg bg-white p-1.5 flex items-center justify-center flex-shrink-0 shadow">
-                      <svg viewBox="0 0 24 24" className="w-full h-full text-slate-900 fill-current">
-                        <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm2 2h2v2h-2v-2zm2 2h2v2h-2v-2zm-6 0h2v2h-2v-2zm2-4h2v2h-2v-2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-xs text-white">QR de Cobro Inmediato</p>
-                      <p className="text-[10px] text-slate-400">Escaneable en el counter de recepción con PayPhone o cámara.</p>
-                    </div>
+                  <div>
+                    <p className="font-semibold text-xs text-white">Validación de Pasarela en Línea</p>
+                    <p className="text-[10px] text-slate-400">Verifica la acreditación inmediata de la transacción vía webhook o pasarela.</p>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleSimulatePayment}
-                    className="w-full sm:w-auto px-4 py-2 rounded-lg font-semibold text-xs border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 hover:bg-emerald-900 transition-colors whitespace-nowrap"
+                    className="w-full sm:w-auto px-4 py-2 rounded-lg font-semibold text-xs border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 hover:bg-emerald-900 transition-colors whitespace-nowrap cursor-pointer"
                   >
                     🧪 Simular Pago Exitoso
                   </button>

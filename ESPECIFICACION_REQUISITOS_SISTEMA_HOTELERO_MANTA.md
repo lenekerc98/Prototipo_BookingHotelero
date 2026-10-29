@@ -2,8 +2,8 @@
 ## Sistema de Gestión, Comercialización y Reservas Hoteleras (Cantón Manta, Ecuador)
 
 * **Código Único de Proyecto (CUP):** 91880000.0000.390820  
-* **Objetivo del Sistema:** Plataforma digital integral para la comercialización directa mediante motor de reservas online por tipos de habitación y cupos, administración de tarifas/temporadas por roles, validación de vouchers digitales con código QR y gestión de cobros digitales para los establecimientos de alojamiento del cantón Manta, Ecuador.  
-* **Enfoque del Sistema:** Motor de Reservas Directo para Huéspedes + Extranet Operativa Multihotel (Bandeja de Reservas, Validación de Vouchers QR, Revenue y Cobros Digitales) + Plataforma Cantonal Superadmin.  
+* **Objetivo del Sistema:** Plataforma digital integral para la comercialización directa mediante motor de reservas online por tipos de habitación y cupos, administración de tarifas/temporadas por roles, validación de vouchers digitales por código único de confirmación y gestión de cobros digitales para los establecimientos de alojamiento del cantón Manta, Ecuador.  
+* **Enfoque del Sistema:** Motor de Reservas Directo para Huéspedes + Extranet Operativa Multihotel (Bandeja de Reservas, Validación de Vouchers por Código, Revenue y Cobros Digitales) + Plataforma Cantonal Superadmin.  
 * **Normativa:** IEEE 830 / ISO/IEC 25010 / Art. 41 Ley de Turismo de Ecuador (Régimen de Servicio 10%) / Ley Orgánica de Protección de Datos Personales (LOPDP).  
 * **Versión:** 4.0 (Modelo de Reservas y Extranet Pura sin PMS, Conmutador IVA 8% por Decreto, Tasa 10% Parametrizable y Catastro Oficial Manta 2026 de 116 Establecimientos).
 
@@ -15,7 +15,7 @@ El sistema **NO es un PMS (Property Management System) ni un ERP hotelero intern
 * **No incluye procesos de *check-in* ni *check-out* físico**, entrega de llaves, asignación de números de habitaciones físicas (`101`, `204`), ni control de estados de limpieza/aseo o mantenimiento de cuartos.
 * **No incluye emisión de facturas electrónicas del SRI**, ya que cada establecimiento emite su propio comprobante contable en su sistema externo y únicamente registra el número de recibo en la plataforma como referencia de liquidación.
 
-Su propósito central es resolver con máxima eficiencia la **comercialización directa sin comisiones de OTAs, el control de cupos web por tipo de habitación, la recepción y confirmación ágil de reservas, la validación de Vouchers QR y los cobros digitales locales (PayPhone / DeUna / Kushki)** para los alojamientos del cantón Manta:
+Su propósito central es resolver con máxima eficiencia la **comercialización directa sin comisiones de OTAs, el control de cupos web por tipo de habitación, la recepción y confirmación ágil de reservas, la validación de Vouchers Digitales por código y los cobros digitales locales (PayPhone / DeUna / Kushki)** para los alojamientos del cantón Manta:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -28,11 +28,11 @@ Su propósito central es resolver con máxima eficiencia la **comercialización 
                   ▼                                         ▼
          • Búsqueda de fechas/aforo               • Bandeja de nuevas reservas
          • Catálogo por Tipo de Habitación        • Confirmar reserva en 1 clic
-         • Planes de tarifa y Extras              • Validar / Canje Voucher QR
+         • Planes de tarifa y Extras              • Validar Voucher por Código
          • Desglose IVA 15% / 8% Decreto          • Control de cupos de venta web
          • Desglose 10% Servicio (si aplica)      • Tarifas, temporadas e IVA 8%
          • Guest Checkout o con Cuenta            • Enlaces de pago (PayPhone/DeUna)
-         • Voucher digital con código QR          • Switch 10% Servicio Turístico
+         • Voucher digital de confirmación        • Switch 10% Servicio Turístico
                   │                                         │
                   └───────────────────┬─────────────────────┘
                                       │
@@ -64,10 +64,10 @@ De acuerdo con la operativa comercial del sector hotelero en Manta, el sistema d
    * **Responsabilidades:** Gestiona el catálogo de **Tipos de Habitación ofertados en la web**; ajusta los **cupos disponibles para venta online**; configura tarifas base por noche y multiplicadores por temporada (Baja, Media, Alta); y opera el **conmutador rápido de emergencia IVA 8%** ante decretos presidenciales de feriados turísticos.
 4. **Operador de Reservas / Recepción:**
    * **Alcance:** Atención de la bandeja de reservas y validación de vouchers de **su hotel**.
-   * **Responsabilidades:** Recibe las reservas entrantes en tiempo real con alertas visuales y sonoras; verifica datos del cliente y peticiones especiales; **confirma la reserva en 1 clic**; **valida el Voucher Digital con código QR** cuando el turista se presenta a efectivizar su reserva; genera enlaces de cobro (PayPhone/DeUna) para saldos pendientes; y registra el número de recibo emitido por el hotel para conciliar la estancia.
+   * **Responsabilidades:** Recibe las reservas entrantes en tiempo real con alertas visuales y sonoras; verifica datos del cliente y peticiones especiales; **confirma la reserva en 1 clic**; **valida el Voucher Digital por código de reserva** cuando el turista se presenta a efectivizar su estadía; genera enlaces de cobro (PayPhone/DeUna) para saldos pendientes; y registra el número de recibo emitido por el hotel para conciliar la estancia.
 5. **Cliente / Huésped (Usuario Público):**
    * **Alcance:** Portal web de reservas directas.
-   * **Responsabilidades:** Consulta tipos de habitación disponibles por fechas de entrada y salida; elige planes de tarifa (flexible vs. no reembolsable, con/sin desayuno) y servicios adicionales (traslado aeropuerto, cama supletoria, cuna, salida extendida); visualiza el desglose transparente de impuestos (IVA 15% u 8% + 10% servicio si aplica); reserva como invitado (*Guest Checkout*) o con cuenta; y descarga su Voucher Digital con código QR.
+   * **Responsabilidades:** Consulta tipos de habitación disponibles por fechas de entrada y salida; elige planes de tarifa (flexible vs. no reembolsable, con/sin desayuno) y servicios adicionales (traslado aeropuerto, cama supletoria, cuna, salida extendida); visualiza el desglose transparente de impuestos (IVA 15% u 8% + 10% servicio si aplica); reserva como invitado (*Guest Checkout*) o con cuenta; y descarga su Voucher Digital con código de confirmación.
 
 ---
 
@@ -79,7 +79,7 @@ De acuerdo con la operativa comercial del sector hotelero en Manta, el sistema d
 | **Crear Reserva Online (Cuenta o Guest Checkout)** | ✅ | ✅ | ❌ | ❌ | ✅ |
 | **Bandeja de Reservas Entrantes y Alertas (Tiempo Real)** | ✅ (Todos) | ✅ (Su hotel) | 👁️ (Lectura) | ✅ (Operativo) | ❌ |
 | **Confirmar / Cancelar Reserva en 1 Clic** | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **Validar / Canjear Voucher Digital con Código QR** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Validar Voucher Digital por Código de Reserva** | ✅ | ✅ | ❌ | ✅ | ❌ |
 | **Apertura/Ajuste de Cupos de Venta Web por Tipo** | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **Configuración de Tarifas, Temporadas y Decreto IVA 8%** | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **Generar Link de Cobro Digital (PayPhone/DeUna)** | ✅ | ✅ | ❌ | ✅ | ❌ |
@@ -134,15 +134,15 @@ Con base en el registro oficial del **Catastro Turístico del Cantón Manta**, l
 * **RF-06 (Servicios Complementarios de Alojamiento - Extras):** Selección opcional en el checkout de: *Traslado Aeropuerto Eloy Alfaro $\leftrightarrow$ Hotel*, *Cama supletoria*, *Cuna para bebé* y *Salida extendida*.
 * **RF-07 (Mapa Geográfico Cantonal y Tiempos de Traslado):** Mapa interactivo Leaflet de las 7 parroquias de Manta y cuadro de distancias/tiempos hacia Playa El Murciélago, Mall del Pacífico, Terminal Terrestre y Aeropuerto Eloy Alfaro.
 * **RF-08 (Reseñas y Valoraciones Verificadas):** Calificación general y barras de puntuación (1 a 10) por subcriterios: *Limpieza, Ubicación, Atención del Personal, Relación Calidad-Precio y Conectividad WiFi*.
-* **RF-09 (Voucher Digital con Código QR):** Emisión automática de comprobante digital con código único (`#RES-XXXX`), desglose pagado y código QR para validación en el establecimiento.
+* **RF-09 (Voucher Digital con Código de Confirmación):** Emisión automática de comprobante digital con código único (`#RES-XXXX`), desglose pagado, PIN de verificación y datos de reserva para validación en el establecimiento.
 
-### 4.2 Módulo 2: Bandeja de Reservas y Validación de Vouchers QR (Extranet Hotel)
-* **RF-10 (Bandeja de Reservas Entrantes):** Gestión de reservas por estados: `Por Confirmar`, `Confirmada`, `Voucher Validado`, `Liquidada` y `Cancelada`.
+### 4.2 Módulo 2: Bandeja de Reservas y Validación de Vouchers (Extranet Hotel)
+* **RF-10 (Bandeja de Reservas Entrantes):** Gestión de reservas por estados: `Por Confirmar`, `Confirmada`, `Validada`, `Liquidada` y `Cancelada`.
 * **RF-11 (Alertas Visuales y Sonoras en Tiempo Real):** Notificación sonora y banner visual inmediato cuando ingresa una nueva reserva desde el portal web.
 * **RF-12 (Confirmación de Reserva en 1 Clic):** Aprobación inmediata de reservas pendientes con descuento automático de cupo web.
-* **RF-13 (Validación / Canje de Voucher QR):** Verificación en 1 clic del código QR o código `#RES-XXXX` del turista para marcar la reserva como `Voucher Validado` (efectivizada), reemplazando cualquier proceso pesado de check-in/check-out de PMS.
+* **RF-13 (Validación de Reserva por Código):** Verificación en 1 clic del código `#RES-XXXX` del turista para marcar la reserva como `Validada` (efectivizada), reemplazando cualquier proceso pesado de check-in/check-out de PMS.
 * **RF-14 (Conciliación con Recibo del Hotel):** Copiado rápido de datos del titular y registro del número de recibo emitido por el hotel en su sistema contable.
-* **RF-15 (Generación de Links de Cobro Digital):** Creación de enlaces PayPhone / DeUna con código QR y envío por WhatsApp/correo.
+* **RF-15 (Generación de Links de Cobro Digital):** Creación de enlaces PayPhone / DeUna y envío por WhatsApp/correo.
 * **RF-16 (Reposición de Cupos por Cancelación):** Reintegro automático del cupo web cuando una reserva pasa a estado `Cancelada`.
 * **RF-17 (Directorio de Clientes de Reserva):** Historial y buscador de clientes por documento, nombre o correo.
 
@@ -154,7 +154,7 @@ Con base en el registro oficial del **Catastro Turístico del Cantón Manta**, l
 
 ### 4.4 Módulo 4: Cobros Digitales y Pasarelas de Pago
 * **RF-22 (Pasarelas de Pago con Tarjeta):** Integración con PayPhone, Kushki, Datafast y Stripe.
-* **RF-23 (Cobros QR y Transferencias):** Integración con DeUna (Banco Pichincha) y transferencias bancarias.
+* **RF-23 (Cobros Móviles y Transferencias):** Integración con DeUna (Banco Pichincha) y transferencias bancarias.
 * **RF-24 (Simulación y Conciliación Inmediata):** Confirmación instantánea del pago y actualización del comprobante de reserva.
 
 ### 4.5 Módulo 5: Catálogos Maestros y Configuración Multi-Tenant
