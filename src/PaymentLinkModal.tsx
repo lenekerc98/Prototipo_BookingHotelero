@@ -228,7 +228,7 @@ export default function PaymentLinkModal({
 
               <div>
                 <label className="block font-medium mb-1" style={{ color: "var(--muted-foreground)" }}>
-                  Email para recibo / factura
+                  Email para recibo y comprobante de pago
                 </label>
                 <input
                   type="email"

@@ -87,7 +87,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261000",
@@ -163,14 +163,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 31,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261027",
@@ -241,14 +241,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 69,
     "priceFrom": 34,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261054",
@@ -320,7 +320,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 60,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -330,7 +330,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261081",
@@ -404,14 +404,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 103,
     "priceFrom": 26,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261108",
@@ -481,14 +481,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 120,
     "priceFrom": 18,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261135",
@@ -558,14 +558,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 137,
     "priceFrom": 20,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261162",
@@ -635,14 +635,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 154,
     "priceFrom": 22,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261189",
@@ -712,14 +712,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 171,
     "priceFrom": 24,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261216",
@@ -789,14 +789,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 188,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261243",
@@ -866,14 +866,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 205,
     "priceFrom": 18,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - San Lorenzo (Faro y Reserva), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - San Lorenzo (Faro y Reserva), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector San lorenzo · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261270",
@@ -945,7 +945,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 50,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -955,7 +955,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíeíríííaí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostería - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261297",
@@ -1040,7 +1040,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261324",
@@ -1115,7 +1115,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 60,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -1125,7 +1125,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - San Lorenzo (Faro y Reserva), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - San Lorenzo (Faro y Reserva), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector San lorenzo · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261351",
@@ -1200,14 +1200,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 93,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261378",
@@ -1278,7 +1278,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 45,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -1288,7 +1288,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261405",
@@ -1375,7 +1375,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261432",
@@ -1451,7 +1451,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "tags": [
       "Cerca de la Playa",
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -1461,7 +1461,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261459",
@@ -1555,7 +1555,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Salones de eventos",
       "Concierge"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 5 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261486",
@@ -1631,14 +1631,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 178,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261513",
@@ -1729,7 +1729,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Salones de eventos",
       "Concierge"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 5 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261540",
@@ -1807,7 +1807,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "tags": [
       "Cerca de la Playa",
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -1817,7 +1817,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261567",
@@ -1892,14 +1892,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 49,
     "priceFrom": 34,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261594",
@@ -1971,7 +1971,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 60,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -1981,7 +1981,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261621",
@@ -2057,14 +2057,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 26,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261648",
@@ -2136,14 +2136,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 28,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261675",
@@ -2213,14 +2213,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 117,
     "priceFrom": 31,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261702",
@@ -2290,14 +2290,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 134,
     "priceFrom": 22,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - San Lorenzo (Faro y Reserva), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - San Lorenzo (Faro y Reserva), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector San lorenzo · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261729",
@@ -2369,14 +2369,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 24,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261756",
@@ -2446,14 +2446,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 168,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261783",
@@ -2524,14 +2524,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 185,
     "priceFrom": 18,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261810",
@@ -2617,7 +2617,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Bar / Lounge",
       "Room Service 24h"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 4 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261837",
@@ -2705,7 +2705,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 261864",
@@ -2781,14 +2781,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 37,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261891",
@@ -2859,14 +2859,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 73,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261918",
@@ -2937,7 +2937,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 45,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -2947,7 +2947,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261945",
@@ -3023,14 +3023,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 31,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261972",
@@ -3102,14 +3102,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 22,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 261999",
@@ -3180,14 +3180,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 141,
     "priceFrom": 24,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262026",
@@ -3258,14 +3258,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 158,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262053",
@@ -3335,14 +3335,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 175,
     "priceFrom": 28,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262080",
@@ -3414,14 +3414,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 31,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262107",
@@ -3492,14 +3492,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 209,
     "priceFrom": 22,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262134",
@@ -3569,14 +3569,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 46,
     "priceFrom": 24,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262161",
@@ -3659,7 +3659,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 262188",
@@ -3734,7 +3734,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 45,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -3744,7 +3744,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262215",
@@ -3818,14 +3818,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 97,
     "priceFrom": 20,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262242",
@@ -3896,14 +3896,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 114,
     "priceFrom": 34,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262269",
@@ -3973,14 +3973,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 131,
     "priceFrom": 37,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262296",
@@ -4050,14 +4050,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 148,
     "priceFrom": 26,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262323",
@@ -4128,14 +4128,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 18,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262350",
@@ -4205,14 +4205,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 182,
     "priceFrom": 31,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262377",
@@ -4295,7 +4295,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 262404",
@@ -4369,14 +4369,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 36,
     "priceFrom": 37,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262431",
@@ -4446,14 +4446,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 53,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262458",
@@ -4524,14 +4524,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 70,
     "priceFrom": 18,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262485",
@@ -4603,14 +4603,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 31,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262512",
@@ -4682,14 +4682,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 22,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262539",
@@ -4760,14 +4760,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 121,
     "priceFrom": 24,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262566",
@@ -4838,14 +4838,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 138,
     "priceFrom": 26,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262593",
@@ -4917,14 +4917,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 28,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262620",
@@ -4994,14 +4994,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 172,
     "priceFrom": 31,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262647",
@@ -5071,14 +5071,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 189,
     "priceFrom": 34,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262674",
@@ -5149,7 +5149,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 60,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -5159,7 +5159,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262701",
@@ -5235,14 +5235,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 40,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262728",
@@ -5312,14 +5312,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 60,
     "priceFrom": 28,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262755",
@@ -5389,14 +5389,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 77,
     "priceFrom": 31,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262782",
@@ -5466,14 +5466,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 94,
     "priceFrom": 22,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262809",
@@ -5556,7 +5556,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 262836",
@@ -5630,14 +5630,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 128,
     "priceFrom": 26,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262863",
@@ -5708,14 +5708,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 145,
     "priceFrom": 18,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262890",
@@ -5787,7 +5787,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 50,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -5797,7 +5797,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262917",
@@ -5871,14 +5871,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 179,
     "priceFrom": 34,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Eloy Alfaro, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Eloy Alfaro, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Eloy alfaro · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262944",
@@ -5949,14 +5949,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 24,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262971",
@@ -6026,14 +6026,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 213,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 262998",
@@ -6104,7 +6104,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 45,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -6114,7 +6114,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263025",
@@ -6188,14 +6188,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 67,
     "priceFrom": 20,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263052",
@@ -6265,14 +6265,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 84,
     "priceFrom": 22,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263079",
@@ -6343,14 +6343,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 101,
     "priceFrom": 37,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263106",
@@ -6422,7 +6422,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 65,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -6432,7 +6432,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263133",
@@ -6527,7 +6527,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Salones de eventos",
       "Concierge"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 5 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263160",
@@ -6619,7 +6619,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Bar / Lounge",
       "Room Service 24h"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 4 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263187",
@@ -6710,7 +6710,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Bar / Lounge",
       "Room Service 24h"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 4 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263214",
@@ -6787,7 +6787,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "tags": [
       "Cerca de la Playa",
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -6797,7 +6797,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263241",
@@ -6886,7 +6886,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Bar / Lounge",
       "Room Service 24h"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 4 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263268",
@@ -6982,7 +6982,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Salones de eventos",
       "Concierge"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 5 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263295",
@@ -7073,7 +7073,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Bar / Lounge",
       "Room Service 24h"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 4 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263322",
@@ -7150,7 +7150,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 55,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -7160,7 +7160,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263349",
@@ -7236,14 +7236,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 37,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263376",
@@ -7313,14 +7313,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 108,
     "priceFrom": 26,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263403",
@@ -7391,14 +7391,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 125,
     "priceFrom": 28,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263430",
@@ -7469,14 +7469,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 142,
     "priceFrom": 31,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263457",
@@ -7548,14 +7548,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 34,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263484",
@@ -7628,7 +7628,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "tags": [
       "Cerca de la Playa",
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -7638,7 +7638,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263511",
@@ -7724,7 +7724,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263538",
@@ -7800,7 +7800,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "tags": [
       "Cerca de la Playa",
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -7810,7 +7810,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - San Mateo (Puerto y Playas), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - San Mateo (Puerto y Playas), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector San mateo · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263565",
@@ -7897,7 +7897,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263592",
@@ -7988,7 +7988,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Bar / Lounge",
       "Room Service 24h"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 4 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 4 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263619",
@@ -8075,7 +8075,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263646",
@@ -8149,14 +8149,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 98,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263673",
@@ -8228,14 +8228,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 28,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263700",
@@ -8307,14 +8307,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 31,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263727",
@@ -8385,14 +8385,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 149,
     "priceFrom": 22,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263754",
@@ -8463,14 +8463,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 166,
     "priceFrom": 24,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263781",
@@ -8540,14 +8540,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 183,
     "priceFrom": 26,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Los Esteros, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Los esteros · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263808",
@@ -8619,14 +8619,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 28,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263835",
@@ -8697,14 +8697,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 37,
     "priceFrom": 20,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - Centro Comercial, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263862",
@@ -8775,14 +8775,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 54,
     "priceFrom": 34,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263889",
@@ -8854,14 +8854,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 37,
     "tags": [
       "Frente al Mar",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 2 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263916",
@@ -8932,14 +8932,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 26,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 1 Estrella). Ubicado en Manta - San Mateo (Puerto y Playas), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 1 Estrella). Ubicado en Manta - San Mateo (Puerto y Playas), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector San mateo · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263943",
@@ -9021,7 +9021,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Santa Marianita (Playa Kite), ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Santa marianita · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 263970",
@@ -9097,7 +9097,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 50,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -9107,7 +9107,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 263997",
@@ -9202,7 +9202,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Salones de eventos",
       "Concierge"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 5 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 5 Estrellas). Ubicado en Manta - Barbasquillo, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": true,
     "phone": "+593 5 264024",
@@ -9279,14 +9279,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 37,
     "tags": [
       "Cerca de la Playa",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - El Murciélago, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 264051",
@@ -9356,14 +9356,14 @@ export const MANTA_HOTELS: Hotel[] = [
     "reviews": 173,
     "priceFrom": 40,
     "tags": [
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
       "Aire acondicionado",
       "Recepción"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoítíeílí - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hotel - 2 Estrellas). Ubicado en Manta - Tarqui, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Tarqui · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 264078",
@@ -9435,7 +9435,7 @@ export const MANTA_HOTELS: Hotel[] = [
     "priceFrom": 45,
     "tags": [
       "WiFi Alta Velocidad",
-      "Tarifa Neta SRI"
+      "Tarifa Neta Hospedaje"
     ],
     "amenities": [
       "WiFi gratis",
@@ -9445,7 +9445,7 @@ export const MANTA_HOTELS: Hotel[] = [
       "Desayuno disponible",
       "Parqueadero"
     ],
-    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Íhíoísítíaílí - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con facturación electrónica SRI.",
+    "description": "Establecimiento oficial de hospedaje adscrito al Catastro Turístico de Manta (Hostal - 3 Estrellas). Ubicado en Manta - Malecón Escénico, ofrece atención cordial, excelente conectividad y tarifas directas garantizadas con confirmación de reserva inmediata.",
     "distance": "Sector Manta · Manta",
     "gravaServicio10": false,
     "phone": "+593 5 264105",

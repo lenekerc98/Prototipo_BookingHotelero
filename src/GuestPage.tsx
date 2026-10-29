@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import type { GuestUser } from "./AuthPage";
-import { HOTEL_SRI_INFO } from "./hotelData";
+import {
+  HOTEL_COMMERCIAL_INFO,
+  getActiveIvaPercent,
+  getIvaDecretoConfig,
+  addAuditLog,
+  playNewBookingSound,
+} from "./hotelData";
 import {
   MANTA_HOTELS,
   INITIAL_DEMO_RESERVATIONS,
@@ -102,21 +108,31 @@ function PriceBreakdownBox({
   basePrice,
   nights = 1,
   hasService10 = false,
-  serviceFee = 2.50,
   hotelName,
   className = "",
   showToggle = true,
   defaultExpanded = false,
 }: PriceBreakdownProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const [ivaPct, setIvaPct] = useState<15 | 8>(() => getActiveIvaPercent());
+  const decretoCfg = getIvaDecretoConfig();
+
+  useEffect(() => {
+    const syncIva = () => setIvaPct(getActiveIvaPercent());
+    window.addEventListener("alojamanta-iva-change", syncIva);
+    window.addEventListener("storage", syncIva);
+    return () => {
+      window.removeEventListener("alojamanta-iva-change", syncIva);
+      window.removeEventListener("storage", syncIva);
+    };
+  }, []);
 
   const n = Math.max(nights, 1);
   const subtotal = Number((basePrice * n).toFixed(2));
-  const iva = Number((subtotal * 0.15).toFixed(2));
-  const fee = Number(serviceFee.toFixed(2));
-  // El 10% de servicio turístico se calcula sobre el subtotal según Art. 41 Ley de Turismo
-  const servicio = hasService10 ? Number(((subtotal + fee) * 0.10).toFixed(2)) : 0;
-  const totalImpuestos = Number((iva + fee + servicio).toFixed(2));
+  const iva = Number((subtotal * (ivaPct / 100)).toFixed(2));
+  // El 10% de servicio turístico se calcula sobre el subtotal neto según Art. 41 Ley de Turismo
+  const servicio = hasService10 ? Number((subtotal * 0.10).toFixed(2)) : 0;
+  const totalImpuestos = Number((iva + servicio).toFixed(2));
   const totalPagar = Number((subtotal + totalImpuestos).toFixed(2));
 
   return (
@@ -124,14 +140,21 @@ function PriceBreakdownBox({
       {/* Resumen estilo Booking */}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Desglose del precio</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Desglose del precio</span>
+            {ivaPct === 8 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                🇪🇨 IVA 8% Feriado Activo
+              </span>
+            )}
+          </div>
           <div className="flex items-baseline gap-1 mt-0.5">
             <span className="text-xs text-slate-500 font-medium">Precio</span>
             <span className="text-xl font-black text-slate-900 tracking-tight">US${subtotal.toFixed(2)}</span>
             {n > 1 && <span className="text-[11px] text-slate-400">({n} noches)</span>}
           </div>
           <p className="text-[11px] font-semibold text-slate-500 mt-0.5">
-            + US${totalImpuestos.toFixed(2)} de impuestos y cargos
+            + US${totalImpuestos.toFixed(2)} de impuestos ({ivaPct}% IVA{hasService10 ? " + 10% Serv." : ""})
           </p>
         </div>
         {showToggle && (
@@ -150,35 +173,30 @@ function PriceBreakdownBox({
         <div className="mt-3 pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
           <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
             <span>ℹ️</span>
-            <span>Información sobre el precio</span>
+            <span>Información tributaria (LORTI & Ley de Turismo Ecuador)</span>
           </div>
 
           <div className="rounded-lg p-3 bg-slate-50 border border-slate-200/80 space-y-2">
             <div className="flex items-center gap-1.5 font-semibold text-slate-700 text-[11px] pb-1.5 border-b border-slate-200">
               <span>💳</span>
-              <span>No incluye US${totalImpuestos.toFixed(2)} de impuestos y cargos</span>
+              <span>Impuestos aplicables: US${totalImpuestos.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between items-center text-slate-600">
-              <span>15% IVA</span>
-              <span className="font-mono font-medium">US${iva.toFixed(2)}</span>
+              <span>
+                {ivaPct}% IVA {ivaPct === 8 ? `(${decretoCfg.nombreFeriado})` : "(Tarifa Ordinaria)"}
+              </span>
+              <span className={`font-mono font-medium ${ivaPct === 8 ? "text-emerald-700 font-bold" : ""}`}>US${iva.toFixed(2)}</span>
             </div>
-
-            {fee > 0 && (
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Tasa Municipal de Turismo (GAD Manta)</span>
-                <span className="font-mono font-medium">US${fee.toFixed(2)}</span>
-              </div>
-            )}
 
             {hasService10 ? (
               <div className="flex justify-between items-center text-emerald-800 font-medium bg-emerald-50 px-2 py-1 rounded border border-emerald-100">
-                <span>10% Cargo gubernamental (Ley Turismo Art. 41)</span>
+                <span>10% Servicio Turístico (Ley Turismo Art. 41)</span>
                 <span className="font-mono font-bold">US${servicio.toFixed(2)}</span>
               </div>
             ) : (
               <div className="flex justify-between items-center text-slate-400 italic text-[11px]">
-                <span>10% Cargo gubernamental (Hostal exento)</span>
+                <span>10% Servicio Turístico (Hostal exento)</span>
                 <span className="font-mono">US$0.00</span>
               </div>
             )}
@@ -192,7 +210,7 @@ function PriceBreakdownBox({
           <div className="p-2 rounded-lg bg-amber-50/70 border border-amber-200/80 flex items-start gap-1.5 text-[11px] text-amber-900 leading-tight">
             <span className="text-sm">🏛️</span>
             <div>
-              <strong>Comprobante de Pago Digital:</strong> Certificado emitido por la pasarela turística. La Factura Electrónica fiscal (SRI) correspondiente al hospedaje es emitida y entregada directamente por {hotelName ? <strong>{hotelName}</strong> : "el hotel prestador"} en recepción.
+              <strong>Voucher QR de Reserva Garantizada:</strong> Emitido al confirmar su pago. Presente su código QR al arribar a {hotelName ? <strong>{hotelName}</strong> : "el alojamiento"} para validar su estancia.
             </div>
           </div>
         </div>
@@ -598,19 +616,19 @@ function SearchBar({
 // ─── Invoice modal ────────────────────────────────────────────────────────────
 
 export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => void }) {
-  // Buscar datos fiscales reales del hotel en Manta
-  const hotelKey = Object.keys(HOTEL_SRI_INFO).find(k => 
+  // Buscar datos comerciales del hotel en Manta
+  const hotelKey = Object.keys(HOTEL_COMMERCIAL_INFO).find(k => 
     res.hotel.toLowerCase().includes(k.replace(/-/g, " ")) || 
-    HOTEL_SRI_INFO[k].nombreComercial.toLowerCase().includes(res.hotel.toLowerCase())
+    HOTEL_COMMERCIAL_INFO[k].nombreComercial.toLowerCase().includes(res.hotel.toLowerCase())
   ) || "costa-sol";
-  const sri = HOTEL_SRI_INFO[hotelKey] || HOTEL_SRI_INFO["costa-sol"];
+  const hotelMeta = HOTEL_COMMERCIAL_INFO[hotelKey] || HOTEL_COMMERCIAL_INFO["costa-sol"];
 
-  const hasServicio = sri.gravaServicio10 ?? (res.hotel.includes("Costa Sol") || res.hotel.includes("Palmeras") || res.hotel.includes("Pacífico"));
-  const divisor = hasServicio ? 1.25 : 1.15;
+  const hasServicio = hotelMeta.gravaServicio10 ?? (res.hotel.includes("Costa Sol") || res.hotel.includes("Palmeras") || res.hotel.includes("Pacífico") || res.hotel.toLowerCase().includes("hotel"));
+  const ivaPct = getActiveIvaPercent();
+  const divisor = 1 + (ivaPct / 100) + (hasServicio ? 0.10 : 0);
   const base = res.total / divisor;
-  const iva = base * 0.15;
+  const iva = base * (ivaPct / 100);
   const servicio = hasServicio ? base * 0.10 : 0;
-  const invoiceNum = `${sri.estab}-${sri.ptoEmi}-${res.id.split("-")[1].padStart(9, "0")}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -619,23 +637,23 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>{sri.nombreComercial}</p>
-                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">PAGO ACREDITADO</span>
+                <p className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</p>
+                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">RESERVA GARANTIZADA</span>
               </div>
-              <p className="text-xs text-slate-300">{sri.razonSocial}</p>
-              <p className="text-[10px] text-slate-400 font-mono">RUC: {sri.ruc} · Manta, Manabí</p>
+              <p className="text-xs text-slate-300">{hotelMeta.razonSocial}</p>
+              <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · Manta, Manabí</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER DIGITAL</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER QR</span>
               <p className="font-mono font-bold text-slate-100 text-xs mt-1">REC-{res.id}</p>
-              <p className="text-[10px] text-slate-400">Fecha: {fmtDateShort(res.checkOut)}</p>
+              <p className="text-[10px] text-slate-400">Entrada: {fmtDateShort(res.checkIn)}</p>
             </div>
           </div>
         </div>
 
         <div className="p-3 bg-blue-50 border-b border-blue-200 text-[11px] text-blue-900 flex items-center gap-2">
           <span>🏛️</span>
-          <span><strong>Facturación Directa por el Hotel:</strong> Este documento certifica su pago online transferido al hotel. Su factura fiscal oficial (SRI) será emitida directamente por {sri.nombreComercial} al momento de su estancia.</span>
+          <span><strong>Voucher Digital de Reserva:</strong> Certifica su reserva garantizada y pago en línea. Presente este código en {hotelMeta.nombreComercial} en su Fecha de Entrada para validar su Voucher QR.</span>
         </div>
 
         <div className="px-6 py-5 space-y-4">
@@ -657,25 +675,26 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
               <thead><tr style={{ background: "#f8fafc" }}><th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500">Detalle de Hospedaje</th><th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500">Monto</th></tr></thead>
               <tbody>
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-2.5"><p className="font-medium text-slate-700">{res.room}</p><p className="text-xs text-slate-400">{res.nights} noche{res.nights > 1 ? "s" : ""} · {fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</p></td>
+                  <td className="px-4 py-2.5"><p className="font-medium text-slate-700">{res.room}</p><p className="text-xs text-slate-400">{res.nights} noche{res.nights > 1 ? "s" : ""} · Entrada {fmtDateShort(res.checkIn)} → Salida {fmtDateShort(res.checkOut)}</p></td>
                   <td className="px-4 py-2.5 text-right font-medium text-slate-700">{fmt(base)}</td>
                 </tr>
                 <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
-                  <td className="px-4 py-2 text-xs text-slate-500">IVA (15% base para factura hotel)</td>
+                  <td className="px-4 py-2 text-xs text-slate-500">IVA ({ivaPct}% {ivaPct === 8 ? "Decreto Feriado Turístico" : "Tarifa Ordinaria"})</td>
                   <td className="px-4 py-2 text-right text-xs text-slate-500">{fmt(iva)}</td>
                 </tr>
-                <tr style={{ background: "#f8fafc" }}>
-                  <td className="px-4 py-2 text-xs text-slate-600 font-medium">Tasa Municipal de Turismo (GAD Manta)</td>
-                  <td className="px-4 py-2 text-right text-xs text-slate-700 font-medium">{fmt(2.50)}</td>
-                </tr>
-                {hasServicio && (
+                {hasServicio ? (
                   <tr style={{ background: "#f8fafc" }}>
                     <td className="px-4 py-2 text-xs text-emerald-600 font-medium">10% Servicio Turístico (Art. 41 Ley Turismo)</td>
                     <td className="px-4 py-2 text-right text-xs text-emerald-600 font-bold">{fmt(servicio)}</td>
                   </tr>
+                ) : (
+                  <tr style={{ background: "#f8fafc" }}>
+                    <td className="px-4 py-2 text-xs text-slate-400 italic">10% Servicio Turístico (Hostal exento)</td>
+                    <td className="px-4 py-2 text-right text-xs text-slate-400">$0.00</td>
+                  </tr>
                 )}
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-3 font-bold text-slate-800">Total Cobrado</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">Total Liquidado</td>
                   <td className="px-4 py-3 text-right font-bold text-lg" style={{ color: "#f59e0b" }}>{fmt(res.total)}</td>
                 </tr>
               </tbody>
@@ -741,12 +760,12 @@ function AccountView({
       city: "Guayaquil / Ecuador",
       roomPref: "Cama Matrimonial King · Piso alto con vista",
       dietPref: "Desayuno incluido en estancia",
-      // Facturación SRI
+      // Datos de contacto para comprobante
       wantsInvoice: true,
       taxId: "1314589201001",
       razonSocial: user.name,
       direccionFiscal: "Av. Malecón y Calle 15, Edif. Poseidón",
-      correoFactura: user.email,
+      correoComprobante: user.email,
     };
   });
 
@@ -768,7 +787,7 @@ function AccountView({
     try {
       localStorage.setItem(`alojamanta_profile_${user.email}`, JSON.stringify(profile));
     } catch {}
-    showToast("✓ Datos fiscales SRI actualizados para la factura del hotel");
+    showToast("✓ Datos de contacto y comprobante actualizados");
   }
 
   const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
@@ -860,7 +879,7 @@ function AccountView({
             { id: "hub", label: "Panel General", icon: "🏠" },
             { id: "reservations", label: `Mis Reservas (${allList.length})`, icon: "🛎️" },
             { id: "personal", label: "Datos Personales & Check-in", icon: "👤" },
-            { id: "billing", label: "Facturación SRI Hotel", icon: "🏛️" },
+            { id: "billing", label: "Comprobantes y Contacto", icon: "🧾" },
             { id: "payments", label: "Medios de Pago", icon: "💳" },
             { id: "about", label: "Acerca de AlojaManta", icon: "ℹ️" },
           ].map(t => (
@@ -956,15 +975,15 @@ function AccountView({
               </div>
             </div>
 
-            {/* Card 3: Facturación Directa SRI */}
+            {/* Card 3: Comprobantes y Contacto */}
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
                   <span>🏛️</span>
-                  <span>Facturación SRI</span>
+                  <span>Comprobantes de Pago</span>
                 </h3>
                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                  Factura del Hotel
+                  Comprobante de Reserva
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1058,7 +1077,7 @@ function AccountView({
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Facturación tributaria directa ante el SRI</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Comprobantes digitales y liquidación de reserva</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1332,21 +1351,21 @@ function AccountView({
         </form>
       )}
 
-      {/* ─── TAB 4: FACTURACIÓN DIRECTA SRI ─── */}
+      {/* ─── TAB 4: COMPROBANTES Y CONTACTO ─── */}
       {activeTab === "billing" && (
         <form onSubmit={handleSaveBilling} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
           <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
                 <span>🏛️</span>
-                <span>Datos Fiscales para el Hotel (SRI Ecuador)</span>
+                <span>Datos del Huésped y Comprobante de Reserva</span>
               </h3>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300">
-                15% IVA SRI
+                15% IVA
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              <strong>El hotel emite tu factura fiscal oficial en recepción.</strong> Guarda aquí tus datos para que el recepcionista la facture automáticamente a tu nombre o empresa.
+              <strong>El establecimiento recibe tus datos verificados para agilizar tu check-in.</strong> Guarda aquí tus datos para que el recepcionista registre tu reserva automáticamente a tu nombre o empresa.
             </p>
           </div>
 
@@ -1354,13 +1373,13 @@ function AccountView({
             <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
               <span className="text-base">ℹ️</span>
               <p>
-                La plataforma de reserva cobra y transfiere el importe neto al alojamiento. La factura con validez tributaria ante el SRI es emitida por la razón social del hotel destino al momento de tu estancia.
+                La plataforma de reserva procesa el cobro del anticipo y transfiere el importe neto al alojamiento. El hotel entrega tu comprobante de estancia y registro al momento de tu llegada.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">RUC o Cédula para Factura</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Cédula o Pasaporte del Huésped</label>
                 <input
                   type="text"
                   value={profile.taxId}
@@ -1399,11 +1418,11 @@ function AccountView({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Correo para Factura Electrónica</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Correo para Envío de Comprobante</label>
               <input
                 type="email"
-                value={profile.correoFactura}
-                onChange={e => setProfile({ ...profile, correoFactura: e.target.value })}
+                value={profile.correoComprobante}
+                onChange={e => setProfile({ ...profile, correoComprobante: e.target.value })}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
                 style={{ borderColor: "#cbd5e1" }}
                 required
@@ -1422,7 +1441,7 @@ function AccountView({
                 type="submit"
                 className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
               >
-                Guardar Datos de Facturación
+                Guardar Datos de Reserva
               </button>
             </div>
           </div>
@@ -1534,10 +1553,10 @@ function AccountView({
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
                 <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                   <span className="text-base">🏛️</span>
-                  <span>Facturación Tributaria Directa (SRI)</span>
+                  <span>Comprobante de Reserva y Liquidación</span>
                 </div>
                 <p className="text-xs text-slate-600">
-                  La factura fiscal oficial con 15% de IVA y deducibilidad tributaria es emitida directamente por la razón social del hotel al momento de tu check-in en recepción física.
+                  El comprobante digital con 15% de IVA y confirmación inmediata es emitido por la plataforma al momento de tu reserva online.
                 </p>
               </div>
 
@@ -1659,10 +1678,10 @@ function AboutModal({
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
               <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                 <span className="text-base">🏛️</span>
-                <span>Factura Fiscal Oficial (SRI)</span>
+                <span>Comprobante Oficial de Reserva</span>
               </div>
               <p className="text-[11px] text-slate-600">
-                La factura electrónica con 15% de IVA y deducibilidad de gastos personales es emitida por la razón social del hotel de destino en recepción física.
+                El comprobante oficial con 15% de IVA y detalle de reserva certifica tu estancia y pago anticipado.
               </p>
             </div>
 
@@ -1729,7 +1748,7 @@ function AboutModal({
   );
 }
 
-// ─── Modal Legal & Facturación SRI ────────────────────────────────────────────
+// ─── Modal Términos y Privacidad LOPDP ────────────────────────────────────────────
 
 function LegalModal({ onClose }: { onClose: () => void }) {
   return (
@@ -1745,7 +1764,7 @@ function LegalModal({ onClose }: { onClose: () => void }) {
             <span className="text-2xl">🏛️</span>
             <div>
               <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-                Facturación SRI & Términos del Servicio
+                Términos del Servicio y Privacidad LOPDP
               </h3>
               <p className="text-xs text-slate-500">
                 Normativa tributaria y condiciones de reserva en AlojaManta
@@ -1765,10 +1784,10 @@ function LegalModal({ onClose }: { onClose: () => void }) {
           <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-slate-800">
             <h4 className="font-bold text-blue-950 text-sm mb-1 flex items-center gap-1.5">
               <span>🧾</span>
-              <span>Emisión Directa de Comprobante Fiscal SRI</span>
+              <span>Comprobante Digital de Reserva y Pagos</span>
             </h4>
             <p>
-              La factura electrónica legal con 15% de IVA para deducibilidad tributaria ante el Servicio de Rentas Internas (SRI) del Ecuador es emitida por el establecimiento hotelero directamente al momento del check-in o recepción. AlojaManta liquida y transfiere el pago neto sin retenciones abusivas.
+              La plataforma emite el comprobante de reserva y certificación de pago digital con el desglose del 15% de IVA. El establecimiento hotelero entrega el recibo y registro de estancia directamente al momento del check-in en recepción.
             </p>
           </div>
 
@@ -1776,7 +1795,7 @@ function LegalModal({ onClose }: { onClose: () => void }) {
             <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
               <h5 className="font-bold text-slate-900 mb-1">1. Datos Tributarios Requeridos</h5>
               <p className="text-[11px] text-slate-600">
-                Puedes registrar previamente tu RUC o Cédula, Razón Social, Dirección y Correo electrónico desde la pestaña "Facturación SRI Hotel" de tu cuenta para agilizar la entrega de tu factura electrónica.
+                Puedes registrar previamente tu documento de identidad, nombres completos y correo electrónico desde la pestaña "Comprobantes y Contacto" de tu cuenta para agilizar tu registro en recepción.
               </p>
             </div>
 
@@ -2174,7 +2193,7 @@ function LoginModal({
                   { role: "Superadmin Cantonal", name: "Carlos Admin", email: "admin@alojamanta.ec", desc: "Supervisión de los 116 hoteles de Manta" },
                   { role: "Administrador de Hotel", name: "Ana Administradora", email: "direccion@mantahost.ec", desc: "MantaHost Hotel (Gestión integral)" },
                   { role: "Revenue Manager", name: "María Revenue", email: "revenue@mantahost.ec", desc: "Tarifas, temporadas y tipos de habitación" },
-                  { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@mantahost.ec", desc: "Operación de reservas y facturas SRI" },
+                  { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@mantahost.ec", desc: "Operación de reservas y comprobantes digitales" },
                 ].map(acc => (
                   <button
                     key={acc.email}
@@ -2232,13 +2251,37 @@ function BookingModal({
   onGuestLogin: (u: GuestUser) => void;
   onReservationCreated?: (r: MyReservation) => void;
 }) {
-  const tasaMunicipal = 2.50;
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
-  const base = room.pricePerNight * nights;
-  const iva = parseFloat((base * 0.15).toFixed(2));
+
+  // RF-04: Planes de Tarifa
+  const [ratePlan, setRatePlan] = useState<"flexible" | "non_refundable" | "breakfast_plus">("flexible");
+  // RF-06: Extras y Servicios Adicionales de Alojamiento
+  const [selectedExtras, setSelectedExtras] = useState<{
+    airport: boolean;
+    extrabed: boolean;
+    crib: boolean;
+    lateout: boolean;
+  }>({ airport: false, extrabed: false, crib: false, lateout: false });
+
+  const effectiveNightlyRate =
+    ratePlan === "non_refundable"
+      ? Math.round(room.pricePerNight * 0.90 * 100) / 100
+      : ratePlan === "breakfast_plus" && !room.breakfastIncluded
+      ? room.pricePerNight + 8
+      : room.pricePerNight;
+
+  const extrasTotal =
+    (selectedExtras.airport ? 15 : 0) +
+    (selectedExtras.extrabed ? 20 : 0) +
+    (selectedExtras.lateout ? 15 : 0);
+
+  const roomBase = parseFloat((effectiveNightlyRate * nights).toFixed(2));
+  const base = parseFloat((roomBase + extrasTotal).toFixed(2));
+  const ivaPct = getActiveIvaPercent(hotel.id);
+  const iva = parseFloat((base * (ivaPct / 100)).toFixed(2));
   const hasService = hotel.gravaServicio10 ?? false;
-  const servicio = hasService ? parseFloat(((base + tasaMunicipal) * 0.10).toFixed(2)) : 0;
-  const total = parseFloat((base + iva + tasaMunicipal + servicio).toFixed(2));
+  const servicio = hasService ? parseFloat((base * 0.10).toFixed(2)) : 0;
+  const total = parseFloat((base + iva + servicio).toFixed(2));
 
   const initialStep: BookingStep = user ? "details" : "auth";
   const [step, setStep] = useState<BookingStep>(initialStep);
@@ -2264,16 +2307,16 @@ function BookingModal({
   const [cardCvv, setCardCvv] = useState("");
   const [saveCard, setSaveCard] = useState(false);
 
-  const hotelSri = HOTEL_SRI_INFO[hotel.id] || HOTEL_SRI_INFO["costa-sol"];
+  const hotelMeta = HOTEL_COMMERCIAL_INFO[hotel.id] || HOTEL_COMMERCIAL_INFO["costa-sol"];
   const [resId] = useState(`RES-${Math.floor(Math.random() * 90000) + 10000}`);
-  const [invoiceId] = useState(`${hotelSri.estab}-${hotelSri.ptoEmi}-${String(Math.floor(Math.random() * 900000) + 100000).padStart(9, "0")}`);
+  const [invoiceId] = useState(`${hotelMeta.estab}-${hotelMeta.ptoEmi}-${String(Math.floor(Math.random() * 900000) + 100000).padStart(9, "0")}`);
   const issueDate = new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
   const verifyCode = Math.random().toString(36).slice(2, 10).toUpperCase();
   const last4 = cardNum.replace(/\s/g, "").slice(-4) || "****";
 
   const STEPS: { k: BookingStep; l: string }[] = user
-    ? [{ k: "details", l: "1. Datos" }, { k: "payment", l: "2. Pago" }, { k: "invoice", l: "3. Comprobante" }]
-    : [{ k: "auth", l: "1. Acceso" }, { k: "details", l: "2. Datos" }, { k: "payment", l: "3. Pago" }, { k: "invoice", l: "4. Comprobante" }];
+    ? [{ k: "details", l: "1. Datos y Tarifa" }, { k: "payment", l: "2. Pago Seguro" }, { k: "invoice", l: "3. Voucher QR" }]
+    : [{ k: "auth", l: "1. Acceso / Invitado" }, { k: "details", l: "2. Datos y Tarifa" }, { k: "payment", l: "3. Pago Seguro" }, { k: "invoice", l: "4. Voucher QR" }];
 
   const stepIndex = STEPS.findIndex(s => s.k === step);
 
@@ -2296,7 +2339,16 @@ function BookingModal({
     setTimeout(() => {
       setProcessing(false);
       setStep("invoice");
-      onReservationCreated?.({
+      playNewBookingSound();
+      const guestFullName = form.name || cardHolder || "Huésped Invitado";
+      addAuditLog({
+        usuario: guestFullName,
+        rol: user ? "Huésped Registrado" : "Checkout Invitado",
+        modulo: "Motor de Reservas Web",
+        accion: "RESERVA_WEB_CONFIRMADA",
+        detalle: `Reserva ${resId} en ${hotel.name} (${room.type}, ${nights} noches) · Plan: ${ratePlan} · Total USD $${total.toFixed(2)} (IVA ${ivaPct}%)`,
+      });
+      const newRes: MyReservation = {
         id: resId,
         hotel: hotel.name,
         hotelId: hotel.id,
@@ -2308,12 +2360,14 @@ function BookingModal({
         total,
         status: "upcoming",
         image: room.image || hotel.image,
-        guestName: form.name || cardHolder || "Huésped Registrado",
-        guestEmail: form.email || user?.email || "cliente@gmail.com",
-        guestPhone: form.phone || "+593 98 000 0000",
+        guestName: guestFullName,
+        guestEmail: form.email || user?.email || "invitado@alojamanta.ec",
+        guestPhone: form.phone || "+593 98 421 8890",
         payMethod: "Tarjeta Digital (PayPhone / Kushki)",
-      });
-    }, 1800);
+      };
+      onReservationCreated?.(newRes);
+      window.dispatchEvent(new CustomEvent("alojamanta-new-booking", { detail: newRes }));
+    }, 1500);
   }
 
   // ── Shared backdrop
@@ -2360,13 +2414,30 @@ function BookingModal({
           {/* ── STEP: AUTH ── */}
           {step === "auth" && (
             <div className="space-y-4">
-              <div className="text-center pb-2">
+              <div className="text-center pb-1">
                 <p className="text-2xl mb-1">🔑</p>
                 <h3 className="font-bold text-slate-800 text-base" style={{ fontFamily: "DM Serif Display, serif" }}>
-                  {authMode === "login" ? "Inicia sesión para continuar" : "Crea tu cuenta gratis"}
+                  {authMode === "login" ? "Inicia sesión o reserva como invitado" : "Crea tu cuenta gratis"}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">Necesitas cuenta para completar la reserva y recibir tu factura</p>
+                <p className="text-xs text-slate-400 mt-1">Accede a tu cuenta de viajero o continúa directamente sin registro obligatorio (RF-02)</p>
               </div>
+
+              {/* RF-02: Guest Checkout sin cuenta obligatoria */}
+              <button
+                type="button"
+                onClick={() => setStep("details")}
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border-2 border-emerald-500 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 cursor-pointer shadow-sm"
+              >
+                <span>⚡</span>
+                <span>Continuar como Invitado (Reserva Rápida sin cuenta)</span>
+              </button>
+
+              <div className="relative flex items-center gap-2">
+                <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
+                <span className="text-[11px] text-slate-400 uppercase font-semibold">o accede con tu cuenta</span>
+                <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
+              </div>
+
               <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "#e2e8f0" }}>
                 {[{ k: "login" as const, l: "Iniciar sesión" }, { k: "register" as const, l: "Registrarme" }].map(m => (
                   <button key={m.k} onClick={() => setAuthMode(m.k)} className="flex-1 py-2 text-sm font-semibold transition-all" style={{ background: authMode === m.k ? "#f59e0b" : "#f8fafc", color: authMode === m.k ? "#0c1220" : "#64748b" }}>{m.l}</button>
@@ -2392,11 +2463,6 @@ function BookingModal({
                   {authMode === "login" ? "Entrar y continuar →" : "Crear cuenta y continuar →"}
                 </button>
               </form>
-              <div className="relative flex items-center gap-2">
-                <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
-                <span className="text-xs text-slate-400">o</span>
-                <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
-              </div>
               <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2" style={{ borderColor: "#e2e8f0", color: "#475569" }}>
                 🌐 Continuar con Google
               </button>
@@ -2406,35 +2472,109 @@ function BookingModal({
           {/* ── STEP: DETAILS ── */}
           {step === "details" && (
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-800">Datos del huésped</h3>
+              <h3 className="font-bold text-slate-800">1. Datos del huésped titular</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs text-slate-400 mb-1">Nombre completo *</label>
-                  <input className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                  <input className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ej: Carlos Mendoza" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs text-slate-400 mb-1">Email *</label>
-                  <input type="email" className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                  <label className="block text-xs text-slate-400 mb-1">Email para envío de Voucher QR *</label>
+                  <input type="email" className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="cliente@correo.ec" />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Teléfono</label>
-                  <input type="tel" className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+34 612 345 678" />
+                  <label className="block text-xs text-slate-400 mb-1">Teléfono / WhatsApp (Ecuador)</label>
+                  <input type="tel" className="w-full px-3 py-2 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+593 98 421 8890" />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">DNI / Pasaporte *</label>
-                  <input className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.dni} onChange={e => setForm({ ...form, dni: e.target.value })} placeholder="12345678A" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs text-slate-400 mb-1">Peticiones especiales</label>
-                  <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Hora de llegada, cama adicional, alergias..." />
+                  <label className="block text-xs text-slate-400 mb-1">Cédula / RUC / Pasaporte *</label>
+                  <input className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={form.dni} onChange={e => setForm({ ...form, dni: e.target.value })} placeholder="1309847512" />
                 </div>
               </div>
+
+              {/* RF-04: Selección de Plan de Tarifa */}
+              <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
+                  <span>🏷️ 2. Plan de Tarifa (RF-04)</span>
+                  <span className="text-[10px] font-mono text-amber-700">{fmt(effectiveNightlyRate)} / noche</span>
+                </p>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "flexible" ? "bg-amber-50 border-amber-400 text-slate-900 font-semibold" : "bg-white border-slate-200 text-slate-600"}`}>
+                    <div className="flex items-center gap-2">
+                      <input type="radio" name="ratePlan" checked={ratePlan === "flexible"} onChange={() => setRatePlan("flexible")} className="accent-amber-500" />
+                      <div>
+                        <p className="font-bold text-slate-800">Tarifa Estándar Flexible (Reembolsable 48h)</p>
+                        <p className="text-[10px] text-slate-500">Cancelación gratuita hasta 48h antes de la Fecha de Entrada</p>
+                      </div>
+                    </div>
+                    <span className="font-mono font-bold text-slate-800">{fmt(room.pricePerNight)}/n</span>
+                  </label>
+
+                  <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "non_refundable" ? "bg-emerald-50 border-emerald-400 text-slate-900 font-semibold" : "bg-white border-slate-200 text-slate-600"}`}>
+                    <div className="flex items-center gap-2">
+                      <input type="radio" name="ratePlan" checked={ratePlan === "non_refundable"} onChange={() => setRatePlan("non_refundable")} className="accent-emerald-600" />
+                      <div>
+                        <p className="font-bold text-emerald-800">Tarifa Promocional No Reembolsable (-10%)</p>
+                        <p className="text-[10px] text-slate-500">10% de descuento inmediato · Pago final sin reembolso</p>
+                      </div>
+                    </div>
+                    <span className="font-mono font-bold text-emerald-700">{fmt(Math.round(room.pricePerNight * 0.90 * 100) / 100)}/n</span>
+                  </label>
+
+                  {!room.breakfastIncluded && (
+                    <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "breakfast_plus" ? "bg-amber-50 border-amber-400 text-slate-900 font-semibold" : "bg-white border-slate-200 text-slate-600"}`}>
+                      <div className="flex items-center gap-2">
+                        <input type="radio" name="ratePlan" checked={ratePlan === "breakfast_plus"} onChange={() => setRatePlan("breakfast_plus")} className="accent-amber-500" />
+                        <div>
+                          <p className="font-bold text-slate-800">Plan con Desayuno Manabita Incluido (+$8/noche)</p>
+                          <p className="text-[10px] text-slate-500">Incluye desayuno costero completo y cancelación flexible</p>
+                        </div>
+                      </div>
+                      <span className="font-mono font-bold text-slate-800">{fmt(room.pricePerNight + 8)}/n</span>
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* RF-06: Extras y Servicios Adicionales de Alojamiento */}
+              <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
+                  <span>✨ 3. Extras y Servicios Adicionales (RF-06)</span>
+                  {extrasTotal > 0 && <span className="text-[10px] font-mono font-bold text-emerald-700">+{fmt(extrasTotal)}</span>}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {[
+                    { k: "airport" as const, label: "Traslado Aeropuerto Manta (MEC)", price: "+$15.00" },
+                    { k: "extrabed" as const, label: "Cama supletoria adicional", price: "+$20.00" },
+                    { k: "crib" as const, label: "Cuna para bebé sujeta a cupo", price: "Cortesía $0" },
+                    { k: "lateout" as const, label: "Salida extendida (hasta 16:00h)", price: "+$15.00" },
+                  ].map(ext => (
+                    <label key={ext.k} className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer ${selectedExtras[ext.k] ? "bg-amber-50 border-amber-400" : "bg-white border-slate-200"}`}>
+                      <span className="flex items-center gap-1.5 text-slate-700 font-medium">
+                        <input
+                          type="checkbox"
+                          checked={selectedExtras[ext.k]}
+                          onChange={e => setSelectedExtras(s => ({ ...s, [ext.k]: e.target.checked }))}
+                          className="accent-amber-500 rounded"
+                        />
+                        {ext.label}
+                      </span>
+                      <span className="font-mono text-[11px] font-bold text-slate-600">{ext.price}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Observaciones o hora estimada de arribo</label>
+                <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ej: Llegada en vuelo de las 15:30, preferencia piso alto..." />
+              </div>
+
               {/* Desglose estilo Booking.com */}
               <PriceBreakdownBox
-                basePrice={room.pricePerNight}
+                basePrice={base / nights}
                 nights={nights}
                 hasService10={hasService}
-                serviceFee={2.50}
                 hotelName={hotel.name}
                 defaultExpanded={true}
                 showToggle={true}
@@ -2442,7 +2582,7 @@ function BookingModal({
               <div className="flex gap-2">
                 {!user && <button onClick={() => setStep("auth")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>← Atrás</button>}
                 <button onClick={() => setStep("payment")} className="flex-1 py-3 rounded-xl font-bold text-sm hover:opacity-90" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                  Continuar al pago →
+                  Continuar al pago seguro →
                 </button>
               </div>
             </div>
@@ -2521,12 +2661,17 @@ function BookingModal({
               </div>
 
               <div className="rounded-xl p-3 space-y-1.5" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                <div className="flex justify-between text-sm text-slate-500"><span>Subtotal Hospedaje</span><span>{fmt(base)}</span></div>
-                <div className="flex justify-between text-sm text-slate-500"><span>15% IVA (SRI)</span><span>{fmt(iva)}</span></div>
-                <div className="flex justify-between text-sm text-slate-600"><span>Tasa Municipal de Turismo (GAD Manta)</span><span className="font-mono font-medium">{fmt(tasaMunicipal)}</span></div>
+                <div className="flex justify-between text-sm text-slate-500"><span>Subtotal Hospedaje ({nights}n)</span><span>{fmt(roomBase)}</span></div>
+                {extrasTotal > 0 && (
+                  <div className="flex justify-between text-sm text-slate-500"><span>Extras de Alojamiento</span><span>{fmt(extrasTotal)}</span></div>
+                )}
+                <div className="flex justify-between text-sm text-slate-500">
+                  <span>{ivaPct}% IVA {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}</span>
+                  <span className={ivaPct === 8 ? "text-emerald-700 font-bold" : ""}>{fmt(iva)}</span>
+                </div>
                 {hasService && (
                   <div className="flex justify-between text-sm text-emerald-700 font-medium bg-emerald-50/60 px-2 py-0.5 rounded">
-                    <span>10% Cargo gubernamental (Ley Turismo)</span>
+                    <span>10% Servicio Turístico (Art. 41 Ley Turismo)</span>
                     <span className="font-mono font-bold">{fmt(servicio)}</span>
                   </div>
                 )}
@@ -2537,7 +2682,7 @@ function BookingModal({
               <label className="flex items-start gap-2 cursor-pointer select-none text-left p-2.5 rounded-lg border bg-slate-50/60 border-slate-200">
                 <input type="checkbox" required defaultChecked className="mt-0.5 accent-amber-500 rounded" />
                 <span className="text-[11px] text-slate-600 leading-tight">
-                  Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la <strong>Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)</strong>. Mis datos personales se tratarán exclusivamente para la reserva y facturación SRI.
+                  Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la <strong>Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)</strong>. Mis datos personales se tratarán exclusivamente para la reserva y gestión de mi estancia.
                 </span>
               </label>
 
@@ -2566,7 +2711,7 @@ function BookingModal({
               <div className="text-center py-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mx-auto mb-2" style={{ background: "#d1fae5" }}>✓</div>
                 <h3 className="font-bold text-slate-800 text-base">¡Pago procesado y reserva confirmada!</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Comprobante de pago oficial de la pasarela y voucher de reserva</p>
+                <p className="text-xs text-slate-500 mt-0.5">Voucher QR de Reserva Garantizada y liquidación de pasarela</p>
               </div>
 
               {/* Electronic payment receipt & Voucher */}
@@ -2575,27 +2720,27 @@ function BookingModal({
                 <div className="px-5 py-4 flex items-start justify-between" style={{ background: "#0c1220" }}>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-bold text-lg text-amber-400" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelSri.nombreComercial}</p>
-                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">PAGO APROBADO</span>
+                      <p className="font-bold text-lg text-amber-400" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</p>
+                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">RESERVA GARANTIZADA</span>
                     </div>
-                    <p className="text-xs text-slate-300 font-medium">{hotelSri.razonSocial}</p>
-                    <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelSri.ruc} · {hotelSri.city}</p>
+                    <p className="text-xs text-slate-300 font-medium">{hotelMeta.razonSocial}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · {hotelMeta.city}</p>
                     <p className="text-[10px] text-slate-400">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
                   </div>
                   <div className="text-right">
-                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">COMPROBANTE DIGITAL</span>
+                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER QR DIGITAL</span>
                     <p className="font-bold mt-1 text-slate-100 font-mono text-xs">{invoiceId}</p>
                     <p className="mono text-[10px] text-slate-400">{issueDate}</p>
                   </div>
                 </div>
 
-                {/* Banner de Facturación por el Hotel */}
+                {/* Banner de Comprobante Oficial */}
                 <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 flex items-start gap-2 text-[11px] text-amber-900 leading-tight">
                   <span className="text-base flex-shrink-0">🏨</span>
                   <div>
-                    <p className="font-bold">Facturación Fiscal a cargo de {hotel.name}:</p>
+                    <p className="font-bold">Voucher Oficial de Reserva - {hotel.name}:</p>
                     <p className="text-amber-800 text-[10px] mt-0.5">
-                      Este comprobante certifica su pago en línea. Su Factura Electrónica fiscal (SRI) será emitida y entregada por el hotel a su llegada o al realizar el check-out en recepción con los datos registrados.
+                      Este documento certifica su reserva garantizada y pago en línea. Presente el código QR en {hotel.name} en su Fecha de Entrada para validar su reserva.
                     </p>
                   </div>
                 </div>
@@ -2604,8 +2749,8 @@ function BookingModal({
                 <div className="grid grid-cols-2 gap-px" style={{ background: "#e2e8f0" }}>
                   <div className="px-4 py-3 bg-white">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Huésped titular</p>
-                    <p className="font-semibold text-slate-800 text-sm">{form.name || user?.name}</p>
-                    <p className="text-xs text-slate-500">{form.email || user?.email}</p>
+                    <p className="font-semibold text-slate-800 text-sm">{form.name || user?.name || "Huésped Invitado"}</p>
+                    <p className="text-xs text-slate-500">{form.email || user?.email || "invitado@alojamanta.ec"}</p>
                     {form.dni && <p className="mono text-xs text-slate-500">C.I. / Pasaporte: {form.dni}</p>}
                     {form.phone && <p className="text-xs text-slate-500">Tel: {form.phone}</p>}
                   </div>
@@ -2619,12 +2764,12 @@ function BookingModal({
 
                 {/* Reservation details */}
                 <div className="px-4 py-3 bg-white" style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Detalle de la reserva</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Detalle de la estancia reservada</p>
                   <div className="grid grid-cols-4 gap-3 text-xs">
                     {[
                       { l: "Nº Reserva", v: resId },
-                      { l: "Check-in", v: `${fmtDateShort(params.checkIn)} · 14:00h` },
-                      { l: "Check-out", v: `${fmtDateShort(params.checkOut)} · 12:00h` },
+                      { l: "Fecha Entrada", v: `${fmtDateShort(params.checkIn)} · 14:00h` },
+                      { l: "Fecha Salida", v: `${fmtDateShort(params.checkOut)} · 12:00h` },
                       { l: "Noches", v: String(nights) },
                     ].map(item => (
                       <div key={item.l}>
@@ -2635,7 +2780,7 @@ function BookingModal({
                   </div>
                 </div>
 
-                {/* Line items con desglose SRI */}
+                {/* Line items con desglose transparente */}
                 <table className="w-full text-sm" style={{ borderTop: "1px solid #e2e8f0" }}>
                   <thead style={{ background: "#f8fafc" }}>
                     <tr>
@@ -2651,31 +2796,35 @@ function BookingModal({
                         <p className="text-xs text-slate-400">{hotel.name} · {room.beds}</p>
                       </td>
                       <td className="px-4 py-3 text-slate-600">{nights} noche{nights > 1 ? "s" : ""}</td>
-                      <td className="px-4 py-3 font-mono text-slate-600">{fmt(room.pricePerNight)}</td>
-                      <td className="px-4 py-3 font-mono font-semibold text-slate-800">{fmt(base)}</td>
+                      <td className="px-4 py-3 font-mono text-slate-600">{fmt(effectiveNightlyRate)}</td>
+                      <td className="px-4 py-3 font-mono font-semibold text-slate-800">{fmt(roomBase)}</td>
                     </tr>
+                    {extrasTotal > 0 && (
+                      <tr style={{ borderTop: "1px solid #e2e8f0" }}>
+                        <td className="px-4 py-2 text-xs text-slate-600" colSpan={3}>Servicios adicionales y extras seleccionados</td>
+                        <td className="px-4 py-2 font-mono text-xs font-semibold text-slate-800">{fmt(extrasTotal)}</td>
+                      </tr>
+                    )}
                   </tbody>
                   <tfoot>
                     <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">Subtotal Neto (Hospedaje)</td>
+                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">Subtotal Neto (Hospedaje y Extras)</td>
                       <td className="px-4 py-2 font-mono text-sm text-slate-700">{fmt(base)}</td>
                     </tr>
                     <tr style={{ background: "#f8fafc" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">15% IVA (SRI Ecuador)</td>
+                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">
+                        {ivaPct}% IVA {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}
+                      </td>
                       <td className="px-4 py-2 font-mono text-sm text-slate-700">{fmt(iva)}</td>
-                    </tr>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-600 font-medium">Tasa Municipal de Turismo (GAD Manta)</td>
-                      <td className="px-4 py-2 font-mono text-sm text-slate-700 font-medium">{fmt(tasaMunicipal)}</td>
                     </tr>
                     {hasService && (
                       <tr style={{ background: "#f8fafc" }}>
-                        <td colSpan={3} className="px-4 py-2 text-xs text-right text-emerald-700 font-medium">10% Cargo gubernamental (Ley Turismo Art. 41)</td>
+                        <td colSpan={3} className="px-4 py-2 text-xs text-right text-emerald-700 font-medium">10% Servicio Turístico (Ley Turismo Art. 41)</td>
                         <td className="px-4 py-2 font-mono text-sm text-emerald-700 font-bold">{fmt(servicio)}</td>
                       </tr>
                     )}
                     <tr style={{ borderTop: "2px solid #e2e8f0" }}>
-                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-slate-800">TOTAL PAGADO</td>
+                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-slate-800">TOTAL LIQUIDADO</td>
                       <td className="px-4 py-3 font-bold font-mono text-lg" style={{ color: "#f59e0b" }}>{fmt(total)}</td>
                     </tr>
                   </tfoot>
@@ -2693,7 +2842,7 @@ function BookingModal({
                 {/* Verification code / QR */}
                 <div className="px-4 py-3 flex items-center justify-between" style={{ background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Código de confirmación y QR</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Código QR de Validación de Reserva</p>
                     <p className="font-mono font-bold text-slate-700 tracking-widest text-sm">{verifyCode}</p>
                     <p className="text-[10px] text-slate-400">Presenta este código al recepcionista al momento del check-in.</p>
                   </div>
@@ -2766,14 +2915,16 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
                 <span className="text-xs text-slate-500 font-medium">/ noche</span>
               </div>
               <p className="text-[11px] font-semibold text-slate-500 mt-1">
-                + US${(((hotel.priceFrom * n) * 0.15) + 2.50 + (hotel.gravaServicio10 ? ((hotel.priceFrom * n + 2.50) * 0.10) : 0)).toFixed(2)} de impuestos y cargos ({n}n)
+                + US${(((hotel.priceFrom * n) * (getActiveIvaPercent(hotel.id) / 100)) + (hotel.gravaServicio10 ? ((hotel.priceFrom * n) * 0.10) : 0)).toFixed(2)} de impuestos ({n}n)
               </p>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                 <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">
-                  {hotel.gravaServicio10 ? "15% IVA + Tasa GAD Manta + 10% Propina" : "15% IVA + Tasa GAD Manta"}
+                  {hotel.gravaServicio10
+                    ? `${getActiveIvaPercent(hotel.id)}% IVA + 10% Servicio Turístico`
+                    : `${getActiveIvaPercent(hotel.id)}% IVA (Hostal Exento 10% Serv.)`}
                 </span>
                 <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                  ✓ Comprobante Digital · Factura en Hotel
+                  ✓ Voucher QR Garantizado
                 </span>
               </div>
             </div>
@@ -2792,6 +2943,32 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
 function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: SearchParams; onBack: () => void; onBook: (r: RoomOffer) => void }) {
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
   const gallery = [hotel.image, ...hotel.rooms.map(room => room.image)].slice(0, 4);
+  const score10 = Math.min(9.9, Math.max(8.2, Number((hotel.rating * 1.98).toFixed(1))));
+  const subcriteria = [
+    { label: "Limpieza e Higiene", val: Math.min(10, Number((score10 + 0.2).toFixed(1))) },
+    { label: "Ubicación en Manta", val: Math.min(10, Number((score10 + 0.1).toFixed(1))) },
+    { label: "Atención del Personal", val: score10 },
+    { label: "Relación Calidad-Precio", val: Math.max(8.0, Number((score10 - 0.2).toFixed(1))) },
+    { label: "Conectividad WiFi", val: Math.max(8.1, Number((score10 - 0.1).toFixed(1))) },
+  ];
+
+  const isRural = hotel.city.includes("Santa Marianita") || hotel.city.includes("San Lorenzo") || hotel.city.includes("San Mateo");
+  const landmarks = isRural
+    ? [
+        { icon: "🏖️", place: "Playa local / Zona Costera", dist: "0.2 km", time: "3 min a pie" },
+        { icon: "🌴", place: "Playa El Murciélago & Malecón", dist: "14.5 km", time: "20 min en auto" },
+        { icon: "🛍️", place: "Mall del Pacífico", dist: "15.0 km", time: "22 min en auto" },
+        { icon: "✈️", place: "Aeropuerto Internacional Eloy Alfaro (MEC)", dist: "21.0 km", time: "28 min en auto" },
+        { icon: "🚌", place: "Terminal Terrestre Luis Valdiviezo Morán", dist: "22.5 km", time: "30 min en auto" },
+      ]
+    : [
+        { icon: "🌴", place: "Playa El Murciélago & Malecón Escénico", dist: "0.8 km", time: "4 min en auto / 10 min a pie" },
+        { icon: "🛍️", place: "Mall del Pacífico", dist: "1.1 km", time: "5 min en auto" },
+        { icon: "🍽️", place: "Zona Gastronómica Flavio Reyes / Barbasquillo", dist: "1.4 km", time: "5 min en auto" },
+        { icon: "✈️", place: "Aeropuerto Internacional Eloy Alfaro (MEC)", dist: "6.5 km", time: "12 min en auto" },
+        { icon: "🚌", place: "Terminal Terrestre Luis Valdiviezo Morán", dist: "7.8 km", time: "15 min en auto" },
+      ];
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-medium mb-5 hover:opacity-70 transition-opacity" style={{ color: "#64748b" }}>← Volver a resultados</button>
@@ -2814,9 +2991,9 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
               <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>{hotel.name}</h1>
               <p className="text-sm text-slate-400 mt-0.5">📍 {hotel.address} · {hotel.distance}</p>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl" style={{ background: "#1e3a5f" }}>
-              <span className="text-white font-bold text-xl">{hotel.rating}</span>
-              <div><p className="text-white/80 text-xs">Muy bueno</p><p className="text-white/50 text-[10px]">{hotel.reviews} reseñas</p></div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl" style={{ background: "#1e3a5f" }}>
+              <span className="text-white font-bold text-xl">{score10}</span>
+              <div><p className="text-amber-300 font-bold text-xs">Excelente (/10)</p><p className="text-white/60 text-[10px]">{hotel.reviews} reseñas verificadas</p></div>
             </div>
           </div>
           <p className="text-sm text-slate-600 mt-3 leading-relaxed">{hotel.description}</p>
@@ -2831,17 +3008,59 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
               ))}
             </div>
           </div>
+
+          {/* RF-07: Puntos de referencia y tiempos de traslado en Manta */}
+          <div className="mt-5 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4" style={{ borderColor: "#f1f5f9" }}>
+            <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5 flex items-center gap-1.5">
+                <span>🗺️</span> Distancias y Tiempos de Traslado en Manta (RF-07)
+              </p>
+              <div className="space-y-2 text-xs">
+                {landmarks.map(lm => (
+                  <div key={lm.place} className="flex items-center justify-between gap-2 py-1 border-b border-slate-200/60 last:border-0">
+                    <span className="text-slate-700 font-medium flex items-center gap-1.5">
+                      <span>{lm.icon}</span> {lm.place}
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-500 whitespace-nowrap">{lm.dist} · {lm.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RF-08: Reseñas y Valoraciones Verificadas (Escala 1 a 10 por subcriterios) */}
+            <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span>⭐</span> Valoración Verificada por Subcriterios (RF-08)
+                </p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">100% Huéspedes Reales</span>
+              </div>
+              <div className="space-y-2 text-xs">
+                {subcriteria.map(sc => (
+                  <div key={sc.label}>
+                    <div className="flex justify-between text-[11px] mb-0.5">
+                      <span className="text-slate-600 font-medium">{sc.label}</span>
+                      <span className="font-mono font-bold text-slate-800">{sc.val} / 10</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                      <div className="h-full rounded-full bg-amber-500" style={{ width: `${sc.val * 10}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 mb-5 border" style={{ background: "#fef3c7", borderColor: "#fcd34d" }}>
         <div className="flex flex-wrap gap-4 text-sm font-semibold text-amber-800">
-          <span>📅 {fmtDateShort(params.checkIn)} → {fmtDateShort(params.checkOut)}</span>
+          <span>📅 Entrada: {fmtDateShort(params.checkIn)} → Salida: {fmtDateShort(params.checkOut)}</span>
           <span>🌙 {nights} noche{nights > 1 ? "s" : ""}</span>
           <span>👤 {params.adults + params.children} huésped{params.adults + params.children > 1 ? "es" : ""}</span>
         </div>
-        <p className="text-xs text-amber-700">✓ Cancelación gratuita hasta 24h antes</p>
+        <p className="text-xs text-amber-700">✓ Voucher QR inmediato · Cancelación gratuita hasta 48h antes</p>
       </div>
-      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Tipos de Habitación Disponibles</h2>
+      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Tipos de Habitación y Cupos para Venta Web</h2>
       <div className="space-y-4">
         {hotel.rooms.filter(r => r.capacity >= params.adults).map(room => (
           <div key={room.id} className="rounded-2xl overflow-hidden border bg-white hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
@@ -2873,17 +3092,18 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                     basePrice={room.pricePerNight}
                     nights={nights}
                     hasService10={hotel.gravaServicio10}
-                    serviceFee={2.50}
                     hotelName={hotel.name}
                     defaultExpanded={false}
                     showToggle={true}
                   />
                   <div className="flex items-center justify-between">
                     <div>
-                      {room.available <= 2 && <p className="text-[10px] font-semibold text-red-600">⚡ ¡Solo {room.available} {room.available === 1 ? "queda" : "quedan"}!</p>}
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${room.available <= 2 ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+                        {room.available <= 2 ? `⚡ ¡Últimos ${room.available} cupos web!` : `✓ ${room.available} cupos disponibles para venta web`}
+                      </span>
                     </div>
                     <button onClick={() => onBook(room)} className="px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                      Reservar →
+                      Reservar Cupo →
                     </button>
                   </div>
                 </div>
@@ -3141,7 +3361,7 @@ function HomePage({
           ))}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales."], ["⭐", "Alojamientos Verificados", "Establecimientos registrados y validados: hostales, hoteles y hosterías del cantón Manta."], ["🏛️", "Facturación Directa", "El hotel emite tu factura fiscal en recepción. La plataforma liquida y transfiere el cobro al alojamiento."]].map(([icon, title, desc]) => (
+          {[["💰", "Sin comisiones abusivas", "Reserva directamente con el establecimiento. Sin el 18-20% de recargo de intermediarios internacionales."], ["⭐", "Alojamientos Verificados", "Establecimientos registrados y validados: hostales, hoteles y hosterías del cantón Manta."], ["🧾", "Comprobantes Inmediatos", "La plataforma liquida y emite tu comprobante digital de reserva y pago al instante con código QR."]].map(([icon, title, desc]) => (
             <div key={title as string} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
               <span className="text-2xl">{icon}</span>
               <h4 className="font-bold text-slate-800 mt-2 mb-1 text-sm">{title}</h4>
@@ -3219,7 +3439,7 @@ function HomePage({
                   onClick={onOpenLegal}
                   className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
                 >
-                  Facturación SRI & Términos
+                  Términos y Privacidad
                 </button>
               )}
               <a
@@ -3257,7 +3477,7 @@ function HomePage({
                 onClick={onOpenLegal}
                 className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
               >
-                Facturación SRI
+                Comprobantes y Contacto
               </button>
             )}
           </div>
@@ -3475,8 +3695,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">🏛️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Datos de Facturación SRI</p>
-                            <p className="text-[10px] text-slate-400">Factura directa emitida por el hotel</p>
+                            <p className="font-semibold text-slate-800">Datos de Comprobantes y Contacto</p>
+                            <p className="text-[10px] text-slate-400">Datos registrados para la reserva</p>
                           </div>
                         </button>
 
@@ -3614,7 +3834,7 @@ export default function GuestPage({
         />
       )}
 
-      {/* Modal Legal & Facturación SRI */}
+      {/* Modal Legal & Comprobantes y Contacto */}
       {showLegalModal && (
         <LegalModal onClose={() => setShowLegalModal(false)} />
       )}

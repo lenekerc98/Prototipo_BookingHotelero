@@ -11,15 +11,22 @@ import {
 } from "./mantaHotels";
 import {
   DEFAULT_HOTEL_RATES,
-  HOTEL_SRI_INFO,
+  HOTEL_COMMERCIAL_INFO,
   getHotelInitialInvoices,
   getHotelInitialPayments,
   fmtUsd,
+  getIvaDecretoConfig,
+  setIvaDecretoConfig,
+  getActiveIvaPercent,
+  getAuditLogs,
+  addAuditLog,
+  playNewBookingSound,
   type HotelRatesConfig,
   type RoomRateInfo,
   type SeasonInfo,
   type HotelInvoice,
   type HotelPayment,
+  type AuditLogEntry,
 } from "./hotelData";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -29,11 +36,13 @@ type View = "hotels" | "users" | "dashboard" | "reservations" | "rooms" | "reven
 type ReservationStatus =
   | "confirmed"
   | "pending"
+  | "validated"
+  | "completed"
+  | "cancelled"
   | "checkin"
-  | "checkout"
-  | "cancelled";
+  | "checkout";
 
-type RoomStatus = "available" | "occupied" | "maintenance" | "cleaning";
+type RoomStatus = "available" | "occupied";
 
 interface Reservation {
   id: string;
@@ -50,6 +59,8 @@ interface Reservation {
   children: number;
   source: string;
   notes?: string;
+  voucherValidated?: boolean;
+  voucherValidatedAt?: string;
 }
 
 interface Room {
@@ -85,38 +96,42 @@ const RESERVATIONS: Reservation[] = [
     id: "RES-001",
     guestName: "Carlos Méndez",
     guestEmail: "cmendez@gmail.com",
-    roomNumber: "101",
+    roomNumber: "Cupo Web #1",
     roomType: "Doble Estándar",
     checkIn: "2026-08-15",
     checkOut: "2026-08-18",
     nights: 3,
-    status: "checkin",
+    status: "validated",
     total: 210,
     adults: 2,
     children: 0,
-    source: "Booking.com",
+    source: "Portal AlojaManta",
+    voucherValidated: true,
+    voucherValidatedAt: "15/08/2026 14:15",
   },
   {
     id: "RES-002",
     guestName: "Laura Fernández",
     guestEmail: "lfernandez@hotmail.com",
-    roomNumber: "205",
+    roomNumber: "Cupo Web #2",
     roomType: "Simple",
     checkIn: "2026-08-15",
     checkOut: "2026-08-16",
     nights: 1,
-    status: "checkout",
+    status: "completed",
     total: 55,
     adults: 1,
     children: 0,
-    source: "Directo",
+    source: "Directo Web",
+    voucherValidated: true,
+    voucherValidatedAt: "15/08/2026 13:50",
   },
   {
     id: "RES-003",
     guestName: "Familia Rodríguez",
     guestEmail: "jrodriguez@yahoo.com",
-    roomNumber: "302",
-    roomType: "Triple",
+    roomNumber: "Cupo Web #3",
+    roomType: "Triple Familiar",
     checkIn: "2026-08-16",
     checkOut: "2026-08-20",
     nights: 4,
@@ -124,14 +139,14 @@ const RESERVATIONS: Reservation[] = [
     total: 440,
     adults: 2,
     children: 1,
-    source: "Expedia",
-    notes: "Cama adicional para niño solicitada",
+    source: "Portal AlojaManta",
+    notes: "Cama supletoria para niño solicitada",
   },
   {
     id: "RES-004",
     guestName: "Miguel Torres",
-    guestEmail: "mtorres@empresa.com",
-    roomNumber: "110",
+    guestEmail: "mtorres@empresa.ec",
+    roomNumber: "Cupo Web #4",
     roomType: "Doble Estándar",
     checkIn: "2026-08-17",
     checkOut: "2026-08-19",
@@ -140,14 +155,14 @@ const RESERVATIONS: Reservation[] = [
     total: 140,
     adults: 1,
     children: 0,
-    source: "Directo",
-    notes: "Factura a nombre de empresa",
+    source: "Directo Web",
+    notes: "Requiere recibo corporativo del hotel",
   },
   {
     id: "RES-005",
     guestName: "Ana Gómez",
     guestEmail: "agomez@gmail.com",
-    roomNumber: "208",
+    roomNumber: "Cupo Web #5",
     roomType: "Simple",
     checkIn: "2026-08-18",
     checkOut: "2026-08-21",
@@ -156,29 +171,30 @@ const RESERVATIONS: Reservation[] = [
     total: 165,
     adults: 1,
     children: 0,
-    source: "Airbnb",
+    source: "Link de Pago",
   },
   {
     id: "RES-006",
     guestName: "Roberto Silva",
     guestEmail: "rsilva@gmail.com",
-    roomNumber: "104",
+    roomNumber: "Cupo Web #6",
     roomType: "Doble Estándar",
     checkIn: "2026-08-14",
     checkOut: "2026-08-15",
     nights: 1,
-    status: "checkout",
+    status: "completed",
     total: 70,
     adults: 2,
     children: 0,
-    source: "Booking.com",
+    source: "Portal AlojaManta",
+    voucherValidated: true,
   },
   {
     id: "RES-007",
     guestName: "Patricia Ruiz",
     guestEmail: "pruiz@hotmail.com",
-    roomNumber: "301",
-    roomType: "Triple",
+    roomNumber: "Cupo Web #7",
+    roomType: "Triple Familiar",
     checkIn: "2026-08-19",
     checkOut: "2026-08-22",
     nights: 3,
@@ -186,13 +202,13 @@ const RESERVATIONS: Reservation[] = [
     total: 330,
     adults: 2,
     children: 2,
-    source: "Directo",
+    source: "Directo Web",
   },
   {
     id: "RES-008",
     guestName: "Daniel Castro",
     guestEmail: "dcastro@outlook.com",
-    roomNumber: "203",
+    roomNumber: "Cupo Web #8",
     roomType: "Simple",
     checkIn: "2026-08-20",
     checkOut: "2026-08-23",
@@ -201,189 +217,30 @@ const RESERVATIONS: Reservation[] = [
     total: 165,
     adults: 1,
     children: 0,
-    source: "Booking.com",
+    source: "Portal AlojaManta",
   },
 ];
 
 const ROOMS: Room[] = [
-  {
-    number: "101",
-    type: "Doble Estándar",
-    floor: 1,
-    status: "occupied",
-    pricePerNight: 70,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C"],
-    guestName: "Carlos Méndez",
-    checkOut: "2026-08-18",
-  },
-  {
-    number: "102",
-    type: "Simple",
-    floor: 1,
-    status: "available",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-  },
-  {
-    number: "103",
-    type: "Simple",
-    floor: 1,
-    status: "cleaning",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-  },
-  {
-    number: "104",
-    type: "Doble Estándar",
-    floor: 1,
-    status: "cleaning",
-    pricePerNight: 70,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C"],
-  },
-  {
-    number: "105",
-    type: "Doble Estándar",
-    floor: 1,
-    status: "available",
-    pricePerNight: 70,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C"],
-  },
-  {
-    number: "106",
-    type: "Simple",
-    floor: 1,
-    status: "maintenance",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-  },
-  {
-    number: "107",
-    type: "Simple",
-    floor: 1,
-    status: "available",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-  },
-  {
-    number: "108",
-    type: "Doble Estándar",
-    floor: 1,
-    status: "available",
-    pricePerNight: 70,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C"],
-  },
-  {
-    number: "110",
-    type: "Doble Estándar",
-    floor: 1,
-    status: "available",
-    pricePerNight: 70,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C"],
-  },
-  {
-    number: "201",
-    type: "Doble Superior",
-    floor: 2,
-    status: "available",
-    pricePerNight: 85,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C", "Minibar"],
-  },
-  {
-    number: "203",
-    type: "Simple",
-    floor: 2,
-    status: "available",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-  },
-  {
-    number: "205",
-    type: "Simple",
-    floor: 2,
-    status: "cleaning",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-    guestName: "Laura Fernández",
-  },
-  {
-    number: "207",
-    type: "Doble Superior",
-    floor: 2,
-    status: "occupied",
-    pricePerNight: 85,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C", "Minibar"],
-    guestName: "Invitado",
-    checkOut: "2026-08-17",
-  },
-  {
-    number: "208",
-    type: "Simple",
-    floor: 2,
-    status: "available",
-    pricePerNight: 55,
-    capacity: 1,
-    amenities: ["WiFi", "TV"],
-  },
-  {
-    number: "210",
-    type: "Doble Superior",
-    floor: 2,
-    status: "available",
-    pricePerNight: 85,
-    capacity: 2,
-    amenities: ["WiFi", "TV", "A/C", "Minibar"],
-  },
-  {
-    number: "301",
-    type: "Triple",
-    floor: 3,
-    status: "available",
-    pricePerNight: 110,
-    capacity: 3,
-    amenities: ["WiFi", "TV", "A/C", "Bañera"],
-  },
-  {
-    number: "302",
-    type: "Triple",
-    floor: 3,
-    status: "available",
-    pricePerNight: 110,
-    capacity: 3,
-    amenities: ["WiFi", "TV", "A/C", "Bañera"],
-  },
-  {
-    number: "303",
-    type: "Suite",
-    floor: 3,
-    status: "occupied",
-    pricePerNight: 150,
-    capacity: 4,
-    amenities: ["WiFi", "TV", "A/C", "Jacuzzi", "Minibar", "Vista al mar"],
-    guestName: "VIP Guest",
-    checkOut: "2026-08-19",
-  },
-  {
-    number: "304",
-    type: "Suite",
-    floor: 3,
-    status: "available",
-    pricePerNight: 150,
-    capacity: 4,
-    amenities: ["WiFi", "TV", "A/C", "Jacuzzi", "Minibar", "Vista al mar"],
-  },
+  { number: "101", type: "Doble Estándar", floor: 1, status: "occupied", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"], guestName: "Carlos Méndez", checkOut: "2026-08-18" },
+  { number: "102", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
+  { number: "103", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
+  { number: "104", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
+  { number: "105", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
+  { number: "106", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
+  { number: "107", type: "Simple", floor: 1, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
+  { number: "108", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
+  { number: "110", type: "Doble Estándar", floor: 1, status: "available", pricePerNight: 70, capacity: 2, amenities: ["WiFi", "TV", "A/C"] },
+  { number: "201", type: "Doble Superior", floor: 2, status: "available", pricePerNight: 85, capacity: 2, amenities: ["WiFi", "TV", "A/C", "Minibar"] },
+  { number: "203", type: "Simple", floor: 2, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
+  { number: "205", type: "Simple", floor: 2, status: "occupied", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"], guestName: "Laura Fernández" },
+  { number: "207", type: "Doble Superior", floor: 2, status: "occupied", pricePerNight: 85, capacity: 2, amenities: ["WiFi", "TV", "A/C", "Minibar"], guestName: "Invitado", checkOut: "2026-08-17" },
+  { number: "208", type: "Simple", floor: 2, status: "available", pricePerNight: 55, capacity: 1, amenities: ["WiFi", "TV"] },
+  { number: "210", type: "Doble Superior", floor: 2, status: "available", pricePerNight: 85, capacity: 2, amenities: ["WiFi", "TV", "A/C", "Minibar"] },
+  { number: "301", type: "Triple", floor: 3, status: "available", pricePerNight: 110, capacity: 3, amenities: ["WiFi", "TV", "A/C", "Bañera"] },
+  { number: "302", type: "Triple", floor: 3, status: "available", pricePerNight: 110, capacity: 3, amenities: ["WiFi", "TV", "A/C", "Bañera"] },
+  { number: "303", type: "Suite", floor: 3, status: "occupied", pricePerNight: 150, capacity: 4, amenities: ["WiFi", "TV", "A/C", "Jacuzzi", "Minibar", "Vista al mar"], guestName: "VIP Guest", checkOut: "2026-08-19" },
+  { number: "304", type: "Suite", floor: 3, status: "available", pricePerNight: 150, capacity: 4, amenities: ["WiFi", "TV", "A/C", "Jacuzzi", "Minibar", "Vista al mar"] },
 ];
 
 const MONTHLY_REVENUE = [
@@ -396,28 +253,27 @@ const MONTHLY_REVENUE = [
 ];
 
 const SOURCE_DATA = [
-  { name: "Booking.com", value: 42, color: "#3b82f6" },
-  { name: "Directo", value: 28, color: "#f59e0b" },
-  { name: "Expedia", value: 16, color: "#8b5cf6" },
-  { name: "Airbnb", value: 9, color: "#ec4899" },
-  { name: "Otros", value: 5, color: "#6b7280" },
+  { name: "Portal AlojaManta", value: 48, color: "#f59e0b" },
+  { name: "Directo Web", value: 28, color: "#10b981" },
+  { name: "Link PayPhone", value: 15, color: "#3b82f6" },
+  { name: "DeUna QR", value: 9, color: "#ec4899" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const statusLabel: Record<ReservationStatus, string> = {
   confirmed: "Confirmada",
-  pending: "Pendiente",
-  checkin: "Check-in hoy",
-  checkout: "Check-out hoy",
+  pending: "Por Confirmar",
+  validated: "Voucher QR Validado",
+  completed: "Liquidada",
   cancelled: "Cancelada",
+  checkin: "Voucher QR Validado",
+  checkout: "Liquidada",
 };
 
 const roomStatusLabel: Record<RoomStatus, string> = {
-  available: "Disponible",
-  occupied: "Ocupada",
-  maintenance: "Mantenimiento",
-  cleaning: "Limpieza",
+  available: "Cupo Disponible",
+  occupied: "Cupo Reservado",
 };
 
 function fmt(amount: number) {
@@ -445,20 +301,116 @@ function StatusBadge({
   status: string;
   type?: "reservation" | "room";
 }) {
+  const normalizedStatus =
+    status === "validated"
+      ? "checkin"
+      : status === "completed"
+      ? "checkout"
+      : status;
   const cls =
     type === "reservation"
-      ? `badge-${status}`
-      : `badge-${status}`;
+      ? `badge-${normalizedStatus}`
+      : `badge-${normalizedStatus}`;
   const label =
     type === "reservation"
-      ? statusLabel[status as ReservationStatus]
-      : roomStatusLabel[status as RoomStatus];
+      ? statusLabel[status as ReservationStatus] || status
+      : roomStatusLabel[status as RoomStatus] || status;
   return (
     <span
       className={`mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide ${cls}`}
     >
       {label}
     </span>
+  );
+}
+
+// RF-21: Conmutador Rápido de Emergencia IVA 15% / 8% por Decreto Presidencial
+function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: string }) {
+  const [ivaCfg, setIvaCfgState] = useState(() => getIvaDecretoConfig());
+
+  useEffect(() => {
+    const sync = () => setIvaCfgState(getIvaDecretoConfig());
+    window.addEventListener("alojamanta-iva-change", sync);
+    return () => window.removeEventListener("alojamanta-iva-change", sync);
+  }, []);
+
+  function toggleIva(enable8: boolean) {
+    const updated = {
+      ...ivaCfg,
+      ivaReducido8Activo: enable8,
+      actualizadoPor: `${userName} (${new Date().toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" })})`,
+    };
+    setIvaDecretoConfig(updated);
+    setIvaCfgState(updated);
+    addAuditLog({
+      usuario: userName,
+      rol: "Administración Tributaria",
+      modulo: "Motor Tributario LORTI (RF-21)",
+      accion: enable8 ? "ACTIVAR_IVA_8_FERIADO" : "RESTAURAR_IVA_15_ORDINARIO",
+      detalle: enable8
+        ? `Activado IVA reducido 8% por ${updated.decretoReferencia} (${updated.nombreFeriado})`
+        : "Restaurada tarifa ordinaria de IVA 15% en el motor de reservas cantonal",
+    });
+  }
+
+  return (
+    <div
+      className="rounded-xl border p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3"
+      style={{
+        background: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.1)" : "var(--card)",
+        borderColor: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.45)" : "var(--border)",
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <span className="text-xl flex-shrink-0">{ivaCfg.ivaReducido8Activo ? "🇪🇨" : "🏛️"}</span>
+        <div className="text-xs">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
+              Conmutador Rápido de IVA Turístico (RF-21 · LORTI Ecuador)
+            </span>
+            <span
+              className={`mono text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                ivaCfg.ivaReducido8Activo
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                  : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+              }`}
+            >
+              {ivaCfg.ivaReducido8Activo ? "Activo: IVA 8% Decreto Feriado" : "Activo: IVA 15% Ordinario"}
+            </span>
+          </div>
+          <p className="mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            {ivaCfg.ivaReducido8Activo
+              ? `Aplicando reducción temporal al 8% en todo el motor de reservas (${ivaCfg.nombreFeriado} · ${ivaCfg.decretoReferencia}).`
+              : "Aplicando tarifa general vigente de IVA 15% más 10% de Servicio Turístico (Art. 41 Ley de Turismo, exento en Hostales)."}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => toggleIva(false)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+            !ivaCfg.ivaReducido8Activo
+              ? "bg-amber-500 text-slate-950 border-amber-400 shadow-sm"
+              : "bg-transparent text-slate-400 border-slate-700 hover:text-white"
+          }`}
+        >
+          IVA 15% (Ordinario)
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleIva(true)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+            ivaCfg.ivaReducido8Activo
+              ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm"
+              : "bg-transparent text-slate-400 border-slate-700 hover:text-white"
+          }`}
+        >
+          🇪🇨 IVA 8% (Decreto Feriado)
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -690,7 +642,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Check-in *
+                Fecha de Entrada (Arribo) *
               </label>
               <input
                 type="date"
@@ -707,7 +659,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Check-out *
+                Fecha de Salida *
               </label>
               <input
                 type="date"
@@ -725,7 +677,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-              Tipo de Habitación *
+              Tipo de Habitación (Cupo Web) *
             </label>
             <select
               className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -798,7 +750,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
                 value={form.source}
                 onChange={(e) => setForm({ ...form, source: e.target.value })}
               >
-                {["Directo", "Booking.com", "Expedia", "Airbnb", "Teléfono"].map(
+                {["Portal AlojaManta", "Directo Web", "Link de Pago", "Teléfono / WhatsApp"].map(
                   (s) => (
                     <option key={s}>{s}</option>
                   )
@@ -808,7 +760,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-              Notas
+              Observaciones de la reserva
             </label>
             <textarea
               className="w-full px-3 py-2 rounded text-sm border outline-none resize-none"
@@ -820,7 +772,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Peticiones especiales, alergias, etc."
+              placeholder="Hora estimada de arribo, extras solicitados..."
             />
           </div>
           {total > 0 && (
@@ -852,14 +804,24 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
             Cancelar
           </button>
           <button
-            onClick={onClose}
+            onClick={() => {
+              playNewBookingSound();
+              addAuditLog({
+                usuario: "Operador Extranet",
+                rol: "Operador Reservas / Recepción",
+                modulo: "Bandeja de Reservas",
+                accion: "CREAR_RESERVA_DIRECTA",
+                detalle: `Reserva directa registrada para ${form.guestName || "Huésped"} (${selectedRoom?.type || "Habitación"})`,
+              });
+              onClose();
+            }}
             className="flex-1 py-2 rounded text-sm font-semibold transition-colors"
             style={{
               background: "var(--primary)",
               color: "var(--primary-foreground)",
             }}
           >
-            Confirmar Reserva
+            Confirmar Reserva y Emitir Voucher QR
           </button>
         </div>
       </div>
@@ -870,53 +832,90 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
 // ─── Views ────────────────────────────────────────────────────────────────────
 
 function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
-  const todayArrivals = RESERVATIONS.filter((r) => r.status === "checkin");
-  const todayDepartures = RESERVATIONS.filter((r) => r.status === "checkout");
-  const occupied = ROOMS.filter((r) => r.status === "occupied").length;
-  const occupancyPct = Math.round((occupied / ROOMS.length) * 100);
+  const [liveAlert, setLiveAlert] = useState<string | null>(null);
+  const confirmedUpcoming = RESERVATIONS.filter((r) => r.status === "confirmed" || r.status === "pending");
+  const validatedStays = RESERVATIONS.filter((r) => r.status === "validated" || r.status === "checkin" || r.status === "completed" || r.status === "checkout");
+  const reservedCupos = ROOMS.filter((r) => r.status === "occupied").length;
+  const occupancyPct = Math.round((reservedCupos / ROOMS.length) * 100);
+
+  function triggerSimulatedBooking() {
+    playNewBookingSound();
+    const code = `RES-${Math.floor(10000 + Math.random() * 90000)}`;
+    setLiveAlert(`🔔 Nueva reserva web entrante ${code}: Habitación Matrimonial Vista al Mar (2 noches · Pagada vía PayPhone).`);
+    addAuditLog({
+      usuario: "Motor de Reservas Web",
+      rol: "Sistema Tiempo Real",
+      modulo: "Notificaciones RF-11",
+      accion: "ALERTA_RESERVA_ENTRANTE",
+      detalle: `Notificación sonora y visual emitida para nueva reserva ${code}`,
+    });
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl leading-tight" style={{ color: "var(--foreground)" }}>
-            Panel de Control
+            Dashboard de Reservas & Cupos Web
           </h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Viernes, 15 de agosto de 2026
+            Extranet de Comercialización y Validación de Vouchers QR (Sin PMS físico)
           </p>
         </div>
-        <button
-          onClick={onNewBooking}
-          className="px-4 py-2 rounded text-sm font-semibold transition-all hover:opacity-90"
-          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-        >
-          + Nueva Reserva
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={triggerSimulatedBooking}
+            className="px-3.5 py-2 rounded text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <span>🔔</span> Simular Reserva Web Entrante (RF-11)
+          </button>
+          <button
+            onClick={onNewBooking}
+            className="px-4 py-2 rounded text-sm font-semibold transition-all hover:opacity-90 cursor-pointer"
+            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+          >
+            + Registrar Reserva Directa
+          </button>
+        </div>
       </div>
+
+      {/* Live audio-visual notification banner (RF-11) */}
+      {liveAlert && (
+        <div className="p-3.5 rounded-xl border border-emerald-400 bg-emerald-950/80 text-emerald-200 flex items-center justify-between gap-3 text-xs animate-pulse">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🔊</span>
+            <span className="font-semibold">{liveAlert}</span>
+          </div>
+          <button onClick={() => setLiveAlert(null)} className="text-emerald-300 hover:text-white font-bold px-2">✕</button>
+        </div>
+      )}
+
+      {/* Emergency IVA 15% / 8% switch banner (RF-21) */}
+      <IvaEmergencySwitchBanner />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
-          label="Ocupación hoy"
+          label="Cupos Web Reservados"
           value={`${occupancyPct}%`}
-          sub={`${occupied} de ${ROOMS.length} habitaciones`}
+          sub={`${reservedCupos} de ${ROOMS.length} cupos comercializados`}
           accent
         />
         <KpiCard
-          label="Revenue (Ago)"
+          label="Revenue Reservas (Ago)"
           value={fmt(21600)}
           sub="↑ 8.4% vs julio"
         />
         <KpiCard
-          label="Check-ins hoy"
-          value={String(todayArrivals.length)}
-          sub="pendientes de llegada"
+          label="Arribos por Validar QR"
+          value={String(confirmedUpcoming.length)}
+          sub="reservas garantizadas próximas"
         />
         <KpiCard
-          label="Check-outs hoy"
-          value={String(todayDepartures.length)}
-          sub="salidas programadas"
+          label="Vouchers QR Validados"
+          value={String(validatedStays.length)}
+          sub="reservas efectivas validadas"
         />
       </div>
 
@@ -929,7 +928,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
         >
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
-              Revenue mensual
+              Revenue mensual por reservas
             </p>
             <span className="mono text-xs px-2 py-0.5 rounded" style={{ background: "var(--muted)", color: "var(--primary)" }}>
               Últimos 6 meses
@@ -947,14 +946,13 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             <OccupancyRing pct={occupancyPct} />
             <div>
               <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Ocupación
+                Cupo Web
               </p>
-              <p className="text-sm" style={{ color: "var(--foreground)" }}>
-                {occupied} ocupadas
+              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                {reservedCupos} cupos vendidos
               </p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                {ROOMS.filter((r) => r.status === "available").length} disponibles ·{" "}
-                {ROOMS.filter((r) => r.status === "cleaning").length} limpieza
+                {ROOMS.filter((r) => r.status === "available").length} cupos libres para venta online
               </p>
             </div>
           </div>
@@ -963,7 +961,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ background: "var(--card)", borderColor: "var(--border)" }}
           >
             <p className="text-xs uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
-              Canal de reserva
+              Canal de origen de reservas
             </p>
             <SourceBar />
           </div>
@@ -972,7 +970,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
 
       {/* Today activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Arrivals */}
+        {/* Upcoming arrivals to validate */}
         <div
           className="rounded-md border overflow-hidden"
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
@@ -982,65 +980,59 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Llegadas de hoy
+              Próximos Arribos (Pendientes de Validar Voucher QR)
             </p>
             <span className="mono text-xs" style={{ color: "var(--primary)" }}>
-              {todayArrivals.length} reservas
+              {confirmedUpcoming.length} reservas
             </span>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-            {todayArrivals.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-center" style={{ color: "var(--muted-foreground)" }}>
-                No hay llegadas programadas
-              </p>
-            ) : (
-              todayArrivals.map((r) => (
-                <div key={r.id} className="px-4 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-                      {r.guestName}
-                    </p>
-                    <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                      {r.roomType} · {r.nights}n · {r.adults}ad
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="mono text-sm font-semibold" style={{ color: "var(--primary)" }}>
-                      {fmt(r.total)}
-                    </p>
-                    <StatusBadge status={r.status} />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Departures */}
-        <div
-          className="rounded-md border overflow-hidden"
-          style={{ background: "var(--card)", borderColor: "var(--border)" }}
-        >
-          <div
-            className="px-4 py-3 border-b flex items-center justify-between"
-            style={{ borderColor: "var(--border)" }}
-          >
-            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Salidas de hoy
-            </p>
-            <span className="mono text-xs" style={{ color: "#d8b4fe" }}>
-              {todayDepartures.length} reservas
-            </span>
-          </div>
-          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-            {todayDepartures.map((r) => (
+            {confirmedUpcoming.map((r) => (
               <div key={r.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
                     {r.guestName}
                   </p>
                   <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    {r.roomType} · {r.source}
+                    {r.roomType} · Entrada {fmtDate(r.checkIn)} ({r.nights}n)
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="mono text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                    {fmt(r.total)}
+                  </p>
+                  <StatusBadge status={r.status} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Validated vouchers */}
+        <div
+          className="rounded-md border overflow-hidden"
+          style={{ background: "var(--card)", borderColor: "var(--border)" }}
+        >
+          <div
+            className="px-4 py-3 border-b flex items-center justify-between"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+              Vouchers QR Validados y Reservas Liquidadas
+            </p>
+            <span className="mono text-xs" style={{ color: "#6ee7b7" }}>
+              {validatedStays.length} reservas
+            </span>
+          </div>
+          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+            {validatedStays.map((r) => (
+              <div key={r.id} className="px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                    {r.guestName}
+                  </p>
+                  <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
+                    {r.roomType} · {r.source} {r.voucherValidatedAt ? `· QR: ${r.voucherValidatedAt}` : ""}
                   </p>
                 </div>
                 <div className="text-right">
@@ -1063,10 +1055,62 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
   const [filter, setFilter] = useState<ReservationStatus | "all">("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Reservation | null>(null);
+  const [qrInput, setQrInput] = useState("");
+  const [qrFeedback, setQrFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<HotelInvoice | null>(null);
+
+  // Sincronizar reservas creadas por huéspedes en el portal web (hoteldirekt_guest_reservations)
+  useEffect(() => {
+    function syncGuestBookings() {
+      try {
+        const raw = localStorage.getItem("hoteldirekt_guest_reservations");
+        if (!raw) return;
+        const guestList: MyReservation[] = JSON.parse(raw);
+        const forThisHotel = guestList.filter(g => !g.hotelId || g.hotelId === hotelId);
+        if (forThisHotel.length === 0) return;
+        setReservations(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const mappedNew: Reservation[] = forThisHotel
+            .filter(g => !existingIds.has(g.id))
+            .map(g => ({
+              id: g.id,
+              guestName: g.guestName || "Huésped Web",
+              guestEmail: g.guestEmail || "cliente@alojamanta.ec",
+              roomNumber: "Cupo Web",
+              roomType: g.room,
+              checkIn: g.checkIn,
+              checkOut: g.checkOut,
+              nights: g.nights,
+              status: g.status === "cancelled" ? "cancelled" : g.status === "completed" ? "completed" : "confirmed",
+              total: g.total,
+              adults: 2,
+              children: 0,
+              source: "Portal AlojaManta",
+            }));
+          return mappedNew.length > 0 ? [...mappedNew, ...prev] : prev;
+        });
+      } catch {
+        // ignore
+      }
+    }
+    syncGuestBookings();
+    window.addEventListener("alojamanta-new-booking", syncGuestBookings);
+    return () => window.removeEventListener("alojamanta-new-booking", syncGuestBookings);
+  }, [hotelId, setReservations]);
+
+  // Normalizar estados heredados (checkin -> validated, checkout -> completed)
+  const normalizedReservations = useMemo(
+    () =>
+      reservations.map(r => ({
+        ...r,
+        status: (r.status === "checkin" ? "validated" : r.status === "checkout" ? "completed" : r.status) as ReservationStatus,
+      })),
+    [reservations]
+  );
 
   const filtered = useMemo(
     () =>
-      reservations.filter(
+      normalizedReservations.filter(
         (r) =>
           (filter === "all" || r.status === filter) &&
           (search === "" ||
@@ -1074,30 +1118,176 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             r.roomType.toLowerCase().includes(search.toLowerCase()) ||
             r.id.toLowerCase().includes(search.toLowerCase()))
       ),
-    [filter, search, reservations]
+    [filter, search, normalizedReservations]
   );
+
+  function handleValidateQr(resIdToValidate: string) {
+    const cleanCode = resIdToValidate.trim().toUpperCase();
+    const target = normalizedReservations.find(
+      r => r.id.toUpperCase() === cleanCode || cleanCode.includes(r.id.toUpperCase())
+    );
+    if (!target) {
+      setQrFeedback({ type: "err", msg: `No se encontró ninguna reserva con el código o QR "${cleanCode}".` });
+      return;
+    }
+    const nowStr = new Date().toLocaleString("es-EC", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    setReservations(items =>
+      items.map(item =>
+        item.id === target.id
+          ? { ...item, status: "validated", voucherValidated: true, voucherValidatedAt: nowStr }
+          : item
+      )
+    );
+    addAuditLog({
+      usuario: "Operador Extranet",
+      rol: "Operador Reservas / Recepción",
+      modulo: "Validador Voucher QR (RF-13)",
+      accion: "VALIDAR_VOUCHER_QR",
+      detalle: `Voucher QR de reserva ${target.id} (${target.guestName} · ${target.roomType}) validado correctamente`,
+    });
+    setQrFeedback({
+      type: "ok",
+      msg: `✓ Voucher QR Validado (${nowStr}): ${target.id} · ${target.guestName} (${target.roomType}, ${target.nights} noches).`,
+    });
+    setQrInput("");
+  }
+
+  function handleConfirmPending(r: Reservation) {
+    setReservations(items =>
+      items.map(item => (item.id === r.id ? { ...item, status: "confirmed" } : item))
+    );
+    addAuditLog({
+      usuario: "Operador Extranet",
+      rol: "Operador Reservas / Recepción",
+      modulo: "Bandeja de Reservas (RF-12)",
+      accion: "CONFIRMAR_RESERVA",
+      detalle: `Reserva ${r.id} (${r.guestName}) cambiada a estado Confirmada`,
+    });
+  }
+
+  function handleSimulateIncomingWebBooking() {
+    playNewBookingSound();
+    const newId = `RES-${Math.floor(10000 + Math.random() * 89999)}`;
+    const simulated: Reservation = {
+      id: newId,
+      guestName: "Valeria Andrade (Reserva Web)",
+      guestEmail: "vandrade@turismo.ec",
+      roomNumber: "Cupo Web",
+      roomType: "Habitación Matrimonial Queen",
+      checkIn: "2026-08-18",
+      checkOut: "2026-08-20",
+      nights: 2,
+      status: "confirmed",
+      total: 162,
+      adults: 2,
+      children: 0,
+      source: "Portal AlojaManta",
+      notes: "Pago acreditado vía PayPhone · Pendiente validar QR al arribo",
+    };
+    setReservations(items => [simulated, ...items]);
+    setQrFeedback({
+      type: "ok",
+      msg: `🔔 ¡Nueva reserva web entrante ${newId} de ${simulated.guestName}! (Alerta sonora RF-11 activada)`,
+    });
+    addAuditLog({
+      usuario: "Motor de Reservas Web",
+      rol: "Sistema Tiempo Real",
+      modulo: "Bandeja de Reservas (RF-11)",
+      accion: "NUEVA_RESERVA_ENTRANTE",
+      detalle: `Reserva entrante ${newId} (${simulated.guestName}) recibida en tiempo real`,
+    });
+  }
 
   const tabs: { key: ReservationStatus | "all"; label: string }[] = [
     { key: "all", label: "Todas" },
-    { key: "checkin", label: "Check-in hoy" },
-    { key: "checkout", label: "Check-out hoy" },
+    { key: "pending", label: "Por Confirmar" },
     { key: "confirmed", label: "Confirmadas" },
-    { key: "pending", label: "Pendientes" },
+    { key: "validated", label: "Voucher QR Validado" },
+    { key: "completed", label: "Liquidadas" },
+    { key: "cancelled", label: "Canceladas" },
   ];
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-          Reservas
-        </h1>
-        <button
-          onClick={() => setEditing({ id: "", guestName: "", guestEmail: "", roomNumber: "", roomType: "Doble Estándar", checkIn: "", checkOut: "", nights: 1, status: "pending", total: 0, adults: 1, children: 0, source: "Directo", notes: "" })}
-          className="px-4 py-2 rounded text-sm font-semibold hover:opacity-90 transition-opacity"
-          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-        >
-          + Nueva Reserva
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
+            Bandeja de Reservas & Validación de Voucher QR
+          </h1>
+          <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            Gestión de reservas entrantes, confirmación de cupos web y validación de Voucher QR al arribo del huésped (Extranet No-PMS).
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSimulateIncomingWebBooking}
+            className="px-3.5 py-2 rounded text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <span>🔔</span> Simular Reserva Entrante (Sonido RF-11)
+          </button>
+          <button
+            onClick={() => setEditing({ id: "", guestName: "", guestEmail: "", roomNumber: "Cupo Web", roomType: "Doble Estándar", checkIn: "", checkOut: "", nights: 1, status: "confirmed", total: 0, adults: 2, children: 0, source: "Directo Web", notes: "" })}
+            className="px-4 py-2 rounded text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+          >
+            + Nueva Reserva
+          </button>
+        </div>
+      </div>
+
+      {/* RF-13: Validador de Voucher QR en 1 Clic */}
+      <div
+        className="rounded-xl border p-4 space-y-2.5"
+        style={{ background: "var(--card)", borderColor: "rgba(245, 158, 11, 0.35)" }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📱</span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                Validador de Voucher QR y Código de Reserva en 1 Clic (RF-13)
+              </p>
+              <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                Ingresa o escanea el código del Voucher QR del huésped al llegar al establecimiento para dejar constancia de reserva efectiva.
+              </p>
+            </div>
+          </div>
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              if (qrInput.trim()) handleValidateQr(qrInput);
+            }}
+            className="flex items-center gap-2"
+          >
+            <input
+              type="text"
+              value={qrInput}
+              onChange={e => setQrInput(e.target.value)}
+              placeholder="Ej: RES-003 o código QR..."
+              className="px-3 py-1.5 rounded border text-xs font-mono outline-none"
+              style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            />
+            <button
+              type="submit"
+              className="px-3.5 py-1.5 rounded text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors cursor-pointer whitespace-nowrap"
+            >
+              ✓ Validar Voucher QR
+            </button>
+          </form>
+        </div>
+        {qrFeedback && (
+          <div
+            className={`p-2.5 rounded-lg text-xs font-medium flex items-center justify-between ${
+              qrFeedback.type === "ok"
+                ? "bg-emerald-950/70 text-emerald-300 border border-emerald-700"
+                : "bg-red-950/70 text-red-300 border border-red-800"
+            }`}
+          >
+            <span>{qrFeedback.msg}</span>
+            <button onClick={() => setQrFeedback(null)} className="text-xs font-bold ml-2">✕</button>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -1108,18 +1298,18 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             background: "var(--card)",
             borderColor: "var(--border)",
             color: "var(--foreground)",
-            minWidth: 200,
+            minWidth: 220,
           }}
-          placeholder="Buscar por huésped, tipo de habitación, ID..."
+          placeholder="Buscar por huésped, tipo de habitación, código RES..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setFilter(t.key)}
-              className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
+              className="px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
               style={{
                 background: filter === t.key ? "var(--primary)" : "var(--card)",
                 color:
@@ -1144,7 +1334,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["ID", "Huésped", "Tipo de Habitación", "Check-in", "Check-out", "Noches", "Canal", "Total", "Estado", "Acciones"].map(
+                {["Código", "Huésped", "Tipo de Habitación", "Fecha Entrada", "Fecha Salida", "Noches", "Canal", "Total", "Estado Reserva", "Acciones (1 Clic)"].map(
                   (h) => (
                     <th
                       key={h}
@@ -1168,9 +1358,14 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                   }}
                 >
                   <td className="px-4 py-3">
-                    <span className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
+                    <span className="mono text-xs font-bold text-amber-400">
                       {r.id}
                     </span>
+                    {r.voucherValidatedAt && (
+                      <span className="block mono text-[9px] text-emerald-400">
+                        QR: {r.voucherValidatedAt}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-medium" style={{ color: "var(--foreground)" }}>
@@ -1185,7 +1380,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                       {r.roomType}
                     </p>
                     <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                      {r.adults} ad. {r.children ? `· ${r.children} ch.` : ""}
+                      {r.adults} ad. {r.children ? `· ${r.children} niñ.` : ""}
                     </p>
                   </td>
                   <td className="px-4 py-3 mono text-xs whitespace-nowrap" style={{ color: "var(--foreground)" }}>
@@ -1209,9 +1404,51 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                     <StatusBadge status={r.status} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <button onClick={() => setEditing({ ...r })} className="text-xs px-2 py-1 rounded transition-colors" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Editar</button>
-                      <button onClick={() => { if (confirm(`¿Eliminar ${r.id}?`)) setReservations(items => items.filter(item => item.id !== r.id)); }} className="text-xs px-2 py-1 rounded border" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {r.status === "pending" && (
+                        <button
+                          onClick={() => handleConfirmPending(r)}
+                          className="text-[11px] px-2 py-1 rounded font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 cursor-pointer"
+                          title="Confirmar reserva en 1 clic (RF-12)"
+                        >
+                          ✓ Confirmar
+                        </button>
+                      )}
+                      {r.status === "confirmed" && (
+                        <button
+                          onClick={() => handleValidateQr(r.id)}
+                          className="text-[11px] px-2 py-1 rounded font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 cursor-pointer"
+                          title="Validar Voucher QR del huésped en 1 clic (RF-13)"
+                        >
+                          📱 Validar QR
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          const ivaPct = getActiveIvaPercent(hotelId);
+                          const base = Number((r.total / (1 + ivaPct / 100 + 0.10)).toFixed(2));
+                          setSelectedInvoice({
+                            id: `VCH-${r.id}`,
+                            resId: r.id,
+                            guest: r.guestName,
+                            clientEmail: r.guestEmail,
+                            roomType: r.roomType,
+                            checkIn: r.checkIn,
+                            checkOut: r.checkOut,
+                            nights: r.nights,
+                            base,
+                            tax: Number((r.total - base).toFixed(2)),
+                            ivaPercent: ivaPct,
+                            total: r.total,
+                            status: "paid",
+                            payMethod: r.source,
+                          });
+                        }}
+                        className="text-[11px] px-2 py-1 rounded font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 cursor-pointer"
+                      >
+                        🧾 Voucher
+                      </button>
+                      <button onClick={() => setEditing({ ...r })} className="text-[11px] px-2 py-1 rounded transition-colors cursor-pointer" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Editar</button>
                     </div>
                   </td>
                 </tr>
@@ -1221,10 +1458,19 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
         </div>
         {filtered.length === 0 && (
           <p className="text-center py-10 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            No se encontraron reservas
+            No se encontraron reservas con ese filtro
           </p>
         )}
       </div>
+
+      {selectedInvoice && (
+        <SriInvoiceModal
+          invoice={selectedInvoice}
+          hotelId={hotelId}
+          onClose={() => setSelectedInvoice(null)}
+        />
+      )}
+
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3,7,18,.78)" }}>
           <form onSubmit={event => {
@@ -1232,6 +1478,13 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             const nights = editing.checkIn && editing.checkOut ? Math.max(1, Math.round((new Date(editing.checkOut).getTime() - new Date(editing.checkIn).getTime()) / 86400000)) : editing.nights;
             const saved = { ...editing, nights, id: editing.id || `RES-${Date.now().toString().slice(-5)}` };
             setReservations(items => items.some(item => item.id === saved.id) ? items.map(item => item.id === saved.id ? saved : item) : [saved, ...items]);
+            addAuditLog({
+              usuario: "Operador Extranet",
+              rol: "Operador Reservas / Recepción",
+              modulo: "Bandeja de Reservas",
+              accion: editing.id ? "ACTUALIZAR_RESERVA" : "CREAR_RESERVA",
+              detalle: `Reserva ${saved.id} (${saved.guestName}) guardada con estado ${saved.status}`,
+            });
             setEditing(null);
           }} className="w-full max-w-2xl rounded-xl border p-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
             <div className="flex items-start justify-between mb-5"><div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Reserva</p><h2 className="text-xl">{editing.id ? "Editar reserva" : "Nueva reserva"}</h2></div><button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }}>×</button></div>
@@ -1239,12 +1492,21 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
               <Field label="Nombre del huésped" value={editing.guestName} onChange={guestName => setEditing({ ...editing, guestName })} required />
               <Field label="Email" type="email" value={editing.guestEmail} onChange={guestEmail => setEditing({ ...editing, guestEmail })} required />
               <Field label="Tipo de Habitación" value={editing.roomType} onChange={roomType => setEditing({ ...editing, roomType })} required />
-              <Field label="Cupo / Cupón" value={editing.roomNumber || "Cupo Web"} onChange={roomNumber => setEditing({ ...editing, roomNumber })} />
-              <Field label="Check-in" type="date" value={editing.checkIn} onChange={checkIn => setEditing({ ...editing, checkIn })} required />
-              <Field label="Check-out" type="date" value={editing.checkOut} onChange={checkOut => setEditing({ ...editing, checkOut })} required />
+              <Field label="Cupo Web Asignado" value={editing.roomNumber || "Cupo Web"} onChange={roomNumber => setEditing({ ...editing, roomNumber })} />
+              <Field label="Fecha de Entrada (Arribo)" type="date" value={editing.checkIn} onChange={checkIn => setEditing({ ...editing, checkIn })} required />
+              <Field label="Fecha de Salida" type="date" value={editing.checkOut} onChange={checkOut => setEditing({ ...editing, checkOut })} required />
               <Field label="Total ($ USD)" type="number" value={String(editing.total)} onChange={total => setEditing({ ...editing, total: Number(total) })} />
-              <Field label="Canal" value={editing.source} onChange={source => setEditing({ ...editing, source })} />
-              <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Estado</label><select value={editing.status} onChange={event => setEditing({ ...editing, status: event.target.value as ReservationStatus })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>{Object.entries(statusLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+              <Field label="Canal de Origen" value={editing.source} onChange={source => setEditing({ ...editing, source })} />
+              <div>
+                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Estado de la Reserva</label>
+                <select value={editing.status} onChange={event => setEditing({ ...editing, status: event.target.value as ReservationStatus })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
+                  <option value="pending">Por Confirmar</option>
+                  <option value="confirmed">Confirmada</option>
+                  <option value="validated">Voucher QR Validado</option>
+                  <option value="completed">Liquidada</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+              </div>
               <Field label="Adultos" type="number" value={String(editing.adults)} onChange={adults => setEditing({ ...editing, adults: Number(adults) })} />
             </div>
             <div className="flex justify-end gap-2 mt-6"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Guardar reserva</button></div>
@@ -1726,13 +1988,34 @@ function RoomsView({
                   </div>
                 </div>
 
-                <div className="p-4 pt-0">
+                <div className="p-4 pt-0 flex gap-2">
                   <button
                     onClick={() => setEditingOffer(offer)}
-                    className="w-full py-1.5 rounded-lg border text-xs font-medium hover:bg-slate-800 transition-colors cursor-pointer text-slate-300"
+                    className="flex-1 py-1.5 rounded-lg border text-xs font-medium hover:bg-slate-800 transition-colors cursor-pointer text-slate-300"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    Editar tarifa y detalles
+                    Editar tarifa
+                  </button>
+                  <button
+                    onClick={() => {
+                      const nextAvail = offer.available > 0 ? 0 : 4;
+                      setRoomOffers(prev => prev.map(o => (o.id === offer.id ? { ...o, available: nextAvail } : o)));
+                      addAuditLog({
+                        usuario: "Operador Extranet",
+                        rol: "Revenue / Admin Hotel",
+                        modulo: "Cupos Web (RF-15)",
+                        accion: nextAvail === 0 ? "STOP_SELL_CIERRE_VENTA" : "ABRIR_VENTA_WEB",
+                        detalle: `${nextAvail === 0 ? "Cierre de venta web (Stop Sell)" : "Reapertura de cupos (4)"} en ${offer.type}`,
+                      });
+                    }}
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
+                      offer.available > 0
+                        ? "border-red-800/60 text-red-300 hover:bg-red-950/50"
+                        : "border-emerald-700/60 text-emerald-300 hover:bg-emerald-950/50"
+                    }`}
+                    title="Cerrar o abrir inmediatamente la venta web de este tipo de habitación (RF-15 Stop Sell)"
+                  >
+                    {offer.available > 0 ? "⛔ Stop Sell" : "✓ Abrir Venta"}
                   </button>
                 </div>
               </div>
@@ -2137,7 +2420,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
     email: r.guestEmail,
     phone: "",
     document: "",
-    country: "España",
+    country: "Ecuador",
     notes: "",
     visits: RESERVATIONS.filter((rr) => rr.guestEmail === r.guestEmail).length,
     totalSpend: RESERVATIONS.filter((rr) => rr.guestEmail === r.guestEmail).reduce(
@@ -2158,13 +2441,13 @@ function GuestsView({ hotelId }: { hotelId: string }) {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-          Huéspedes
+          Directorio de Huéspedes (LOPDP)
         </h1>
         <div className="flex gap-3">
           <span className="mono text-xs px-3 py-1.5 rounded" style={{ background: "var(--card)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}>
             {guests.length} registrados
           </span>
-          <button onClick={() => setEditing({ id: "", name: "", email: "", phone: "", document: "", country: "España", notes: "", visits: 0, totalSpend: 0, lastVisit: new Date().toISOString().split("T")[0], source: "Directo" })} className="px-3 py-1.5 rounded text-xs font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Huésped</button>
+          <button onClick={() => setEditing({ id: "", name: "", email: "", phone: "", document: "", country: "Ecuador", notes: "", visits: 0, totalSpend: 0, lastVisit: new Date().toISOString().split("T")[0], source: "Directo Web" })} className="px-3 py-1.5 rounded text-xs font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Huésped</button>
         </div>
       </div>
 
@@ -2281,7 +2564,7 @@ const DELIVERY_STYLE: Record<InvoiceDeliveryStatus, { bg: string; color: string;
   returned: { bg: "rgba(245, 158, 11, 0.15)", color: "#d97706", label: "Reversado" },
 };
 
-// ─── Billing view (SRI Ecuador) ───────────────────────────────────────────────
+// ─── Payment Receipts & Booking Settlements ───────────────────────────────────
 
 function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHotel }) {
   const hotelName = hotel?.name || "Hotel Costa Sol";
@@ -2309,16 +2592,16 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
 
   function handleCreateQuickInvoice(e: React.FormEvent) {
     e.preventDefault();
-    const sri = HOTEL_SRI_INFO[hotelId] || HOTEL_SRI_INFO["costa-sol"];
+    const hotelMeta = HOTEL_COMMERCIAL_INFO[hotelId] || HOTEL_COMMERCIAL_INFO["costa-sol"];
     const base = Number(newInvBase);
     const iva = Number((base * 0.15).toFixed(2));
-    const hasServicio10 = sri.gravaServicio10 ?? true;
+    const hasServicio10 = hotelMeta.gravaServicio10 ?? true;
     const servicio10 = hasServicio10 ? Number((base * 0.10).toFixed(2)) : 0;
     const total = Number((base + iva + servicio10).toFixed(2));
     const seq = String(invoices.length + 1).padStart(9, "0");
 
     const newInv: HotelInvoice = {
-      id: `${sri.estab}-${sri.ptoEmi}-${seq}`,
+      id: `${hotelMeta.estab}-${hotelMeta.ptoEmi}-${seq}`,
       resId: `RES-${Math.floor(100 + Math.random() * 900)}`,
       guest: newInvGuest || "Cliente Huésped",
       hotel: hotelName,
@@ -2348,12 +2631,12 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Comprobantes de Pago & Facturación</h1>
+            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Comprobantes de Pago y Liquidación</h1>
             <span className="mono text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
               Pasarela PayPhone / DeUna
             </span>
           </div>
-          <p className="text-xs text-amber-500 font-medium mt-0.5">{hotelName} · RUC: {HOTEL_SRI_INFO[hotelId]?.ruc || "1391789456001"} · Factura fiscal emitida por recepción</p>
+          <p className="text-xs text-amber-500 font-medium mt-0.5">{hotelName} · RUC: {HOTEL_COMMERCIAL_INFO[hotelId]?.ruc || "1391789456001"} · Comprobantes de abono y liquidación de reserva</p>
         </div>
         <button
           onClick={() => setShowNewInvoiceModal(true)}
@@ -2366,10 +2649,10 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
       {/* Operational model banner */}
       <div className="p-3.5 rounded-xl border flex items-center justify-between gap-3 text-xs" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.25)" }}>
         <div className="flex items-center gap-2.5">
-          <span className="text-xl flex-shrink-0">🏛️</span>
+          <span className="text-xl flex-shrink-0">💳</span>
           <div>
-            <p className="font-bold text-amber-400">Modelo Operativo: El Hotel es el Emisor de la Factura Fiscal</p>
-            <p className="text-slate-400 mt-0.5">La plataforma procesa y certifica los cobros digitales (PayPhone / DeUna). Cada hotel emite la Factura Electrónica SRI oficial a nombre del huésped al momento del check-in o check-out en recepción.</p>
+            <p className="font-bold text-amber-400">Plataforma de Cobros Digitales y Liquidación de Reservas</p>
+            <p className="text-slate-400 mt-0.5">La plataforma procesa y certifica los cobros y anticipos digitales en tiempo real (PayPhone, DeUna y Kushki), emitiendo los comprobantes oficiales de reserva con código QR para el huésped y recepción.</p>
           </div>
         </div>
       </div>
@@ -2377,8 +2660,8 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="Cobrado en Pasarela (Ago)" value={fmtUsd(totalPaid)} sub={`${invoices.filter(i => i.status === "paid").length} pagos confirmados`} accent />
         <KpiCard label="Pendiente de cobro" value={fmtUsd(totalPending)} sub={`${invoices.filter(i => i.status === "pending" || i.status === "overdue").length} transacciones`} />
-        <KpiCard label="Facturas Hotel Emitidas" value={String(invoices.filter(i => i.hotelInvoiceNumber).length || 3)} sub="entregadas al huésped en recepción" />
-        <KpiCard label="Facturas Hotel Pendientes" value={String(Math.max(0, invoices.length - (invoices.filter(i => i.hotelInvoiceNumber).length || 3)))} sub="por emitir en check-in / check-out" />
+        <KpiCard label="Comprobantes Emitidos" value={String(invoices.filter(i => i.hotelInvoiceNumber).length || 3)} sub="registrados en el sistema de reservas" />
+        <KpiCard label="Comprobantes Pendientes" value={String(Math.max(0, invoices.length - (invoices.filter(i => i.hotelInvoiceNumber).length || 3)))} sub="por conciliar o liquidar" />
       </div>
 
       {/* Filters */}
@@ -2395,7 +2678,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Nº Comprobante", "Reserva", "Huésped", "Fecha", "Subtotal", "IVA 15%", "Total USD", "Pasarela", "Estado Pago", "Factura del Hotel", ""].map(h => (
+                {["Nº Comprobante", "Reserva", "Huésped", "Fecha", "Subtotal", "IVA 15%", "Total USD", "Pasarela", "Estado Pago", "Recibo / Comprobante", ""].map(h => (
                   <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{h}</th>
                 ))}
               </tr>
@@ -2425,7 +2708,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
                         </span>
                       ) : (
                         <span className="mono text-[10px] font-medium px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-800/60 flex items-center gap-1 w-fit">
-                          <span>⚠️</span> Pendiente Hotel
+                          <span>⚠️</span> Pendiente Confirmar
                         </span>
                       )}
                     </td>
@@ -2803,6 +3086,9 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
         </button>
       </div>
 
+      {/* RF-21: Conmutador Rápido de Emergencia IVA 15% / 8% */}
+      <IvaEmergencySwitchBanner userName="Revenue Manager" />
+
       {/* Season multipliers */}
       <div>
         <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>Temporadas</p>
@@ -3069,7 +3355,7 @@ const ROLE_INFO: Record<AdminRole, { label: string; color: string; bg: string }>
   superadmin: { label: "Superadministrador (Cantonal)", color: "#d97706", bg: "rgba(245, 158, 11, 0.15)" },
   admin: { label: "Administrador de Hotel", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.15)" },
   manager: { label: "Revenue Manager", color: "#2563eb", bg: "rgba(37, 99, 235, 0.15)" },
-  receptionist: { label: "Recepcionista Front Desk", color: "#059669", bg: "rgba(16, 185, 129, 0.15)" },
+  receptionist: { label: "Operador Reservas / Recepción", color: "#059669", bg: "rgba(16, 185, 129, 0.15)" },
 };
 
 function usePersistentState<T>(key: string, initialValue: T) {
@@ -3229,10 +3515,13 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
       {/* Platform KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="Alojamientos registrados" value={String(activeCount)} sub={`${hotels.length} en el Catastro Cantonal 2026`} />
-        <KpiCard label="Revenue plataforma (Ago)" value={fmtUsd(totalRevenue)} sub="facturado en USD Manta" accent />
+        <KpiCard label="Revenue plataforma (Ago)" value={fmtUsd(totalRevenue)} sub="reservado en USD Manta" accent />
         <KpiCard label="Ocupación media cantonal" value={`${avgOccupancy}%`} sub="red oficial de Manta" />
         <KpiCard label="Capacidad total de camas" value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="plazas de alojamiento cantonal" />
       </div>
+
+      {/* RF-21: Conmutador Rápido de Emergencia IVA 15% / 8% por Decreto Presidencial */}
+      <IvaEmergencySwitchBanner userName="Superadministrador Cantonal" />
 
       {/* Filter bar */}
       <div className="p-4 rounded-xl border space-y-3" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
@@ -3539,6 +3828,14 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
 }) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<StaffUser | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => getAuditLogs());
+
+  useEffect(() => {
+    const refreshLogs = () => setAuditLogs(getAuditLogs());
+    window.addEventListener("alojamanta-audit-change", refreshLogs);
+    return () => window.removeEventListener("alojamanta-audit-change", refreshLogs);
+  }, []);
+
   const roleOptions: AdminRole[] = currentRole === "superadmin"
     ? ["superadmin", "admin", "manager", "receptionist"]
     : ["manager", "receptionist"];
@@ -3560,18 +3857,18 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p className="mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: "var(--primary)" }}>Control de acceso</p>
-          <h1 className="text-2xl">Usuarios y permisos</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>Asigna cada cuenta a una propiedad y limita su acceso por rol.</p>
+          <p className="mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: "var(--primary)" }}>Control de acceso RBAC & Auditoría LOPDP</p>
+          <h1 className="text-2xl">Usuarios, Permisos y Bitácora de Auditoría</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>Asigna cada cuenta a una propiedad, limita su acceso por rol y supervisa la bitácora inalterable de operaciones (RF-29, RF-30).</p>
         </div>
-        <button onClick={startNewUser} className="px-4 py-2.5 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Crear usuario</button>
+        <button onClick={startNewUser} className="px-4 py-2.5 rounded text-sm font-semibold cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Crear usuario</button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="Usuarios" value={String(users.length)} sub="cuentas registradas" />
         <KpiCard label="Activos" value={String(activeUsers)} sub="con acceso habilitado" accent />
         <KpiCard label="Invitaciones" value={String(users.filter(u => u.status === "invited").length)} sub="pendientes de aceptar" />
-        <KpiCard label="Propiedades asignadas" value={String(new Set(users.flatMap(u => u.hotelIds)).size)} sub="con equipo activo" />
+        <KpiCard label="Eventos Auditados" value={String(auditLogs.length)} sub="bitácora LOPDP inalterable" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
@@ -3614,13 +3911,55 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         </div>
 
         <div className="rounded-md border p-4 h-fit" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>Permisos por rol</p>
+          <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>Permisos por rol (RBAC · RF-29)</p>
           {[
-            ["Superadministrador (Cantonal)", "Acceso total a los 116 hoteles de Manta, auditoría, catastro y métricas consolidadas."],
-            ["Administrador de Hotel", "Control de su establecimiento, configuración del 10% de servicio, liquidaciones bancarias y su equipo."],
-            ["Revenue Manager", "Control de tarifas, temporadas, multiplicadores, inventario y disponibilidad de habitaciones."],
-            ["Recepcionista Front Desk", "Bandeja de reservas en tiempo real, registro de check-in/out, pagos y facturas electrónicas SRI."],
+            ["Superadministrador (Cantonal)", "Acceso total a los 116 alojamientos de Manta, conmutador IVA 15%/8%, auditoría LOPDP, catastro y métricas consolidadas."],
+            ["Administrador de Hotel", "Control de su establecimiento, configuración del 10% de servicio (Art. 41), liquidaciones de pasarela y su equipo."],
+            ["Revenue Manager", "Control de tarifas por temporada, planes tarifarios, apertura/cierre de venta web (Stop Sell) y cupos disponibles."],
+            ["Operador Reservas / Recepción", "Bandeja de reservas en tiempo real, validación de Voucher QR en 1 clic al arribo del huésped, links de pago y comprobantes digitales (Sin PMS físico)."],
           ].map(([role, description]) => <div key={role} className="pb-3 mb-3 border-b last:border-0 last:mb-0 last:pb-0" style={{ borderColor: "var(--border)" }}><p className="text-xs font-semibold">{role}</p><p className="text-[11px] mt-1 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{description}</p></div>)}
+        </div>
+      </div>
+
+      {/* RF-30: Bitácora Inalterable de Auditoría (LOPDP Ecuador) */}
+      <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+        <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+          <div>
+            <p className="text-sm font-semibold flex items-center gap-2" style={{ color: "var(--foreground)" }}>
+              <span>🛡️</span> Bitácora Inalterable de Auditoría del Sistema (RF-30 · LOPDP Ecuador)
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              Registro cronológico automático de cambios tributarios (IVA 15%/8%), validaciones de Voucher QR, cierres de cupo (Stop Sell) y reservas.
+            </p>
+          </div>
+          <span className="mono text-[10px] px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            Registro Activo · Solo Lectura
+          </span>
+        </div>
+        <div className="overflow-x-auto max-h-72">
+          <table className="w-full text-xs">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                {["ID", "Fecha y Hora", "Usuario", "Rol", "Módulo", "Acción", "Detalle de la Operación", "IP"].map(h => (
+                  <th key={h} className="mono text-left px-3.5 py-2.5 text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.map((log, i) => (
+                <tr key={log.id} style={{ borderBottom: i < auditLogs.length - 1 ? "1px solid var(--border)" : "none" }}>
+                  <td className="px-3.5 py-2.5 mono text-[10px] text-amber-400">{log.id}</td>
+                  <td className="px-3.5 py-2.5 mono text-[11px] whitespace-nowrap" style={{ color: "var(--muted-foreground)" }}>{log.timestamp}</td>
+                  <td className="px-3.5 py-2.5 font-medium" style={{ color: "var(--foreground)" }}>{log.usuario}</td>
+                  <td className="px-3.5 py-2.5 text-[11px]" style={{ color: "var(--muted-foreground)" }}>{log.rol}</td>
+                  <td className="px-3.5 py-2.5 text-[11px] font-semibold text-sky-400">{log.modulo}</td>
+                  <td className="px-3.5 py-2.5 mono text-[10px] font-bold text-emerald-400">{log.accion}</td>
+                  <td className="px-3.5 py-2.5 text-[11px]" style={{ color: "var(--foreground)" }}>{log.detalle}</td>
+                  <td className="px-3.5 py-2.5 mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>{log.ip}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

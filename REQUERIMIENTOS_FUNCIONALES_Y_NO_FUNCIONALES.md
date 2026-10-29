@@ -1,34 +1,33 @@
 # Catálogo de Requisitos Funcionales y No Funcionales (SRS)
-## Sistema de Gestión de Servicios Operativos, Reservas y Facturación SRI para Alojamientos del Cantón Manta, Ecuador
+## Sistema de Gestión de Reservas Hoteleras, Cupos Web y Vouchers Digitales (Cantón Manta, Ecuador)
 
 * **Código Único de Proyecto (CUP):** 91880000.0000.390820
-* **Normativa de Referencia:** IEEE 830 / ISO/IEC 25010 / Normativa Tributaria SRI Ecuador (Art. 41 Ley de Turismo)
-* **Ámbito Territorial:** Cantón Manta, Provincia de Manabí, Ecuador (Catastro de 118 establecimientos)
-* **Fecha de Emisión:** Octubre 2026 (Versión 3.3 - Catálogos Maestros CRUD, Conmutador Rápido de IVA 8% y Operativa Hotelera Pura)
+* **Normativa de Referencia:** IEEE 830 / ISO/IEC 25010 / Art. 41 Ley de Turismo de Ecuador (Tasa de Servicio 10%) / LOPDP
+* **Ámbito Territorial:** Cantón Manta, Provincia de Manabí, Ecuador (Catastro Oficial de 116 establecimientos activos)
+* **Fecha de Emisión:** Octubre 2026 (Versión 4.0 - Modelo Extranet y Motor de Reservas Puro sin PMS)
+* **Propósito del Sistema:** Motor de reservas y cotización online por tipos de habitación y cupos, confirmación de abonos con pasarelas digitales locales (PayPhone, DeUna, Kushki), validación/canje de vouchers digitales con código QR, gestión dinámica de tarifas/temporadas (conmutador IVA 15% / 8% por Decreto) y gobernanza cantonal multi-tenant para los alojamientos de Manta.
+* **Delimitación Conceptual (No-PMS):** El sistema **NO es un PMS interno** (no incluye procesos de *check-in/check-out* de habitaciones físicas numeradas, entrega de llaves, estados de limpieza/aseo ni mantenimiento operativo), ni emite facturas electrónicas del SRI (proceso contable interno de cada hotel).
 
 ---
 
 ## 1. Identificación y Descripción de Actores del Sistema
 
-El sistema identifica actores humanos (roles del sistema bajo esquema RBAC) y actores externos (sistemas automatizados y webservices integrados):
-
-### 1.1 Actores Humanos (Roles del Sistema)
+### 1.1 Actores Humanos (Roles bajo esquema RBAC)
 
 | Actor | Perfil / Rol | Responsabilidad y Ámbito de Operación |
 | :--- | :--- | :--- |
-| **ACT-01** | **Superadministrador (Superadmin Cantonal)** | Máxima autoridad de gobernanza a nivel del cantón Manta. Gestiona el catastro oficial de alojamientos (118 establecimientos: hostales, hoteles y hosterías), tipos de hotel, categorías por estrellas y roles; supervisa tableros consolidados cantonales (ocupación, flujo de turistas, divisas generadas); y emite alertas tributarias globales (activación sugerida de IVA 8% cantonal ante decreto presidencial de última hora). |
-| **ACT-02** | **Administrador del Hotel (Admin Hotel)** | Responsable legal, comercial y fiscal de un establecimiento específico (aislamiento Multi-tenant). Configura datos tributarios ante el SRI (RUC, punto de emisión `001-001`), gestiona las habitaciones físicas y el personal de su hotel (usuarios con rol Recepcionista y Revenue Manager), y opera el **interruptor para activar o desactivar la tasa del 10% de servicio turístico** (Art. 41 Ley de Turismo). |
-| **ACT-03** | **Encargado de Tarifas y Cupos (Revenue Manager)** | Responsable comercial y de ocupación del establecimiento. Administra los tipos de habitación, crea y ajusta temporadas, planes de tarifa (precios base definidos por su análisis de mercado), controla la apertura/cierre de cupos para evitar sobreventas (*overbooking*), gestiona internamente los bloqueos por mantenimiento y opera el **Conmutador Rápido de Emergencia de IVA al 8%** ante decretos presidenciales de última hora. |
-| **ACT-04** | **Recepcionista (Front Desk)** | Personal operativo de mostrador. Gestiona la bandeja de reservas en tiempo real (notificaciones auditivas y visuales); ejecuta el **registro de Check-in presencial en mostrador** validando disponibilidad física y cédula/pasaporte; **asigna manualmente la habitación física concreta**; realiza el Check-out; genera enlaces de cobro digital (PayPhone/DeUna) y emite la factura electrónica autorizada ante el SRI. |
-| **ACT-05** | **Cliente / Huésped (Usuario Público)** | Turista nacional o extranjero. Interactúa con el motor de reservas web: consulta disponibilidad por tipos de habitación, compara planes de tarifa, observa el desglose tributario transparente (IVA 15%/8% + 10% servicio si aplica), formaliza la reserva (con Google, correo o como invitado *Guest Checkout*) y obtiene su voucher digital con código QR. |
+| **ACT-01** | **Superadministrador (Superadmin Cantonal)** | Máxima autoridad de gobernanza turística cantonal. Gestiona el catastro oficial de alojamientos de Manta (116 establecimientos activos: 76 hostales, 39 hoteles y 1 hostería), modalidades, categorías por estrellas y roles; supervisa tableros consolidados de reservas y activa decretos globales de IVA al 8% en feriados turísticos. |
+| **ACT-02** | **Administrador del Hotel (Admin Hotel)** | Responsable comercial y administrativo del establecimiento. Configura datos comerciales de su hotel, personal interno (encargados de reservas y revenue managers) y opera el interruptor para activar o desactivar la tasa del 10% de servicio turístico en la cotización web (Art. 41 Ley de Turismo). |
+| **ACT-03** | **Encargado de Tarifas y Cupos (Revenue Manager)** | Responsable comercial de disponibilidad. Administra tipos de habitación ofertados, cupos disponibles para venta web, temporadas, planes tarifarios y el conmutador rápido de emergencia para cotizaciones con IVA al 8% ante decretos presidenciales de última hora. |
+| **ACT-04** | **Operador de Reservas / Recepción** | Personal encargado de la bandeja de reservas del hotel. Recibe reservas entrantes en tiempo real con alertas visuales y sonoras; confirma reservas en 1 clic; **valida y canjea el Voucher Digital con código QR** cuando el huésped hace efectiva su reserva; genera enlaces de cobro digital (PayPhone/DeUna) y registra el número de recibo interno del hotel para conciliación. |
+| **ACT-05** | **Cliente / Huésped (Usuario Público)** | Turista nacional o extranjero. Consulta disponibilidad por tipos de habitación, selecciona fechas de entrada y salida, compara planes de tarifa y servicios adicionales, observa el desglose transparente (IVA 15%/8% + 10% servicio si aplica), reserva como invitado (*Guest Checkout*) o con cuenta y descarga su Voucher Digital con código QR. |
 
 ### 1.2 Actores Externos (Sistemas e Interfaces Integradas)
 
 | Actor Externo | Tipo de Interfaz | Función en el Ecosistema |
 | :--- | :--- | :--- |
-| **EXT-01: SRI (Servicio de Rentas Internas)** | Web Service SOAP / REST | Recepción de comprobantes electrónicos XML, validación de Clave de Acceso (49 dígitos Módulo 11), autorización tributaria y consulta de estado de facturas en línea (`cel.sri.gob.ec`). |
-| **EXT-02: Pasarelas de Pago Digitales (PayPhone / DeUna / Kushki)** | API REST / Webhooks | Procesamiento de cobros digitales en USD mediante tarjetas de crédito/débito y transferencias directas, generación de códigos QR de cobro y retorno de confirmación de pago. |
-| **EXT-03: Servicio de Notificaciones (WhatsApp API / Email SMTP)** | Web Service REST / SMTP | Despacho automático de notificaciones inmediatas: voucher de confirmación con QR al huésped, alertas sonoras/visuales de nuevas reservas a recepción y enlaces de cobro con tiempo de expiración. |
+| **EXT-01: Pasarelas de Pago Digitales (PayPhone / DeUna / Kushki)** | API REST / Webhooks | Procesamiento de cobros digitales en USD mediante tarjetas de crédito/débito y transferencias directas con código QR, retornando confirmación inmediata de pago. |
+| **EXT-02: Servicio de Notificaciones (WhatsApp API / Email SMTP)** | Web Service REST / SMTP | Despacho automático de vouchers de confirmación con código QR al huésped y enlaces de cobro. |
 
 ---
 
@@ -36,214 +35,93 @@ El sistema identifica actores humanos (roles del sistema bajo esquema RBAC) y ac
 
 ### Módulo 1: Motor de Reservas y Experiencia del Huésped (Portal Público)
 
-* **RF-01 (Búsqueda y Cotización Dinámica):** El sistema debe permitir al huésped seleccionar rango de fechas (check-in / check-out), aforo (adultos, niños) y cantidad de habitaciones, recalculando instantáneamente la disponibilidad de tipos de habitación y tarifas vigentes.
-* **RF-02 (Autenticación Flexible del Huésped):** El sistema debe permitir al usuario autenticarse mediante:
-  * Cuenta de Google (OAuth 2.0).
-  * Registro tradicional con correo electrónico y contraseña.
-  * Modalidad de **Reserva como Invitado (*Guest Checkout*)** sin necesidad de registro previo para minimizar el abandono de compra.
-* **RF-03 (Desglose Tributario Transparente y Adaptativo):** El motor de reservas debe presentar la cotización desglosada con total claridad:
-  * Subtotal neto de alojamiento (Base imponible).
-  * IVA aplicable: 15% en periodos ordinarios o **8% en feriados turísticos decretados**.
-  * Tasa del 10% de Servicio Turístico (Propina legal Art. 41 Ley de Turismo) **únicamente si el hotel la tiene activada**. Si el hotel no la cobra, la cotización no debe reflejar ningún recargo por este concepto.
-  * Total final a pagar en USD.
-* **RF-04 (Selección de Planes de Tarifa):** El sistema debe permitir seleccionar modalidades de reserva: Solo Alojamiento vs. Con Desayuno Incluido; y Tarifa Flexible (con cancelación gratuita) vs. Tarifa No Reembolsable (con descuento promocional).
-* **RF-05 (Ficha Técnica y Galería Multimedia por Tipo de Habitación):** El sistema debe exhibir por cada categoría: carrusel fotográfico HD, metraje en metros cuadrados ($m^2$), tipo y cantidad de camas, vista (al mar, a la ciudad, piscina) y badges de equipamiento (A/C, WiFi, TV cable, baño privado).
-* **RF-06 (Servicios Complementarios de Alojamiento - Extras Opcionales):** El sistema debe permitir al hotel configurar servicios extra directamente asociados a la estancia:
-  * *Transporte Aeropuerto de Manta $\leftrightarrow$ Hotel:* Configurable por el hotel como **gratuito (de cortesía)**, **con valor adicional en USD**, o **no disponible**.
-  * *Adicionales de Hospedaje:* Cunas para bebés, camas supletorias o late check-out (sujeto a disponibilidad).
-  * *(Se excluyen expresamente tours y paquetes turísticos ajenos al servicio de alojamiento).*
-* **RF-07 (Localización y Puntos de Interés en Manta):** El sistema debe presentar la ubicación geográfica del hotel dentro de su parroquia (Manta, Tarqui, Barbasquillo, Santa Marianita, San Lorenzo, etc.) con distancias y tiempos a playas, terminal y aeropuerto.
-* **RF-08 (Reseñas y Calificaciones Verificadas):** El sistema debe mostrar la puntuación promedio (escala 1 a 10) y opiniones de huéspedes reales desglosadas por: Limpieza, Ubicación, Personal y Conectividad.
-* **RF-09 (Voucher Digital de Reserva con Código QR):**
-  * *Definición de Voucher Digital:* Es el **comprobante oficial de confirmación de reserva** que se genera al completarse el proceso. Contiene el código alfanumérico único (ej. `#RES-CS-201`), fechas de entrada y salida, tipo de habitación contratada, número de huéspedes, desglose de valores pagados/pendientes y un **código QR escaneable**.
-  * *Uso Operativo:* El huésped lo porta en formato digital (PDF o pantalla del smartphone) y lo presenta en la recepción del hotel al momento de su llegada, permitiendo al recepcionista escanear el QR o ingresar el código para validar la reserva de inmediato sin necesidad de imprimir papel. Se despacha copia automática por correo electrónico y WhatsApp.
+* **RF-01 (Búsqueda y Cotización Dinámica por Cupos):** El sistema debe permitir al huésped seleccionar parroquia/sector de Manta, rango de fechas (fecha de entrada y fecha de salida), aforo (adultos, niños) y recalcular instantáneamente los tipos de habitación con cupos web disponibles y sus tarifas vigentes en USD.
+* **RF-02 (Autenticación Flexible y Reserva como Invitado - Guest Checkout):** El sistema debe permitir al turista autenticarse mediante cuenta de Google (OAuth 2.0), correo/contraseña o realizar una **Reserva Rápida como Invitado (*Guest Checkout*)** sin obligarlo a crear una cuenta previa.
+* **RF-03 (Desglose Tributario Transparente y Adaptativo):** La cotización debe presentar con total transparencia: Subtotal neto de alojamiento (y extras seleccionados), IVA aplicable (**15% régimen ordinario** u **8% en feriados turísticos decretados**), Tasa del **10% de Servicio Turístico** (calculada estrictamente sobre el subtotal neto únicamente si el hotel la tiene activada) y Total final en USD.
+* **RF-04 (Selección de Planes de Tarifa):** El sistema debe permitir seleccionar modalidades de tarifa al reservar: *Tarifa Estándar Flexible (Reembolsable)* vs. *Tarifa No Reembolsable (con descuento promocional)*; y opción de *Solo Alojamiento* vs. *Con Desayuno Incluido*.
+* **RF-05 (Ficha Técnica y Galería Multimedia por Tipo de Habitación):** Exhibición por tipo de habitación: fotografía HD, metraje en $m^2$, configuración de camas, capacidad máxima, cupos restantes y etiquetas de amenidades (A/C, WiFi, Smart TV, baño privado).
+* **RF-06 (Servicios Complementarios de Alojamiento - Extras Opcionales):** Selección opcional de servicios asociados a la reserva: *Traslado Aeropuerto Eloy Alfaro de Manta $\leftrightarrow$ Hotel*, *Cama supletoria*, *Cuna para bebé* o *Salida extendida*. Se excluyen tours o paquetes externos al hospedaje.
+* **RF-07 (Localización Geográfica Cantonal y Puntos de Interés de Manta):** Mapa interactivo con ubicación en las 7 parroquias de Manta (Manta Matriz, Tarqui, Los Esteros, San Mateo, Eloy Alfaro, Santa Marianita y San Lorenzo) y tiempos estimados de traslado hacia atractivos clave (Aeropuerto Eloy Alfaro, Terminal Terrestre, Playa El Murciélago y Mall del Pacífico).
+* **RF-08 (Reseñas y Calificaciones Verificadas por Subcriterios):** Puntuación del alojamiento y desglose de valoraciones de huéspedes verificados en escala de 1 a 10 por: *Limpieza, Ubicación, Atención del Personal, Relación Calidad-Precio y Conectividad WiFi*.
+* **RF-09 (Emisión de Voucher Digital de Reserva con Código QR):** Generación inmediata del comprobante oficial de reserva y pago con código único (`#RES-XXXX`), desglose económico, estado de acreditación y código QR escaneable para validación en el hotel.
 
 ---
 
-### Módulo 2: Recepción y Operación de Mostrador (Front Desk)
+### Módulo 2: Bandeja de Reservas del Hotel y Validación de Vouchers (Extranet No-PMS)
 
-* **RF-10 (Bandeja de Reservas Entrantes en Tiempo Real):** El sistema debe contar con una pantalla operativa de recepción que liste las reservas clasificadas por estado: `Nueva / Por Confirmar`, `Confirmada`, `En Casa (Check-in)`, `Finalizada (Check-out)` y `Cancelada`.
-* **RF-11 (Sistema de Alertas Inmediatas):** Al generarse una nueva reserva desde el motor web, el sistema debe emitir una alerta visual destacada y un aviso sonoro audible en el panel del recepcionista.
-* **RF-12 (Confirmación Ágil de Reserva):** El recepcionista debe poder consultar el detalle de cualquier reserva entrante y confirmarla con un solo clic.
-* **RF-13 (Registro de Check-in en Mostrador - Sujeto a Disponibilidad Física):**
-  * El check-in **no es automático ni desatendido**: depende estrictamente de la llegada presencial del huésped y de la disponibilidad física de habitaciones listas, limpias e inspeccionadas por el hotel (respetando la hora oficial de ingreso del establecimiento, ej. 14:00 o 15:00).
-  * El recepcionista verifica la identidad del huésped (Cédula ecuatoriana o Pasaporte), registra la hora de ingreso en el sistema y hace entrega de la llave o tarjeta física.
-* **RF-14 (Asignación Manual de la Habitación Física por Recepción):**
-  * El motor de reservas público **nunca vende ni promete un número de habitación físico específico** (ej. "Habitación 204"); únicamente vende un **Tipo de Habitación** (categoría y capacidad) con base en los cupos disponibles.
-  * La **asignación del número de habitación física concreta** es potestad exclusiva del personal del hotel (Recepción), quien asigna manualmente la habitación libre y lista al momento de preparar la llegada o durante el Check-in.
-* **RF-15 (Generación de Links de Cobro Digital):** Para reservas garantizadas sin cobro previo o con saldos pendientes, el recepcionista debe poder generar un enlace de pago seguro (PayPhone / DeUna) con código QR en pantalla y enviarlo por WhatsApp al cliente.
-* **RF-16 (Check-out y Cierre de Cuenta):** El recepcionista debe poder registrar la salida del huésped, verificar que el saldo esté en cero, liquidar consumos extras y liberar la habitación en el sistema para posterior limpieza.
-* **RF-17 (Búsqueda Rápida en Directorio de Huéspedes):** El sistema debe permitir consultar registros previos de huéspedes por número de cédula o apellido para autocompletar recepciones frecuentes.
+* **RF-10 (Bandeja de Reservas Entrantes en Tiempo Real):** Pantalla centralizada del hotel que clasifica las reservas según su ciclo comercial: `Por Confirmar`, `Confirmada`, `Voucher Validado`, `Liquidada / Completada` y `Cancelada`.
+* **RF-11 (Sistema de Alertas Visuales y Sonoras Inmediatas):** Notificación visual destacada y alerta sonora en el panel del operador del hotel al ingresar una nueva reserva desde el motor público web.
+* **RF-12 (Confirmación Ágil de Reserva en 1 Clic):** Verificación de los datos de la reserva entrante y confirmación inmediata en 1 solo clic, descontando automáticamente el cupo web del tipo de habitación contratado.
+* **RF-13 (Validación y Canje de Voucher Digital con Código QR):** Buscador y validador rápido de códigos de reserva/QR (`#RES-XXXX`) para que el hotel registre en 1 clic que el huésped presentó su voucher y **efectivizó su reserva** (`Voucher Validado`), sin requerir procesos de check-in/check-out físico ni asignación de número de cuarto.
+* **RF-14 (Conciliación con Recibo Externo del Establecimiento):** Ficha de liquidación donde el hotel puede copiar en 1 clic los datos fiscales del titular y registrar el número de comprobante/recibo emitido en su propio sistema contable externo.
+* **RF-15 (Generación de Links de Cobro Digital):** Creación de enlaces de pago seguro (PayPhone / DeUna / Kushki) con código QR y envío directo por WhatsApp o correo para reservas con pago pendiente.
+* **RF-16 (Liberación Automática de Cupos por Cancelación):** Al marcarse una reserva como `Cancelada` (por el huésped dentro del plazo flexible o por el hotel ante falta de pago), el sistema reintegra automáticamente el cupo al inventario de venta web.
+* **RF-17 (Directorio Histórico de Clientes de Reserva):** Registro y búsqueda rápida de titulares de reservas por cédula/pasaporte, nombre o correo electrónico, mostrando cantidad de reservas acumuladas e inversión total.
 
 ---
 
-### Módulo 3: Revenue Management, Tarifas y Régimen Tributario Dinámico
+### Módulo 3: Revenue Management, Cupos Web, Tarifas y Régimen de Feriados
 
-* **RF-18 (Control Dinámico de Cupos por Tipo de Habitación):** El Revenue Manager debe poder abrir o cerrar la disponibilidad de cupos por categoría de habitación en fechas determinadas para prevenir sobreventas (*overbooking*). Para el huésped externo, el sistema solo exhibe la cantidad de cupos disponibles y el tipo de habitación disponible.
-* **RF-19 (Gestión Operativa Interna de Bloqueos por Mantenimiento):** Función de uso estrictamente interno del hotel que permite dar de baja temporalmente habitaciones del inventario activo por daños o reparaciones. Esta acción descuenta automáticamente los cupos disponibles hacia el motor público sin exponer motivos técnicos ni detalles operativos al reservador externo.
-* **RF-20 (Administración de Tarifas Base y Planes por el Revenue):** El Revenue Manager define las tarifas base por noche de cada tipo de habitación, márgenes por aforo adicional y recargos por planes de desayuno según la oferta comercial del establecimiento.
-* **RF-21 (Conmutador Rápido de Emergencia - IVA al 8% por Decreto Presidencial de Última Hora):**
-  * *Contexto Operativo:* En Ecuador, la reducción del IVA al 8% durante feriados turísticos (Ley Orgánica de Desarrollo Económico) es potestad del Presidente de la República mediante Decreto Ejecutivo. En la práctica, **dichos decretos se emiten frecuentemente con escasa antelación (de un día para otro o 24-48 horas antes del asueto)**.
-  * *Requerimiento:* El sistema debe proveer un **conmutador inmediato de un solo clic ("Activar Régimen Feriado IVA 8% por Decreto")** tanto en el panel del Revenue Manager como en el panel de configuración del hotel.
-  * *Impacto en Tiempo Real:* Al activarse el conmutador:
-    1. Las nuevas cotizaciones y reservas en el motor web aplican inmediatamente la tasa del 8% de IVA en lugar del 15% ordinario.
-    2. Las facturas electrónicas generadas a partir de ese momento aplican el código de porcentaje y tarifa 8% del SRI.
-    3. Si el decreto incluye un rango de fechas de vigencia inmediata (ej. desde las 00:00 del viernes hasta las 23:59 del domingo), el sistema debe permitir ingresar dichas fechas para encendido y apagado automático programado, o mantener el modo forzado manual de emergencia.
+* **RF-18 (Control Dinámico de Cupos Web por Tipo de Habitación):** Ajuste ágil (`+` / `-`) de la cantidad de cupos disponibles para la venta online en cada tipo de habitación, previniendo sobreventas (*overbooking*).
+* **RF-19 (Administración de Tarifas Base por Tipo de Habitación):** Configuración y edición de tarifas base por noche en USD para cada categoría de habitación ofertada por el hotel.
+* **RF-20 (Configuración de Temporadas y Multiplicadores Comerciales):** Gestión de temporadas (Baja, Media, Alta / Feriados) con multiplicadores automáticos sobre la tarifa base y comparativa de ahorro frente a comisiones de OTAs internacionales.
+* **RF-21 (Conmutador Rápido de Emergencia - IVA al 8% por Decreto Presidencial):** Interruptor inmediato de 1 clic (*"Activar Régimen Feriado IVA 8% por Decreto"*) disponible para Superadmin, Admin Hotel y Revenue Manager que conmuta al instante el cálculo de IVA del **15% al 8%** en todo el motor de reservas web, desgloses de precios y vouchers digitales.
 
 ---
 
-### Módulo 4: Facturación Electrónica SRI Ecuador
+### Módulo 4: Cobros Digitales y Pasarelas de Pago
 
-* **RF-22 (Cálculo Oficial de Clave de Acceso de 49 Dígitos):** El sistema debe generar la Clave de Acceso reglamentaria del SRI utilizando el algoritmo ponderado Módulo 11 (ponderadores 2 al 7 de derecha a izquierda sobre los primeros 48 dígitos).
-* **RF-23 (Estructuración del Comprobante XML v1.1.0):** El sistema debe construir el archivo XML de la Factura conforme a las fichas técnicas del SRI, incorporando:
-  * Datos del emisor (RUC, Razón Social, Dir. Matriz, Establecimiento `001`, Punto de Emisión `001`).
-  * Datos del comprador (Tipo de identificación, Cédula/RUC/Pasaporte o Consumidor Final).
-  * Desglose exacto de impuestos: Código de impuesto 2 (IVA) con código de porcentaje según corresponda: tarifa 15% ordinaria o tarifa 8% feriado.
-* **RF-24 (Liquidación de la Tasa del 10% de Servicio Turístico en Factura SRI):**
-  * Si el establecimiento tiene **activada** la tasa del 10%: El sistema debe calcular el 10% sobre la base imponible neta y colocar el valor resultante en la etiqueta reglamentaria `<propina>` del XML y del RIDE.
-  * Si el establecimiento tiene **desactivada** la tasa del 10%: El sistema debe colocar de forma explícita `<propina>0.00</propina>`, garantizando que no se cobre ni tribute propina indebida.
-* **RF-25 (Generación de RIDE en PDF y Validación):** El sistema debe emitir la representación gráfica (RIDE) con código de barras de la clave de acceso, desglose tributario y opción de envío automático por correo electrónico al huésped.
+* **RF-22 (Procesamiento de Pagos Digitales Locales e Internacionales):** Cobro directo en USD mediante tarjetas de crédito/débito (PayPhone, Kushki, Datafast, Stripe).
+* **RF-23 (Cobro Inmediato con Código QR y Transferencias):** Cobro instantáneo mediante código QR y transferencia bancaria con DeUna (Banco Pichincha).
+* **RF-24 (Conciliación Automática vía Webhooks / Simulación en Vivo):** Actualización inmediata del estado del pago (`Completado`) y acreditación automática en el comprobante de la reserva.
 
 ---
 
-### Módulo 5: Gestión de Catálogos Maestros y Operaciones CRUD
+### Módulo 5: Catálogos Maestros y Configuración Multi-Tenant
 
-Este módulo formaliza las operaciones fundamentales de persistencia (Crear, Consultar, Actualizar, Inactivar / Baja Lógica) para las entidades del modelo de dominio:
-
-* **RF-26 (CRUD de Hoteles / Alojamientos del Catastro):**
-  * *Actor:* Superadmin Cantonal.
-  * *Crear:* Registrar un nuevo establecimiento vinculando RUC (13 dígitos), razón social, nombre comercial, dirección matriz y sucursal, parroquia de Manta (Tarqui, Barbasquillo, Manta Centro, etc.), tipo de alojamiento, categoría de estrellas, teléfonos de contacto y switch inicial del 10% de servicio.
-  * *Consultar:* Búsqueda y listado paginado con filtros combinados por parroquia, categoría de estrellas, tipo de hotel y estado (activo/inactivo).
-  * *Actualizar:* Modificar datos comerciales, fiscales, direcciones o contactos.
-  * *Inactivar (Baja lógica):* Suspender un establecimiento (`activo = false`) para retirarlo de la oferta pública, preservando íntegro su historial contable y de reservas.
-* **RF-27 (CRUD de Tipos de Hotel):**
-  * *Actor:* Superadmin Cantonal.
-  * *Crear:* Registrar modalidades oficiales de alojamiento turístico según la normativa del Ministerio de Turismo (`HOSTAL`, `HOTEL`, `HOSTERÍA`).
-  * *Consultar:* Listar modalidades activas en el sistema con sus descripciones normativas.
-  * *Actualizar:* Modificar nombres o descripciones del catálogo.
-  * *Inactivar:* Deshabilitar modalidades que dejen de tener vigencia legal.
-* **RF-28 (CRUD de Categorías de Hotel por Estrellas):**
-  * *Actor:* Superadmin Cantonal.
-  * *Crear:* Registrar categorías de categorización oficial (`1 Estrella`, `2 Estrellas`, `3 Estrellas`, `4 Estrellas`, `5 Estrellas / Lujo`).
-  * *Consultar:* Listar las categorías vigentes con sus especificaciones de servicio.
-  * *Actualizar:* Modificar descripciones o criterios de evaluación.
-  * *Inactivar:* Suspender una categoría en caso de actualización reglamentaria.
-* **RF-29 (CRUD de Roles y Permisos del Sistema - RBAC):**
-  * *Actor:* Superadmin Cantonal.
-  * *Crear / Definir:* Roles predeterminados del sistema (`Superadmin Cantonal`, `Admin Hotel`, `Revenue Manager`, `Recepcionista`, `Huésped`).
-  * *Consultar:* Visualizar la matriz de permisos asociados a cada rol.
-  * *Actualizar:* Asignar o revocar privilegios específicos sobre módulos del sistema.
-* **RF-30 (CRUD de Usuarios del Sistema y Asignación de Roles):**
-  * *Actor:* Superadmin (usuarios globales y Admin Hotel) y Admin Hotel (personal interno de su hotel).
-  * *Crear:* Registrar nuevos colaboradores con correo electrónico único institucional, contraseña cifrada (BCrypt/Argon2), número de cédula/pasaporte, nombres, apellidos y teléfono. **Obligatoriamente se asocia a un establecimiento (`HotelId`) y a un rol (`RolId`)**.
-  * *Consultar:* Directorio de usuarios con filtros por establecimiento, rol y estado.
-  * *Actualizar:* Modificar datos de perfil, reasignar rol o restablecer contraseña.
-  * *Bloquear / Inactivar:* Revocar el acceso de un colaborador ante cese laboral (bloqueo lógico sin borrado físico).
-* **RF-31 (CRUD de Tipos de Habitación - Categorías Comerciales):**
-  * *Actor:* Admin Hotel / Revenue Manager.
-  * *Crear:* Registrar una categoría de habitación para comercialización (nombre ej: *"Matrimonial Superior"*, *"Doble Twin"*, *"Suite Ejecutiva"*; capacidad máxima de adultos y niños; metraje en $m^2$; carrusel fotográfico HD; configuración de camas; vistas al mar/ciudad/piscina; e insignias de amenidades).
-  * *Consultar:* Listar tipos de habitación del hotel con vistas de galería y ficha técnica.
-  * *Actualizar:* Editar fotos, textos promocionales, capacidad o equipamiento.
-  * *Inactivar:* Dar de baja temporalmente una categoría para que no sea ofertable en la web.
-* **RF-32 (CRUD de Habitaciones Físicas - Unidades de Inventario):**
-  * *Actor:* Admin Hotel / Recepción.
-  * *Crear:* Registrar unidades habitacionales físicas individuales (número o código ej. `101`, `102`, `204`; piso o bloque arquitectónico; vinculación a su respectivo `Tipo de Habitación`; y estado operativo inicial: `DISPONIBLE`, `OCUPADA`, `LIMPIEZA`, `MANTENIMIENTO`).
-  * *Consultar:* Matriz visual de inventario físico del hotel con filtros por piso, estado operativo y tipo de habitación.
-  * *Actualizar:* Cambiar número de habitación, tipo asignado o conmutar su estado operativo diario (ej. pasar de *"Limpieza"* a *"Disponible"* tras inspección de camarera).
-  * *Inactivar:* Deshabilitar una unidad física por reformas mayores.
-* **RF-33 (CRUD de Temporadas y Tarifas por Plan - Pricing):**
-  * *Actor:* Revenue Manager.
-  * *Crear Temporadas:* Definir temporadas del hotel (nombre: Alta, Baja, Feriado Local; rango de fechas inicio/fin; y multiplicador o tarifa base).
-  * *Crear Planes de Tarifa:* Configurar modalidades comerciales (Solo Alojamiento, Con Desayuno Incluido; Tarifa Flexible con cancelación gratuita, Tarifa No Reembolsable con descuento).
-  * *Consultar:* Matriz de tarifas cruzada por temporada, tipo de habitación y plan.
-  * *Actualizar Tarifas:* **El precio es determinado por el análisis del Revenue Manager**: modificar tarifas base por noche en USD, costos por persona adicional y recargos por planes especiales.
-  * *Cerrar / Inactivar:* Deshabilitar temporadas o planes que hayan caducado.
-* **RF-34 (CRUD de Huéspedes - Directorio y Perfil SRI):**
-  * *Actor:* Recepcionista / Front Desk (y autoservicio vía Checkout).
-  * *Crear:* Registrar nuevo huésped con tipo de documento (Cédula ecuatoriana, RUC o Pasaporte), número de documento, nombres completos, nacionalidad, teléfono con código de país para WhatsApp, correo electrónico y dirección.
-  * *Consultar:* Búsqueda ágil y autocompletado en mostrador por número de identificación o apellidos para agilizar check-ins recurrentes.
-  * *Actualizar:* Corregir datos personales, teléfono de contacto o razón social y RUC para la factura electrónica del SRI.
-  * *Archivar / Anonimizar:* En cumplimiento de la LOPDP y del Código Tributario del SRI, los huéspedes no se eliminan físicamente; se archivan o anonimizan una vez cumplido el plazo legal de 7 años de retención fiscal.
-* **RF-35 (CRUD de Parámetros Fiscales y Comerciales del Hotel):**
-  * *Actor:* Admin Hotel.
-  * *Crear / Configurar:* Registro de parámetros tributarios (RUC de 13 dígitos, razón social, nombre comercial, dirección matriz/sucursal, código de establecimiento `001`, punto de emisión `001`, régimen tributario: General, RIMPE Emprendedor o RIMPE Negocio Popular, condición de obligado a llevar contabilidad, cuentas bancarias oficiales y **switch booleano de la tasa del 10% de servicio turístico**).
-  * *Consultar:* Ficha de configuración fiscal y operativa del establecimiento.
-  * *Actualizar:* Editar datos comerciales, cuentas o conmutar la tasa del 10% de servicio turístico.
+* **RF-25 (Configuración de Tasa de Servicio del 10% por Hotel):** Interruptor independiente por establecimiento para activar o desactivar el cobro del 10% de servicio turístico (Art. 41 Ley de Turismo), actualizando al instante las cotizaciones web y vouchers de ese hotel.
+* **RF-26 (CRUD del Catastro Oficial de Alojamientos de Manta):** Administración, filtrado por parroquia/sector y edición de los **116 establecimientos activos** del Catastro Turístico de Manta (76 hostales, 39 hoteles y 1 hostería).
+* **RF-27 (Clasificación por Modalidad y Categoría de Estrellas):** Filtros y catalogación por modalidad oficial (*Hotel, Hostal, Hostería*) y categoría (*1 a 5 Estrellas*).
+* **RF-28 (Gestión de Roles RBAC y Usuarios por Establecimiento):** Administración de cuentas de personal vinculadas a cada hotel bajo los roles `SUPERADMIN`, `ADMIN_HOTEL`, `REVENUE_MANAGER` y `RECEPCIONISTA` (Operador de Reservas), además del perfil `HUESPED`.
+* **RF-29 (Catálogo de Tipos de Habitación en Oferta Web):** Creación y edición de tipos de habitación comercializados en el portal público (nombre, configuración de camas, capacidad, metraje $m^2$, tarifa por noche, amenidades y cupos web).
 
 ---
 
-### Módulo 6: Superadministración y Gobernanza Cantonal de Manta
+### Módulo 6: Gobernanza Cantonal y Auditoría LOPDP
 
-* **RF-36 (Tablero Consolidado Turístico Cantonal):** El Superadministrador debe visualizar métricas agregadas del cantón: tasa global de ocupación de Manta, total de reservas realizadas, ingresos turísticos generados en USD y distribución de la demanda por parroquia (Catastro de 118 establecimientos).
-* **RF-37 (Alerta Cantonal Global de Decreto de IVA 8%):** El Superadministrador debe contar con una herramienta para emitir un aviso o conmutar de manera sugerida la bandera de IVA al 8% para todos los hoteles adscritos de Manta ante la promulgación imprevista de un Decreto Ejecutivo de feriado.
-* **RF-38 (Aislamiento Lógico de Datos Multi-Tenant):** La arquitectura debe restringir las consultas y operaciones de manera que ningún usuario con rol de Administrador, Recepcionista o Revenue Manager pueda acceder a datos, habitaciones, reservas o facturas de otro hotel.
-* **RF-39 (Auditoría Global y Trazabilidad de Accesos):** El sistema debe registrar una bitácora inalterable (*Audit Logs*) con fecha, hora, usuario e IP de cada creación, modificación o consulta sensible de datos personales o transacciones financieras.
+* **RF-30 (Tablero Consolidado Cantonal y Bitácora de Auditoría LOPDP):** Supervisión macro de reservas e ingresos turísticos del cantón Manta y registro inalterable de auditoría (*Audit Logs* con fecha/hora, usuario, rol, módulo, acción e IP) en cumplimiento de la Ley Orgánica de Protección de Datos Personales del Ecuador.
 
 ---
 
-## 3. Requerimientos No Funcionales (RNF)
+## 3. Requerimientos No Funcionales (RNF) según ISO/IEC 25010
 
-Estructurados bajo el estándar internacional de calidad **ISO/IEC 25010**:
-
-### 3.1 Eficiencia de Desempeño
-* **RNF-01 (Tiempo de Respuesta en Cotizaciones):** La consulta de disponibilidad y cálculo de tarifas con desglose de impuestos debe responder en **menos de 1.0 segundo** bajo condiciones estándar de conexión a Internet.
-* **RNF-02 (Concurrencia en Temporadas Altas):** El motor de reservas debe soportar un mínimo de **150 usuarios concurrentes simultáneos** consultando tarifas y realizando reservas durante picos turísticos (Carnaval, Feriado de Difuntos, Fiestas del Comercio de Manta) sin degradación del servicio.
-
-### 3.2 Usabilidad y Experiencia de Usuario (UX)
-* **RNF-03 (Operatividad de Mostrador en 2 Clics):** El flujo de recepción para confirmar una reserva entrante o registrar un check-in en mostrador debe completarse en un máximo de **2 clics**, evitando esperas al recibir al huésped físico.
-* **RNF-04 (Diseño Responsivo Multidispositivo):**
-  * El portal del huésped debe estar 100% optimizado para pantallas móviles (smartphones de 360px a 430px de ancho).
-  * El panel operativo de recepción y revenue debe estar diseñado para pantallas de escritorio (1080p) y tablets de mostrador.
-
-### 3.3 Seguridad y Criptografía
-* **RNF-05 (Comunicaciones Seguras y Cifrado):** Todas las comunicaciones deben viajar cifradas bajo protocolo **HTTPS / TLS 1.3**. Las contraseñas deben almacenarse con hashing unidireccional robusto (Argon2id o BCrypt con salt).
-* **RNF-06 (Tokenización y Cumplimiento PCI-DSS):** Los links de pago para PayPhone/DeUna deben implementarse mediante tokens SHA-256 de un solo uso con vigencia de expiración temporal. El sistema **no debe almacenar bajo ninguna circunstancia** números completos de tarjeta de crédito (PAN) ni códigos de seguridad CVV.
-
-### 3.4 Protección de Datos Personales (Normativa LOPDP Ecuador)
-* **RNF-07 (Cumplimiento de la Ley Orgánica de Protección de Datos Personales):**
-  * *Consentimiento:* El portal de reservas debe incluir checkbox obligatorio de aceptación de la Política de Privacidad antes de formalizar la compra.
-  * *Finalidad y Proporcionalidad:* Los datos recopilados (cédula/pasaporte, nombres, teléfono, correo) se usarán exclusivamente para la reserva, recepción y facturación tributaria SRI.
-  * *Trazabilidad de Accesos:* Todo acceso o consulta a información de huéspedes por parte de recepcionistas o administradores debe quedar registrado en una bitácora inalterable de auditoría (*Audit Logs*).
-  * *Retención de Datos:* Los datos vinculados a facturación electrónica se conservarán durante los 7 años reglamentarios exigidos por el Código Tributario ecuatoriano.
-
-### 3.5 Fiabilidad, Concurrencia e Integridad Transaccional
-* **RNF-08 (Disponibilidad y Uptime):** La plataforma debe garantizar una disponibilidad del **99.5% de tiempo de actividad** anual, con alta tolerancia a fallos durante fines de semana y feriados.
-* **RNF-09 (Integridad ACID y Prevención de Overbooking):** El proceso de bloqueo y asignación de habitaciones durante una reserva debe ejecutarse mediante transacciones atómicas con bloqueo de registros (*pessimistic / optimistic locking*) para imposibilitar la doble reserva simultánea de una misma habitación.
-
-### 3.6 Cumplimiento Legal y Tributario
-* **RNF-10 (Conformidad con Esquemas XSD del SRI):** Todos los comprobantes electrónicos generados deben validar exitosamente contra los esquemas XSD v1.1.0 del SRI para facturas electrónicas, incluyendo el cálculo verificado de la Clave de Acceso Módulo 11.
-* **RNF-11 (Aislamiento de Información Multi-Tenant):** La arquitectura de base de datos y la capa de lógica de negocio deben garantizar de manera inviolable que ningún establecimiento pueda visualizar registros contables, reservas o datos de clientes de otro establecimiento adscrito.
-
-### 3.7 Mantenibilidad y Portabilidad
-* **RNF-12 (Arquitectura Modular y Estándares Web):** El código frontend y backend debe estar modularizado por componentes desacoplados, documentado y tipado estrictamente (TypeScript / C# / SQL), permitiendo su despliegue en entornos contenerizados (Docker) o arquitecturas serverless en la nube.
+* **RNF-01 (Tiempo de Respuesta en Cotizaciones):** La búsqueda de disponibilidad de cupos y desglose tributario debe responder en **menos de 1.0 segundo**.
+* **RNF-02 (Concurrencia en Temporadas Altas):** Capacidad para soportar al menos **150 usuarios concurrentes simultáneos** durante feriados nacionales y eventos en Manta.
+* **RNF-03 (Usabilidad en Gestión de Reservas):** La confirmación de una reserva o la validación de un Voucher QR debe completarse en **máximo 2 clics**.
+* **RNF-04 (Diseño Responsivo Multidispositivo y Temas Claro/Oscuro):** Portal público mobile-first (360px a 430px) y panel extranet adaptable con soporte de modo claro y oscuro.
+* **RNF-05 (Seguridad Criptográfica):** Comunicaciones bajo **HTTPS / TLS 1.3** y contraseñas almacenadas con **Argon2id o BCrypt**.
+* **RNF-06 (Tokenización y Cumplimiento PCI-DSS):** Enlaces de cobro con tokens únicos y expiración temporal; el sistema jamás almacena códigos CVV ni datos sensibles de tarjetas.
+* **RNF-07 (Protección de Datos Personales - LOPDP Ecuador):** Consentimiento explícito e informado en el checkout, finalidad exclusiva para la gestión de la reserva y trazabilidad en la bitácora de auditoría.
+* **RNF-08 (Disponibilidad Continua):** Nivel de servicio (SLA) del **99.5% de uptime** anual.
+* **RNF-09 (Integridad Transaccional ACID y Prevención de Overbooking de Cupos):** Control atómico de descuento de cupos por tipo de habitación para impedir sobreventas simultáneas.
+* **RNF-10 (Aislamiento Multi-Tenant con Row-Level Security):** Políticas RLS en PostgreSQL que garantizan que cada hotel únicamente pueda visualizar y gestionar sus propias reservas, tarifas, cupos y pagos.
 
 ---
 
-## 4. Matriz de Trazabilidad: Actores vs. Requerimientos Funcionales
+## 4. Matriz de Trazabilidad: Actores vs. Requisitos
 
-| Módulo / Funcionalidad | Superadmin | Admin Hotel | Revenue Manager | Recepcionista | Huésped |
+| Módulo / Funcionalidad | Superadmin | Admin Hotel | Revenue Manager | Operador Reservas / Recepción | Huésped |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Buscar habitaciones y cotizar tarifas (RF-01 al RF-08)** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Crear Reserva Online y Voucher QR (RF-09)** | ✅ | ✅ | ❌ | ❌ | ✅ |
-| **Bandeja de Reservas en Tiempo Real (RF-10, RF-11)** | ✅ (Todo Manta) | ✅ (Su hotel) | 👁️ (Lectura) | ✅ (Operativo) | ❌ |
-| **Confirmar Reserva, Check-in y Check-out (RF-12, RF-13, RF-16)** | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **Asignación Manual de Habitación Física (RF-14)** | ✅ | ✅ | ❌ | ✅ (Operativo) | ❌ |
-| **Generar Link de Cobro PayPhone / DeUna (RF-15)** | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **Directorio Rápido de Huéspedes en Mostrador (RF-17)** | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **Control Dinámico de Cupos por Tipo (RF-18)** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Bloqueo Interno por Mantenimiento (RF-19)** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Administración de Tarifas Base por Revenue (RF-20)** | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Conmutador Inmediato IVA 8% de Última Hora (RF-21)** | ✅ (Alerta Cantonal) | ✅ (Su hotel) | ✅ (Su hotel) | ❌ | ❌ |
-| **Emisión Factura SRI con Desglose 10% Propina (RF-22 al RF-25)** | ✅ | ✅ | ❌ | ✅ | ❌ |
-| **CRUD de Hoteles / Catastro Cantonal (RF-26)** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **CRUD de Tipos de Hotel y Categorías (RF-27, RF-28)** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **CRUD de Roles del Sistema - RBAC (RF-29)** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **CRUD de Usuarios del Sistema y Asignación (RF-30)** | ✅ | ✅ (Su hotel) | ❌ | ❌ | ❌ |
-| **CRUD de Tipos de Habitación (RF-31)** | ✅ | ✅ (Su hotel) | ✅ (Su hotel) | ❌ | ❌ |
-| **CRUD de Habitaciones Físicas e Inventario (RF-32)**| ✅ | ✅ (Su hotel) | ❌ | ✅ (Estados) | ❌ |
-| **CRUD de Temporadas y Tarifas por Plan (RF-33)** | ✅ | ✅ (Su hotel) | ✅ (Su hotel) | ❌ | ❌ |
-| **CRUD de Huéspedes y Perfil SRI (RF-34)** | ✅ | ✅ | ❌ | ✅ | ✅ (Auto-registro) |
-| **CRUD de Parámetros Fiscales y 10% Servicio (RF-35)**| ✅ | ✅ (Su hotel) | ❌ | ❌ | ❌ |
-| **Tablero Consolidado Cantonal de Manta (RF-36)** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Alerta Cantonal Global Decreto IVA 8% (RF-37)** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Aislamiento Multi-Tenant y Auditoría (RF-38, RF-39)**| ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Buscar habitaciones, cotizar y elegir planes/extras (RF-01 al RF-08)** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Reservar (con Cuenta o Guest Checkout) y Voucher QR (RF-02, RF-09)** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Bandeja de Reservas y Alertas en Tiempo Real (RF-10, RF-11)** | ✅ (Todo Manta) | ✅ (Su hotel) | 👁️ (Lectura) | ✅ (Operativo) | ❌ |
+| **Confirmar Reserva y Validar Voucher QR en 1 clic (RF-12, RF-13, RF-16)** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Conciliar Recibo Externo y Copiar Ficha Cliente (RF-14)** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Generar Link de Cobro Digital y Simular/Conciliar Pago (RF-15, RF-22..24)** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Directorio de Clientes de Reserva (RF-17)** | ✅ | ✅ | ❌ | ✅ | ❌ |
+| **Control Dinámico de Cupos Web y Tipos de Habitación (RF-18, RF-29)** | ✅ | ✅ | ✅ | 👁️ (Consulta) | ❌ |
+| **Administración de Tarifas y Temporadas (RF-19, RF-20)** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **Conmutador Rápido de Emergencia IVA 8% Feriado (RF-21)** | ✅ (Global Cantonal) | ✅ (Su hotel) | ✅ (Su hotel) | ❌ | ❌ |
+| **Configuración Switch 10% Servicio Turístico (RF-25)** | ✅ | ✅ (Su hotel) | ❌ | ❌ | ❌ |
+| **CRUD del Catastro Cantonal (116 Alojamientos) (RF-26, RF-27)** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **CRUD de Usuarios RBAC y Bitácora de Auditoría LOPDP (RF-28, RF-30)** | ✅ | ✅ (Su hotel) | ❌ | ❌ | ❌ |

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { HOTEL_SRI_INFO, fmtUsd } from "./hotelData";
+import { HOTEL_COMMERCIAL_INFO, fmtUsd, getActiveIvaPercent } from "./hotelData";
 
 export interface InvoiceData {
   id: string;
@@ -12,6 +12,8 @@ export interface InvoiceData {
   nights: number;
   base: number;
   iva: number;
+  ivaPercent?: number;
+  servicio10?: number;
   total: number;
   status: "paid" | "pending" | "overdue" | "refunded";
   issueDate: string;
@@ -22,7 +24,7 @@ export interface InvoiceData {
   clientEmail?: string;
   clientPhone?: string;
   roomType?: string;
-  hotelInvoiceNumber?: string; // Nº de Factura fiscal emitida directamente por el hotel
+  hotelInvoiceNumber?: string; // Nº de Recibo de estancia emitida directamente por el hotel
 }
 
 interface SriInvoiceModalProps {
@@ -74,7 +76,7 @@ export default function SriInvoiceModal({
   const [savedHotelInvoice, setSavedHotelInvoice] = useState(invoice.hotelInvoiceNumber || "");
   const [isEditingInvoiceNum, setIsEditingInvoiceNum] = useState(!invoice.hotelInvoiceNumber);
 
-  const sri = HOTEL_SRI_INFO[hotelId] || HOTEL_SRI_INFO["costa-sol"];
+  const hotelMeta = HOTEL_COMMERCIAL_INFO[hotelId] || HOTEL_COMMERCIAL_INFO["costa-sol"];
   
   // Extract or generate sequential number
   const seqDigits = invoice.id.replace(/\D/g, "") || "1041";
@@ -82,10 +84,12 @@ export default function SriInvoiceModal({
   const authCode = `AUTH-PP-${(parseInt(seqDigits, 10) * 83 + 120491).toString().slice(-6)}`;
 
   // Ecuadorian tax breakdown (Reference for hotel fiscal invoice)
-  const hasService10 = sri.gravaServicio10 ?? true;
+  const hasService10 = hotelMeta.gravaServicio10 ?? true;
+  const ivaPct = invoice.ivaPercent ?? getActiveIvaPercent(hotelId);
   const subtotal15 = Number(invoice.base.toFixed(2));
-  const iva15 = Number((subtotal15 * 0.15).toFixed(2));
-  const servicio10 = hasService10 ? Number((subtotal15 * 0.10).toFixed(2)) : 0.00;
+  const ivaAmount = Number((subtotal15 * (ivaPct / 100)).toFixed(2));
+  const servicio10 = invoice.servicio10 !== undefined ? invoice.servicio10 : (hasService10 ? Number((subtotal15 * 0.10).toFixed(2)) : 0.00);
+  const computedTotal = Number((subtotal15 + ivaAmount + servicio10).toFixed(2));
   const unitPrice = Number((subtotal15 / (invoice.nights || 1)).toFixed(2));
 
   // Client info
@@ -104,7 +108,7 @@ export default function SriInvoiceModal({
   }
 
   function handleCopyGuestBillingData() {
-    const text = `DATOS DE FACTURACIÓN FISCAL - HUÉSPED
+    const text = `DATOS DEL HUÉSPED Y RESERVA
 Huésped / Razón Social: ${invoice.guest}
 C.I. / RUC: ${clientDoc}
 Email: ${clientEmail}
@@ -112,9 +116,9 @@ Teléfono: ${clientPhone}
 Dirección: ${clientAddress}
 Reserva: ${invoice.resId} (${roomDescription}, ${invoice.nights} noches)
 Subtotal Hospedaje: $${subtotal15.toFixed(2)}
-IVA 15%: $${iva15.toFixed(2)}
+IVA ${ivaPct}%: $${ivaAmount.toFixed(2)}
 10% Servicio Turístico: $${servicio10.toFixed(2)}
-Total Pagado en Pasarela: $${invoice.total.toFixed(2)} USD
+Total Pagado en Pasarela: $${computedTotal.toFixed(2)} USD
 Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
 
     navigator.clipboard?.writeText(text);
@@ -178,7 +182,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   viewTab === "reception" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-300 hover:text-white"
                 }`}
               >
-                🏨 Ficha para Facturación en Hotel
+                🏨 Ficha y Datos del Huésped
               </button>
             </div>
 
@@ -192,27 +196,27 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
           </div>
         </div>
 
-        {/* Notice: El hotel es el que factura */}
+        {/* Notice: Comprobante digital de reserva y liquidación */}
         <div className="px-5 py-2.5 bg-amber-50 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-950">
           <div className="flex items-center gap-2">
             <span className="text-base">🏛️</span>
             <div>
               <p className="font-bold text-[11px] leading-tight">
-                Emisión de Factura Fiscal (SRI): A cargo directo del Hotel {sri.nombreComercial} (RUC: {sri.ruc})
+                Comprobante de Reserva y Liquidación: Hotel {hotelMeta.nombreComercial} (RUC: {hotelMeta.ruc})
               </p>
               <p className="text-[10px] text-amber-800 mt-0.5">
-                La plataforma procesa y certifica el pago online. El hotel entrega la Factura Electrónica fiscal al huésped en recepción.
+                La plataforma procesa y certifica la reserva y el pago online. El hotel entrega las llaves y el recibo al huésped en recepción.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {savedHotelInvoice ? (
               <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                <span>✓</span> Factura Hotel: #{savedHotelInvoice}
+                <span>✓</span> Recibo Hotel: #{savedHotelInvoice}
               </span>
             ) : (
               <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-400">
-                Factura Hotel: Pendiente en Recepción
+                Recibo Hotel: Pendiente en Recepción
               </span>
             )}
           </div>
@@ -230,9 +234,9 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   ✓
                 </div>
                 <p className="mono text-[10px] uppercase tracking-widest text-amber-400 font-bold">Comprobante Oficial de Pago Digital</p>
-                <h2 className="text-2xl font-bold mt-1 text-white" style={{ fontFamily: "DM Serif Display, serif" }}>{sri.nombreComercial}</h2>
-                <p className="text-xs text-slate-300">{sri.razonSocial} · RUC: {sri.ruc}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">📍 {sri.dirMatriz} · Manta, Ecuador</p>
+                <h2 className="text-2xl font-bold mt-1 text-white" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</h2>
+                <p className="text-xs text-slate-300">{hotelMeta.razonSocial} · RUC: {hotelMeta.ruc}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">📍 {hotelMeta.dirMatriz} · Manta, Ecuador</p>
 
                 <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs text-slate-200">
                   <span>Autorización Pasarela:</span>
@@ -281,12 +285,12 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
 
                   <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
                     <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <span>🛏️</span> Detalle de la Estancia
+                      <span>🛏️</span> Detalle de la Estancia Reservada
                     </p>
                     <div className="space-y-1 text-slate-600">
                       <p><strong className="text-slate-800">Tipo de Habitación:</strong> {roomDescription}</p>
-                      <p><strong className="text-slate-800">Check-in:</strong> <span className="font-mono">{invoice.checkIn} (14:00h)</span></p>
-                      <p><strong className="text-slate-800">Check-out:</strong> <span className="font-mono">{invoice.checkOut} (12:00h)</span></p>
+                      <p><strong className="text-slate-800">Fecha de Entrada (Arribo):</strong> <span className="font-mono">{invoice.checkIn} (desde 14:00h)</span></p>
+                      <p><strong className="text-slate-800">Fecha de Salida:</strong> <span className="font-mono">{invoice.checkOut} (hasta 12:00h)</span></p>
                       <p><strong className="text-slate-800">Duración:</strong> {invoice.nights} noche{invoice.nights > 1 ? "s" : ""}</p>
                     </div>
                   </div>
@@ -316,27 +320,30 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   </table>
 
                   <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-col items-end gap-1 font-mono text-xs">
-                    <div className="flex justify-between w-64 text-slate-600">
-                      <span>Subtotal Hospedaje:</span>
+                    <div className="flex justify-between w-72 text-slate-600">
+                      <span>Subtotal Neto Hospedaje:</span>
                       <span>{fmtUsd(subtotal15)}</span>
                     </div>
-                    <div className="flex justify-between w-64 text-slate-600">
-                      <span>IVA 15% (Base para factura hotel):</span>
-                      <span>{fmtUsd(iva15)}</span>
+                    <div className="flex justify-between w-72 text-slate-600">
+                      <span>
+                        IVA {ivaPct}% {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}:
+                      </span>
+                      <span className={ivaPct === 8 ? "text-emerald-700 font-bold" : ""}>{fmtUsd(ivaAmount)}</span>
                     </div>
-                    {hasService10 && (
-                      <div className="flex justify-between w-64 text-slate-600">
-                        <span>10% Servicio Turístico (Ley Turismo):</span>
+                    {hasService10 ? (
+                      <div className="flex justify-between w-72 text-slate-600">
+                        <span>10% Servicio Turístico (Art. 41 Ley Turismo):</span>
                         <span>{fmtUsd(servicio10)}</span>
                       </div>
+                    ) : (
+                      <div className="flex justify-between w-72 text-slate-400 text-[11px]">
+                        <span>10% Servicio Turístico (Exento Hostal):</span>
+                        <span>$0.00</span>
+                      </div>
                     )}
-                    <div className="flex justify-between w-64 text-slate-600">
-                      <span>Tasa GAD Manta / Transacción:</span>
-                      <span>$2.50</span>
-                    </div>
-                    <div className="flex justify-between w-64 pt-2 mt-1 border-t border-slate-300 font-bold text-slate-900 text-sm">
-                      <span>TOTAL PAGADO (USD):</span>
-                      <span className="text-amber-600">{fmtUsd(invoice.total)}</span>
+                    <div className="flex justify-between w-72 pt-2 mt-1 border-t border-slate-300 font-bold text-slate-900 text-sm">
+                      <span>TOTAL LIQUIDADO (USD):</span>
+                      <span className="text-amber-600">{fmtUsd(computedTotal)}</span>
                     </div>
                   </div>
                 </div>
@@ -344,10 +351,10 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 {/* Fiscal Note Box */}
                 <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 leading-relaxed text-[11px]">
                   <p className="font-bold flex items-center gap-1.5 mb-1 text-xs">
-                    <span>📌</span> Facturación Fiscal Electrónica (SRI)
+                    <span>📌</span> Comprobante Digital de Reserva y Pago
                   </p>
                   <p>
-                    Este comprobante certifica la recepción de su pago mediante pasarela digital. <strong>La Factura Electrónica fiscal autorizada por el SRI será emitida y entregada directamente por {sri.nombreComercial}</strong> al momento de su atención presencial en recepción (check-in / check-out).
+                    Este voucher certifica su reserva garantizada y pago en línea. <strong>Presente el código QR al arribar a {hotelMeta.nombreComercial}</strong> para validar su reserva y recibir el comprobante contable oficial del establecimiento.
                   </p>
                 </div>
 
@@ -375,7 +382,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
             </div>
           )}
 
-          {/* TAB 2: FICHA PARA FACTURACIÓN EN RECEPCIÓN (EL HOTEL ES EL QUE FACTURA) */}
+          {/* TAB 2: FICHA DE LIQUIDACIÓN Y DATOS DEL HUÉSPED */}
           {viewTab === "reception" && (
             <div className="max-w-2xl mx-auto space-y-4">
               {/* Hotel Action Box: Register Invoice Number */}
@@ -383,15 +390,15 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                      <span>🧾</span> Registro de Factura Emitida por el Hotel
+                      <span>🧾</span> Registro de Recibo / Liquidación del Hotel
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Como la facturación fiscal corresponde al hotel, ingrese aquí el número de factura que recepción emitió en el SRI para este huésped.
+                      Ingrese aquí el número de recibo o comprobante interno asignado por recepción para este huésped.
                     </p>
                   </div>
                   {savedHotelInvoice && (
                     <span className="mono text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      ✓ Facturado
+                      ✓ Registrado
                     </span>
                   )}
                 </div>
@@ -410,7 +417,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                       type="submit"
                       className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
                     >
-                      Guardar Nº Factura Hotel
+                      Guardar Nº Recibo
                     </button>
                     {savedHotelInvoice && (
                       <button
@@ -426,7 +433,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
                     <div>
                       <p className="text-xs font-bold text-emerald-900">
-                        Factura Fiscal del Hotel Registrada:
+                        Nº Recibo del Hotel Registrado:
                       </p>
                       <p className="font-mono text-sm font-bold text-emerald-700">
                         #{savedHotelInvoice}
@@ -443,18 +450,18 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 )}
               </div>
 
-              {/* Data card ready to copy to hotel's SRI software */}
+              {/* Data card de estancia y pago */}
               <div className="p-4 rounded-xl border bg-white shadow-sm space-y-3" style={{ borderColor: "#cbd5e1" }}>
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                    Datos del Cliente para Emitir Factura en el Sistema del Hotel
+                    Datos del Huésped Registrados en la Reserva
                   </h4>
                   <button
                     onClick={handleCopyGuestBillingData}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>{copiedData ? "✓ Copiado" : "📋"}</span>
-                    <span>{copiedData ? "¡Datos copiados al portapapeles!" : "Copiar Ficha Fiscal"}</span>
+                    <span>{copiedData ? "¡Datos copiados al portapapeles!" : "Copiar Ficha del Huésped"}</span>
                   </button>
                 </div>
 
@@ -468,7 +475,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                     <p className="font-mono font-bold text-slate-800 text-sm select-all">{clientDoc}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Correo Electrónico (Facturación)</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Correo Electrónico de Contacto</span>
                     <p className="font-medium text-slate-700 select-all">{clientEmail}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
@@ -482,15 +489,15 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 </div>
 
                 <div className="p-3 rounded-lg bg-slate-100 border border-slate-200 text-xs">
-                  <p className="font-bold text-slate-800 mb-1">Desglose Referencial para el Software Contable:</p>
+                  <p className="font-bold text-slate-800 mb-1">Desglose Referencial para el Software Contable Externo del Hotel:</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="p-2 rounded bg-white">
-                      <p className="text-[10px] text-slate-400">Subtotal 15%</p>
+                      <p className="text-[10px] text-slate-400">Subtotal Base ({ivaPct}%)</p>
                       <p className="font-mono font-bold text-slate-800">{fmtUsd(subtotal15)}</p>
                     </div>
                     <div className="p-2 rounded bg-white">
-                      <p className="text-[10px] text-slate-400">IVA 15%</p>
-                      <p className="font-mono font-bold text-slate-800">{fmtUsd(iva15)}</p>
+                      <p className="text-[10px] text-slate-400">IVA {ivaPct}%</p>
+                      <p className="font-mono font-bold text-slate-800">{fmtUsd(ivaAmount)}</p>
                     </div>
                     <div className="p-2 rounded bg-white">
                       <p className="text-[10px] text-slate-400">10% Servicio Turístico</p>

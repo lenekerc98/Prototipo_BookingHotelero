@@ -1,0 +1,449 @@
+-- =============================================================================
+-- BASE DE DATOS: SISTEMA DE GESTIÓN DE RESERVAS Y COMERCIALIZACIÓN HOTELERA
+-- CANTÓN MANTA, MANABÍ, ECUADOR (ARQUITECTURA MULTI-TENANT - EXTRANET & MOTOR WEB)
+-- CÓDIGO ÚNICO DE PROYECTO (CUP): 91880000.0000.390820
+-- CONVENCIÓN: TODAS LAS CLAVES E IDENTIFICADORES INICIAN CON 'id_'
+-- ALCANCE: Motor de Reservas por Cupos, Bandeja Extranet, Validación de Vouchers QR,
+--          Tarifas/Temporadas (IVA 15%/8% Decreto), Tasa 10% Servicio, Pagos y Superadmin
+-- EXCLUSIONES: No es un PMS (no incluye check-in/check-out físico, ni llaves, ni
+--              habitaciones físicas numeradas, ni aseo/mantenimiento) y No incluye
+--              Facturación Electrónica SRI (externa a cada establecimiento).
+-- MOTOR RECOMENDADO: PostgreSQL 16+
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- 0. EXTENSIONES REQUERIDAS
+-- -----------------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "btree_gist"; -- Prevención de overbooking de cupos
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";   -- Criptografía y tokens de seguridad
+
+-- -----------------------------------------------------------------------------
+-- 1. CATÁLOGOS BASE Y GOBERNANZA CANTONAL (MANTA)
+-- -----------------------------------------------------------------------------
+
+-- Parroquias Urbanas y Rurales del Cantón Manta
+CREATE TABLE parroquia_manta (
+    id_parroquia SERIAL PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL UNIQUE,
+    tipo_zona VARCHAR(20) NOT NULL CHECK (tipo_zona IN ('Urbana', 'Rural')),
+    codigo_postal VARCHAR(10) DEFAULT '130801'
+);
+
+INSERT INTO parroquia_manta (nombre, tipo_zona) VALUES
+('Manta (Centro)', 'Urbana'),
+('Tarqui', 'Urbana'),
+('Los Esteros', 'Urbana'),
+('Eloy Alfaro', 'Urbana'),
+('San Mateo', 'Urbana'),
+('Barbasquillo', 'Urbana'),
+('Santa Marianita', 'Rural'),
+('San Lorenzo', 'Rural');
+
+-- Modalidad oficial del establecimiento turístico (Ministerio de Turismo de Ecuador)
+CREATE TABLE tipo_hotel (
+    id_tipo_hotel VARCHAR(30) PRIMARY KEY,
+    denominacion VARCHAR(80) NOT NULL, -- Hotel, Hostal, Hostería
+    descripcion TEXT,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+INSERT INTO tipo_hotel (id_tipo_hotel, denominacion, descripcion) VALUES
+('HOTEL', 'Hotel', 'Establecimiento que presta servicio de hospedaje en habitaciones con baño privado'),
+('HOSTAL', 'Hostal', 'Establecimiento que ofrece alojamiento con servicios básicos y estructura ágil'),
+('HOSTERIA', 'Hostería', 'Alojamiento ubicado en zonas periféricas o rurales con áreas verdes');
+
+-- Categorización oficial por Estrellas
+CREATE TABLE categoria_hotel (
+    id_categoria VARCHAR(30) PRIMARY KEY,
+    estrellas INT NOT NULL CHECK (estrellas BETWEEN 1 AND 5),
+    denominacion VARCHAR(50) NOT NULL
+);
+
+INSERT INTO categoria_hotel (id_categoria, estrellas, denominacion) VALUES
+('1_ESTRELLA', 1, '1 Estrella'),
+('2_ESTRELLAS', 2, '2 Estrellas'),
+('3_ESTRELLAS', 3, '3 Estrellas'),
+('4_ESTRELLAS', 4, '4 Estrellas'),
+('5_ESTRELLAS', 5, '5 Estrellas / Lujo');
+
+-- Parámetros Globales del Sistema (Incluye Decreto Presidencial IVA 8%)
+CREATE TABLE parametro_sistema (
+    id_parametro VARCHAR(50) PRIMARY KEY,
+    valor TEXT NOT NULL,
+    descripcion TEXT,
+    es_editable BOOLEAN DEFAULT TRUE,
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO parametro_sistema (id_parametro, valor, descripcion) VALUES
+('IVA_ORDINARIO', '15.00', 'Porcentaje de IVA ordinario vigente en Ecuador'),
+('IVA_FERIADO_TURISMO', '8.00', 'Porcentaje de IVA reducido aplicable en feriados turísticos decretados'),
+('DECRETO_IVA_8_ACTIVO_GLOBAL', 'FALSE', 'Conmutador global de emergencia para activar IVA 8% en todo el cantón');
+
+-- -----------------------------------------------------------------------------
+-- 2. HOTELES / ALOJAMIENTOS DEL CATASTRO CANTONAL (MULTI-TENANT ROOT)
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE hotel (
+    id_hotel VARCHAR(50) PRIMARY KEY, -- Ej: 'hotel-voyager-manta'
+    id_parroquia INT NOT NULL REFERENCES parroquia_manta(id_parroquia),
+    id_tipo_hotel VARCHAR(30) NOT NULL REFERENCES tipo_hotel(id_tipo_hotel),
+    id_categoria VARCHAR(30) NOT NULL REFERENCES categoria_hotel(id_categoria),
+    
+    -- Datos Comerciales y Jurídicos
+    razon_social VARCHAR(180) NOT NULL,
+    nombre_comercial VARCHAR(180) NOT NULL,
+    ruc CHAR(13) NOT NULL UNIQUE,
+    email_contacto VARCHAR(120) NOT NULL,
+    telefono_contacto VARCHAR(30) NOT NULL,
+    sitio_web VARCHAR(150),
+    direccion_matriz VARCHAR(255) NOT NULL,
+    direccion_establecimiento VARCHAR(255) NOT NULL,
+    latitud NUMERIC(10, 8),
+    longitud NUMERIC(11, 8),
+    
+    -- Políticas Comerciales y Desglose Tributario de Cotización
+    aplica_servicio_10 BOOLEAN NOT NULL DEFAULT FALSE, -- Art. 41 Ley Turismo: 10% Propina / Servicio en cotización
+    conmutador_iva_8_emergencia BOOLEAN NOT NULL DEFAULT FALSE, -- Conmutador de feriado turístico decretado
+    fecha_inicio_iva_8 TIMESTAMP WITH TIME ZONE,
+    fecha_fin_iva_8 TIMESTAMP WITH TIME ZONE,
+    
+    -- Horarios Referenciales de Reserva y Servicios Complementarios de Estancia
+    hora_entrada_referencial TIME NOT NULL DEFAULT '14:00:00',
+    hora_salida_referencial TIME NOT NULL DEFAULT '12:00:00',
+    servicio_traslado_aeropuerto VARCHAR(20) NOT NULL DEFAULT 'NO_DISPONIBLE' 
+        CHECK (servicio_traslado_aeropuerto IN ('GRATUITO', 'CON_COSTO', 'NO_DISPONIBLE')),
+    tarifa_traslado_aeropuerto_usd NUMERIC(8,2) DEFAULT 0.00,
+    
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- -----------------------------------------------------------------------------
+-- 3. SEGURIDAD, ROLES (RBAC), USUARIOS Y AUDITORÍA
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE rol (
+    id_rol VARCHAR(30) PRIMARY KEY,
+    nombre VARCHAR(60) NOT NULL UNIQUE,
+    descripcion TEXT
+);
+
+INSERT INTO rol (id_rol, nombre, descripcion) VALUES
+('SUPERADMIN', 'Superadministrador Cantonal', 'Control del catastro de Manta, reportes cantonales y alertas globales de IVA 8%'),
+('ADMIN_HOTEL', 'Administrador de Hotel', 'Gestor general del establecimiento, switch de tasa del 10% y equipo'),
+('REVENUE_MANAGER', 'Revenue Manager', 'Encargado de tarifas, temporadas, cupos por tipo de habitación y conmutador IVA 8%'),
+('RECEPCIONISTA', 'Operador de Reservas / Recepción', 'Gestión de bandeja de reservas entrantes, confirmación en 1 clic, validación de Voucher QR y links de cobro'),
+('HUESPED', 'Cliente / Huésped', 'Usuario externo para consulta, cotización, reserva y descarga de voucher QR');
+
+CREATE TABLE usuario (
+    id_usuario UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_hotel VARCHAR(50) REFERENCES hotel(id_hotel) ON DELETE CASCADE, -- NULL si es SUPERADMIN cantonal
+    id_rol VARCHAR(30) NOT NULL REFERENCES rol(id_rol),
+    identificacion VARCHAR(20) NOT NULL,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL, -- Hashing seguro Argon2id o BCrypt
+    telefono VARCHAR(30),
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    ultimo_acceso TIMESTAMP WITH TIME ZONE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bitácora Inalterable de Auditoría (Cumplimiento LOPDP Ecuador)
+CREATE TABLE bitacora_auditoria (
+    id_auditoria BIGSERIAL PRIMARY KEY,
+    id_hotel VARCHAR(50) REFERENCES hotel(id_hotel),
+    id_usuario UUID REFERENCES usuario(id_usuario),
+    accion VARCHAR(50) NOT NULL, -- CREAR, MODIFICAR, CANCELAR, VALIDAR_VOUCHER, CAMBIO_IVA_8, SWITCH_SERVICIO_10
+    modulo VARCHAR(60) NOT NULL, -- RESERVAS, VOUCHERS, TARIFAS, USUARIOS, CATASTRO
+    tabla_afectada VARCHAR(60) NOT NULL,
+    id_registro VARCHAR(80) NOT NULL,
+    datos_previos JSONB,
+    datos_nuevos JSONB,
+    direccion_ip VARCHAR(45) NOT NULL,
+    user_agent TEXT,
+    fecha_hora TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- -----------------------------------------------------------------------------
+-- 4. OFERTA COMERCIAL Y CUPOS WEB POR TIPO DE HABITACIÓN (SIN PMS FÍSICO)
+-- -----------------------------------------------------------------------------
+
+-- Categoría Comercial (Lo que se cotiza y reserva en el motor web por cupos)
+CREATE TABLE tipo_habitacion (
+    id_tipo_habitacion UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_hotel VARCHAR(50) NOT NULL REFERENCES hotel(id_hotel) ON DELETE CASCADE,
+    codigo_interno VARCHAR(30) NOT NULL,
+    nombre VARCHAR(100) NOT NULL, -- Ej: Habitación Matrimonial Queen Vista Mar
+    descripcion TEXT,
+    capacidad_adultos INT NOT NULL CHECK (capacidad_adultos >= 1),
+    capacidad_ninos INT NOT NULL DEFAULT 0 CHECK (capacidad_ninos >= 0),
+    metraje_m2 NUMERIC(6,2),
+    tipo_cama VARCHAR(100) NOT NULL, -- '1 Cama King', '1 Cama Queen', '2 Camas Twin'
+    vista VARCHAR(60) DEFAULT 'Vista a la ciudad', -- Mar, Ciudad, Piscina, Jardín
+    precio_base_estandar NUMERIC(10,2) NOT NULL CHECK (precio_base_estandar > 0),
+    cupos_disponibles_web INT NOT NULL DEFAULT 5 CHECK (cupos_disponibles_web >= 0),
+    venta_abierta BOOLEAN NOT NULL DEFAULT TRUE,
+    amenidades JSONB NOT NULL DEFAULT '["Aire Acondicionado", "WiFi", "Baño Privado", "Smart TV"]',
+    galeria_fotos_urls JSONB NOT NULL DEFAULT '[]',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(id_hotel, codigo_interno)
+);
+
+-- Control de Cupos Disponibles por Fecha (Apertura/Cierre de disponibilidad web)
+CREATE TABLE cupo_fecha_tipo_habitacion (
+    id_cupo_fecha UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_tipo_habitacion UUID NOT NULL REFERENCES tipo_habitacion(id_tipo_habitacion) ON DELETE CASCADE,
+    fecha DATE NOT NULL,
+    cupos_asignados INT NOT NULL CHECK (cupos_asignados >= 0),
+    cupos_reservados INT NOT NULL DEFAULT 0 CHECK (cupos_reservados >= 0),
+    cerrado_a_la_venta BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE(id_tipo_habitacion, fecha),
+    CHECK (cupos_reservados <= cupos_asignados)
+);
+
+-- -----------------------------------------------------------------------------
+-- 5. REVENUE MANAGEMENT, TEMPORADAS Y PLANES DE TARIFA
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE temporada (
+    id_temporada UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_hotel VARCHAR(50) NOT NULL REFERENCES hotel(id_hotel) ON DELETE CASCADE,
+    nombre VARCHAR(100) NOT NULL, -- 'Temporada Alta Ballenas', 'Carnaval Manta', 'Baja Regular'
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    aplica_iva_8_decreto BOOLEAN NOT NULL DEFAULT FALSE,
+    multiplicador NUMERIC(4,2) NOT NULL DEFAULT 1.00,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    CHECK (fecha_fin >= fecha_inicio)
+);
+
+CREATE TABLE plan_tarifa (
+    id_plan_tarifa UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_hotel VARCHAR(50) NOT NULL REFERENCES hotel(id_hotel) ON DELETE CASCADE,
+    codigo_plan VARCHAR(30) NOT NULL, -- 'FLEXIBLE_SOLO_ALOJ', 'FLEXIBLE_DESAYUNO', 'NO_REEMBOLSABLE'
+    nombre VARCHAR(100) NOT NULL,
+    incluye_desayuno BOOLEAN NOT NULL DEFAULT FALSE,
+    es_reembolsable BOOLEAN NOT NULL DEFAULT TRUE,
+    recargo_descuento_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0.00, -- Ej: -10.00 para no reembolsable, +15.00 desayuno
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    UNIQUE(id_hotel, codigo_plan)
+);
+
+-- Matriz de Tarifas por Categoría, Temporada y Plan Comercial
+CREATE TABLE tarifa_temporada_plan (
+    id_tarifa UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_tipo_habitacion UUID NOT NULL REFERENCES tipo_habitacion(id_tipo_habitacion) ON DELETE CASCADE,
+    id_temporada UUID NOT NULL REFERENCES temporada(id_temporada) ON DELETE CASCADE,
+    id_plan_tarifa UUID NOT NULL REFERENCES plan_tarifa(id_plan_tarifa) ON DELETE CASCADE,
+    precio_noche_usd NUMERIC(10,2) NOT NULL CHECK (precio_noche_usd > 0),
+    UNIQUE(id_tipo_habitacion, id_temporada, id_plan_tarifa)
+);
+
+CREATE TABLE canal_venta (
+    id_canal VARCHAR(40) PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL, -- 'Motor Directo Web', 'Reserva Directa Telefónica/WhatsApp'
+    comision_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0.00,
+    es_directo BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+INSERT INTO canal_venta (id_canal, nombre, comision_porcentaje, es_directo) VALUES
+('MOTOR_DIRECTO', 'Motor de Reservas Web Oficial', 0.00, TRUE),
+('RESERVA_TELEFONICA', 'Reserva Directa Telefónica / WhatsApp', 0.00, TRUE);
+
+-- -----------------------------------------------------------------------------
+-- 6. HUÉSPEDES Y PRIVACIDAD (LOPDP ECUADOR)
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE huesped (
+    id_huesped UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tipo_documento VARCHAR(15) NOT NULL CHECK (tipo_documento IN ('CEDULA', 'RUC', 'PASAPORTE')),
+    numero_documento VARCHAR(25) NOT NULL,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    email VARCHAR(120) NOT NULL,
+    telefono_whatsapp VARCHAR(30) NOT NULL,
+    pais_origen VARCHAR(60) NOT NULL DEFAULT 'Ecuador',
+    ciudad VARCHAR(80),
+    direccion VARCHAR(255),
+    es_invitado_guest_checkout BOOLEAN NOT NULL DEFAULT FALSE,
+    
+    -- Cumplimiento Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)
+    acepta_politica_privacidad BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_consentimiento_lopdp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    es_anonimizado BOOLEAN NOT NULL DEFAULT FALSE,
+    fecha_anonimizacion TIMESTAMP WITH TIME ZONE,
+    
+    reservas_acumuladas INT NOT NULL DEFAULT 1,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tipo_documento, numero_documento)
+);
+
+-- -----------------------------------------------------------------------------
+-- 7. RESERVAS Y VALIDACIÓN DE VOUCHERS DIGITALES QR (MODELO EXTRANET NO-PMS)
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE reserva (
+    id_reserva VARCHAR(35) PRIMARY KEY, -- Ej: 'RES-4821'
+    id_hotel VARCHAR(50) NOT NULL REFERENCES hotel(id_hotel),
+    id_huesped UUID NOT NULL REFERENCES huesped(id_huesped),
+    id_canal VARCHAR(40) NOT NULL REFERENCES canal_venta(id_canal),
+    
+    -- Fechas de Estancia Reservada
+    fecha_entrada DATE NOT NULL,
+    fecha_salida DATE NOT NULL,
+    numero_noches INT NOT NULL CHECK (numero_noches >= 1),
+    cantidad_adultos INT NOT NULL CHECK (cantidad_adultos >= 1),
+    cantidad_ninos INT NOT NULL DEFAULT 0,
+    
+    -- Estados del Ciclo de Reserva y Canje de Voucher (Sin Check-in/out de PMS)
+    estado VARCHAR(25) NOT NULL DEFAULT 'POR_CONFIRMAR'
+        CHECK (estado IN ('POR_CONFIRMAR', 'CONFIRMADA', 'VOUCHER_VALIDADO', 'COMPLETADA', 'CANCELADA', 'NO_SHOW')),
+    
+    -- Desglose Económico Transparente (USD)
+    subtotal_hospedaje_usd NUMERIC(12,2) NOT NULL,
+    subtotal_extras_usd NUMERIC(12,2) NOT NULL DEFAULT 0.00,
+    base_imponible_total NUMERIC(12,2) NOT NULL,
+    
+    porcentaje_iva_aplicado NUMERIC(4,2) NOT NULL, -- 15.00 (Ordinario) u 8.00 (Feriado por Decreto)
+    monto_iva_usd NUMERIC(12,2) NOT NULL,
+    
+    aplico_tasa_servicio_10 BOOLEAN NOT NULL DEFAULT FALSE,
+    monto_servicio_10_usd NUMERIC(12,2) NOT NULL DEFAULT 0.00, -- 10% sobre base_imponible_total si aplica
+    
+    total_reserva_usd NUMERIC(12,2) NOT NULL,
+    saldo_pendiente_usd NUMERIC(12,2) NOT NULL,
+    
+    -- Voucher Digital con Código QR y Trazabilidad de Canje
+    codigo_voucher_qr VARCHAR(100) NOT NULL UNIQUE,
+    voucher_validado BOOLEAN NOT NULL DEFAULT FALSE,
+    fecha_validacion_voucher TIMESTAMP WITH TIME ZONE,
+    id_usuario_valida_voucher UUID REFERENCES usuario(id_usuario),
+    numero_recibo_externo_hotel VARCHAR(50), -- Referencia opcional del recibo emitido en el sistema propio del hotel
+    
+    peticiones_especiales TEXT,
+    creada_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CHECK (fecha_salida > fecha_entrada)
+);
+
+-- Detalle de Tipos de Habitación y Cupos Contratados en la Reserva
+CREATE TABLE reserva_detalle_habitacion (
+    id_reserva_detalle UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_reserva VARCHAR(35) NOT NULL REFERENCES reserva(id_reserva) ON DELETE CASCADE,
+    id_tipo_habitacion UUID NOT NULL REFERENCES tipo_habitacion(id_tipo_habitacion),
+    id_plan_tarifa UUID NOT NULL REFERENCES plan_tarifa(id_plan_tarifa),
+    cantidad_cupos INT NOT NULL DEFAULT 1 CHECK (cantidad_cupos >= 1),
+    tarifa_noche_pactada NUMERIC(10,2) NOT NULL,
+    subtotal_habitacion NUMERIC(12,2) NOT NULL
+);
+
+-- Servicios Complementarios de Alojamiento (Asociados a la Reserva)
+CREATE TABLE reserva_servicio_adicional (
+    id_servicio_adicional UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_reserva VARCHAR(35) NOT NULL REFERENCES reserva(id_reserva) ON DELETE CASCADE,
+    tipo_servicio VARCHAR(40) NOT NULL 
+        CHECK (tipo_servicio IN ('TRASLADO_AEROPUERTO', 'CUNA_BEBE', 'CAMA_SUPLETORIA', 'SALIDA_EXTENDIDA', 'DESAYUNO_ADICIONAL')),
+    descripcion VARCHAR(150) NOT NULL,
+    costo_usd NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    es_cortesia BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- -----------------------------------------------------------------------------
+-- 8. PAGOS DIGITALES Y ENLACES DE COBRO SEGURO (PAYPHONE / DEUNA / KUSHKI)
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE metodo_pago (
+    id_metodo_pago VARCHAR(40) PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    tipo_procesamiento VARCHAR(30) NOT NULL -- 'PASARELA_DIGITAL', 'TRANSFERENCIA_QR', 'PAGO_EN_HOTEL'
+);
+
+INSERT INTO metodo_pago (id_metodo_pago, nombre, tipo_procesamiento) VALUES
+('PAYPHONE_EC', 'PayPhone Ecuador (Visa/Mastercard)', 'PASARELA_DIGITAL'),
+('DEUNA_PICHINCHA', 'DeUna Banco Pichincha (QR / Débito)', 'TRANSFERENCIA_QR'),
+('KUSHKI_EC', 'Kushki Pagos (Tarjetas / Transferencias)', 'PASARELA_DIGITAL'),
+('TRANSFERENCIA_BANCARIA', 'Transferencia Bancaria Directa', 'TRANSFERENCIA_QR'),
+('PAGO_EN_ALOJAMIENTO', 'Pago Directo en el Alojamiento', 'PAGO_EN_HOTEL');
+
+CREATE TABLE pago (
+    id_pago VARCHAR(40) PRIMARY KEY, -- Ej: 'PAG-MANTA-00084'
+    id_reserva VARCHAR(35) NOT NULL REFERENCES reserva(id_reserva),
+    id_hotel VARCHAR(50) NOT NULL REFERENCES hotel(id_hotel),
+    id_metodo_pago VARCHAR(40) NOT NULL REFERENCES metodo_pago(id_metodo_pago),
+    monto_usd NUMERIC(12,2) NOT NULL CHECK (monto_usd > 0),
+    fecha_pago TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' 
+        CHECK (estado IN ('PENDIENTE', 'COMPLETADO', 'FALLIDO', 'REEMBOLSADO')),
+    referencia_transaccion_externa VARCHAR(120),
+    respuesta_pasarela_payload JSONB,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enlaces de Cobro con Token SHA-256 de Expiración
+CREATE TABLE link_pago (
+    id_link_pago UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id_pago VARCHAR(40) NOT NULL REFERENCES pago(id_pago) ON DELETE CASCADE,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    url_acceso_seguro VARCHAR(255) NOT NULL,
+    monto_usd NUMERIC(12,2) NOT NULL,
+    telefono_destino_whatsapp VARCHAR(30),
+    email_destino VARCHAR(120),
+    expira_en TIMESTAMP WITH TIME ZONE NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVO' 
+        CHECK (estado IN ('ACTIVO', 'PAGADO', 'EXPIRADO', 'ANULADO')),
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- -----------------------------------------------------------------------------
+-- 9. ÍNDICES DE ALTO RENDIMIENTO
+-- -----------------------------------------------------------------------------
+
+CREATE INDEX idx_hotel_parroquia ON hotel(id_parroquia);
+CREATE INDEX idx_hotel_ruc ON hotel(ruc);
+CREATE INDEX idx_tipo_habitacion_hotel ON tipo_habitacion(id_hotel);
+CREATE INDEX idx_cupo_fecha_tipo ON cupo_fecha_tipo_habitacion(id_tipo_habitacion, fecha);
+CREATE INDEX idx_reserva_hotel_fechas ON reserva(id_hotel, fecha_entrada, fecha_salida);
+CREATE INDEX idx_reserva_estado ON reserva(id_hotel, estado);
+CREATE INDEX idx_reserva_voucher_qr ON reserva(codigo_voucher_qr);
+CREATE INDEX idx_pago_reserva ON pago(id_reserva);
+CREATE INDEX idx_link_pago_token ON link_pago(token_hash);
+CREATE INDEX idx_auditoria_hotel_fecha ON bitacora_auditoria(id_hotel, fecha_hora DESC);
+CREATE INDEX idx_tipo_habitacion_amenidades_gin ON tipo_habitacion USING gin (amenidades);
+
+-- -----------------------------------------------------------------------------
+-- 10. REGLAS DE AISLAMIENTO MULTI-TENANT (ROW LEVEL SECURITY - RLS)
+-- -----------------------------------------------------------------------------
+
+ALTER TABLE tipo_habitacion ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reserva ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pago ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY rls_hotel_reserva ON reserva
+    FOR ALL
+    USING (
+        current_setting('app.current_user_hotel_id', true) IS NULL OR
+        current_setting('app.current_user_hotel_id', true) = '' OR
+        id_hotel = current_setting('app.current_user_hotel_id', true)
+    );
+
+CREATE POLICY rls_hotel_tipo_habitacion ON tipo_habitacion
+    FOR ALL
+    USING (
+        current_setting('app.current_user_hotel_id', true) IS NULL OR
+        current_setting('app.current_user_hotel_id', true) = '' OR
+        id_hotel = current_setting('app.current_user_hotel_id', true)
+    );
+
+CREATE POLICY rls_hotel_pago ON pago
+    FOR ALL
+    USING (
+        current_setting('app.current_user_hotel_id', true) IS NULL OR
+        current_setting('app.current_user_hotel_id', true) = '' OR
+        id_hotel = current_setting('app.current_user_hotel_id', true)
+    );

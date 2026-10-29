@@ -33,7 +33,7 @@ export interface HotelRatesConfig {
   channels: ChannelCommission[];
 }
 
-export interface HotelSriMeta {
+export interface HotelCommercialMeta {
   ruc: string;
   razonSocial: string;
   nombreComercial: string;
@@ -51,7 +51,7 @@ export interface HotelSriMeta {
   gravaServicio10: boolean; // Art. 41 Ley de Turismo: TRUE si grava 10% propina, FALSE si exento
 }
 
-const BASE_HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
+const BASE_HOTEL_COMMERCIAL_INFO: Record<string, HotelCommercialMeta> = {
   "costa-sol": {
     ruc: "1391789456001",
     razonSocial: "OPERADORA HOTELERA COSTA SOL S.A.S.",
@@ -65,7 +65,7 @@ const BASE_HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
     estab: "001",
     ptoEmi: "002",
     phone: "+593 5 262 8900",
-    email: "facturacion@hotelcostasol.ec",
+    email: "reservas@hotelcostasol.ec",
     city: "Manta, Ecuador",
     gravaServicio10: true,
   },
@@ -180,8 +180,8 @@ const BASE_HOTEL_SRI_INFO: Record<string, HotelSriMeta> = {
   },
 };
 
-// Exportar ficha fiscal SRI dinámica para todos los 116 establecimientos de Manta
-export const HOTEL_SRI_INFO: Record<string, HotelSriMeta> = new Proxy(BASE_HOTEL_SRI_INFO, {
+// Exportar ficha comercial dinámica para todos los establecimientos de Manta
+export const HOTEL_COMMERCIAL_INFO: Record<string, HotelCommercialMeta> = new Proxy(BASE_HOTEL_COMMERCIAL_INFO, {
   get(target, prop: string) {
     if (prop in target) return target[prop];
     const h = MANTA_HOTELS.find(item => item.id === prop);
@@ -205,6 +205,10 @@ export const HOTEL_SRI_INFO: Record<string, HotelSriMeta> = new Proxy(BASE_HOTEL
     return target["costa-sol"];
   }
 });
+
+// Alias para compatibilidad de importaciones
+export const HOTEL_SRI_INFO = HOTEL_COMMERCIAL_INFO;
+export const HOTEL__INFO = HOTEL_COMMERCIAL_INFO;
 
 const BASE_HOTEL_RATES: Record<string, HotelRatesConfig> = {
   "costa-sol": {
@@ -422,7 +426,7 @@ export const DEFAULT_HOTEL_RATES: Record<string, HotelRatesConfig> = new Proxy(B
   }
 });
 
-// ─── SRI Clave de Acceso Generator ────────────────────────────────────────────
+// ───  Clave de Acceso Generator ────────────────────────────────────────────
 // Format: 49 digits numeric
 // [Fecha: 8 ddmmaaaa][Tipo Comp: 2 (01)][RUC: 13][Ambiente: 1 (1 o 2)][Estab: 3][PtoEmi: 3][Secuencial: 9][Codigo Numerico: 8][Tipo Emision: 1][Digito Verificador: 1]
 export function generateSriAccessKey(
@@ -462,7 +466,7 @@ export function generateSriAccessKey(
   };
 }
 
-// ─── Format helper for Ecuador SRI Invoices ───────────────────────────────────
+// ─── Format helper for Ecuador  Invoices ───────────────────────────────────
 export function fmtSriSecuencial(estab: string, ptoEmi: string, seq: string | number): string {
   const cleanEstab = String(estab).replace(/\D/g, "").padStart(3, "0").slice(0, 3);
   const cleanPto = String(ptoEmi).replace(/\D/g, "").padStart(3, "0").slice(0, 3);
@@ -491,6 +495,7 @@ export interface HotelInvoice {
   nights: number;
   base: number;
   iva: number;
+  ivaPercent?: number; // 15 (Ordinario) u 8 (Feriado por Decreto)
   servicio10?: number; // 10% Propina / Servicio (Art. 41 Ley Turismo)
   total: number;
   status: "paid" | "pending" | "overdue" | "refunded";
@@ -502,7 +507,7 @@ export interface HotelInvoice {
   clientEmail?: string;
   clientPhone?: string;
   roomType?: string;
-  hotelInvoiceNumber?: string; // Factura fiscal oficial emitida directamente por el hotel
+  hotelInvoiceNumber?: string; // Código de recibo o comprobante directo emitido por el hotel
 }
 
 export interface HotelPayment {
@@ -518,9 +523,9 @@ export interface HotelPayment {
 }
 
 export function getHotelInitialInvoices(hotelId: string, hotelName: string): HotelInvoice[] {
-  const sri = HOTEL_SRI_INFO[hotelId] || HOTEL_SRI_INFO["costa-sol"];
-  const estab = sri.estab;
-  const pto = sri.ptoEmi;
+  const hotelMeta = HOTEL_COMMERCIAL_INFO[hotelId] || HOTEL_COMMERCIAL_INFO["costa-sol"];
+  const estab = hotelMeta.estab;
+  const pto = hotelMeta.ptoEmi;
 
   if (hotelId === "costa-sol") {
     return [
@@ -905,8 +910,189 @@ export function getHotelInitialPayments(hotelId: string): HotelPayment[] {
     { id: "PAY-1043", guest: "Familia Rodríguez", amount: 440, method: "Transferencia", date: "2026-08-16", status: "pending", concept: "Suite Familiar" },
     { id: "PAY-1044", guest: "Miguel Torres", amount: 140, method: "Tarjeta empresa", date: "2026-08-17", status: "pending", concept: "1 Cama Queen" },
     { id: "PAY-1045", guest: "Ana Gómez", amount: 165, method: "Booking.com", date: "2026-08-18", status: "pending", concept: "Estancia fin de semana" },
-    { id: "PAY-1046", guest: "Roberto Silva", amount: 70, method: "Tarjeta", date: "2026-08-15", status: "completed", concept: "Check-in recepción" },
+    { id: "PAY-1046", guest: "Roberto Silva", amount: 70, method: "Tarjeta", date: "2026-08-15", status: "completed", concept: "Liquidación reserva" },
     { id: "PAY-1047", guest: "Javier Morales", amount: 280, method: "Transferencia", date: "2026-07-10", status: "failed", concept: "Pago de reserva" },
   ];
+}
+
+// ─── Conmutador Rápido de Emergencia IVA 15% / 8% por Decreto (RF-21) ─────────
+
+export interface IvaDecretoConfig {
+  enabledGlobal: boolean;
+  hotelOverrides: Record<string, boolean>;
+  decretoNombre: string;
+  fechaInicio: string;
+  fechaFin: string;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+const DEFAULT_IVA_CONFIG: IvaDecretoConfig = {
+  enabledGlobal: false,
+  hotelOverrides: {},
+  decretoNombre: "Decreto Ejecutivo N° 418 - Feriado Turístico Nacional",
+  fechaInicio: "2026-10-30",
+  fechaFin: "2026-11-04",
+  updatedBy: "Sistema Cantonal Manta",
+  updatedAt: "2026-10-28 08:30",
+};
+
+export function getIvaDecretoConfig(): IvaDecretoConfig {
+  try {
+    const raw = localStorage.getItem("alojamanta.iva_decreto_config");
+    if (raw) return { ...DEFAULT_IVA_CONFIG, ...JSON.parse(raw) };
+  } catch {}
+  return DEFAULT_IVA_CONFIG;
+}
+
+export function setIvaDecretoConfig(next: Partial<IvaDecretoConfig>): IvaDecretoConfig {
+  const current = getIvaDecretoConfig();
+  const updated: IvaDecretoConfig = {
+    ...current,
+    ...next,
+    updatedAt: new Date().toLocaleString("es-EC", { hour12: false }),
+  };
+  try {
+    localStorage.setItem("alojamanta.iva_decreto_config", JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent("alojamanta-iva-change", { detail: updated }));
+  } catch {}
+  return updated;
+}
+
+export function getActiveIvaRate(hotelId?: string): number {
+  const cfg = getIvaDecretoConfig();
+  if (hotelId && hotelId in cfg.hotelOverrides) {
+    return cfg.hotelOverrides[hotelId] ? 0.08 : 0.15;
+  }
+  return cfg.enabledGlobal ? 0.08 : 0.15;
+}
+
+export function getActiveIvaPercent(hotelId?: string): 15 | 8 {
+  return getActiveIvaRate(hotelId) === 0.08 ? 8 : 15;
+}
+
+// ─── Bitácora Inalterable de Auditoría LOPDP Ecuador (RF-30 / RNF-07) ─────────
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  user: string;
+  role: string;
+  hotelId: string;
+  hotelName: string;
+  module: "RESERVAS" | "VOUCHERS_QR" | "TARIFAS_IVA" | "SERVICIO_10" | "PAGOS" | "USUARIOS_LOPDP";
+  action: string;
+  detail: string;
+  ip: string;
+}
+
+const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
+  {
+    id: "AUD-2026-0905",
+    timestamp: "2026-10-28 11:45:12",
+    user: "Juan Recepción",
+    role: "Operador de Reservas",
+    hotelId: "hotel-voyager-manta",
+    hotelName: "Hotel Voyager Manta",
+    module: "VOUCHERS_QR",
+    action: "VALIDAR_VOUCHER_QR",
+    detail: "Voucher #RES-8941 (Miguel Torres) validado y canjeado sin fricción",
+    ip: "186.46.120.44",
+  },
+  {
+    id: "AUD-2026-0904",
+    timestamp: "2026-10-28 10:20:05",
+    user: "Ana Administradora",
+    role: "Admin Hotel",
+    hotelId: "hotel-voyager-manta",
+    hotelName: "Hotel Voyager Manta",
+    module: "SERVICIO_10",
+    action: "PARAMETRO_SERVICIO_10",
+    detail: "Verificación de Tasa 10% Servicio Turístico (Art. 41 Ley de Turismo): ACTIVA",
+    ip: "186.46.120.41",
+  },
+  {
+    id: "AUD-2026-0903",
+    timestamp: "2026-10-28 09:15:39",
+    user: "María Revenue",
+    role: "Revenue Manager",
+    hotelId: "hotel-voyager-manta",
+    hotelName: "Hotel Voyager Manta",
+    module: "TARIFAS_IVA",
+    action: "AJUSTE_CUPOS_WEB",
+    detail: "Actualización de cupos web para Habitación Matrimonial Queen (4 cupos disponibles)",
+    ip: "186.46.120.48",
+  },
+  {
+    id: "AUD-2026-0902",
+    timestamp: "2026-10-27 18:04:22",
+    user: "Cliente Web (Consentimiento LOPDP)",
+    role: "Huésped",
+    hotelId: "mantahost-hotel",
+    hotelName: "MantaHost Hotel",
+    module: "USUARIOS_LOPDP",
+    action: "CONSENTIMIENTO_LOPDP",
+    detail: "Aceptación explícita de Política de Privacidad LOPDP en reserva #RES-4821",
+    ip: "190.152.84.19",
+  },
+  {
+    id: "AUD-2026-0901",
+    timestamp: "2026-10-27 16:30:00",
+    user: "Carlos Admin",
+    role: "Superadmin Cantonal",
+    hotelId: "GLOBAL-MANTA",
+    hotelName: "Plataforma Cantonal Manta",
+    module: "USUARIOS_LOPDP",
+    action: "SINCRONIZACION_CATASTRO",
+    detail: "Verificación de los 116 alojamientos del Catastro Turístico de Manta 2026",
+    ip: "186.46.118.10",
+  },
+];
+
+export function getAuditLogs(): AuditLogEntry[] {
+  try {
+    const raw = localStorage.getItem("alojamanta.audit_logs");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return INITIAL_AUDIT_LOGS;
+}
+
+export function addAuditLog(entry: Omit<AuditLogEntry, "id" | "timestamp" | "ip">): AuditLogEntry {
+  const logs = getAuditLogs();
+  const newEntry: AuditLogEntry = {
+    ...entry,
+    id: `AUD-2026-${String(logs.length + 901).padStart(4, "0")}`,
+    timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
+    ip: "186.46.120." + Math.floor(10 + Math.random() * 200),
+  };
+  const updated = [newEntry, ...logs].slice(0, 100);
+  try {
+    localStorage.setItem("alojamanta.audit_logs", JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent("alojamanta-audit-change", { detail: updated }));
+  } catch {}
+  return newEntry;
+}
+
+// ─── Alerta Sonora para Nuevas Reservas Entrantes (RF-11) ─────────────────────
+
+export function playNewBookingSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    [659.25, 830.61, 987.77].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+      gain.gain.setValueAtTime(0.18, now + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + 0.46);
+    });
+  } catch {}
 }
 

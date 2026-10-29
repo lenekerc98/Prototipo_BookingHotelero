@@ -26,16 +26,16 @@ interface Props {
 
 const ADMIN_ACCOUNTS: (AdminUser & { password: string; legacyEmails?: string[] })[] = [
   { name: "Carlos Admin", email: "admin@alojamanta.ec", password: "admin123", role: "superadmin", hotelIds: [], legacyEmails: ["admin@hoteldirekt.com"] },
-  { name: "Ana Administradora", email: "direccion@mantahost.ec", password: "hotel123", role: "admin", hotel: "MantaHost Hotel", hotelIds: ["mantahost-hotel", "las-palmeras"], legacyEmails: ["direccion@laspalmeras.com"] },
-  { name: "María Revenue", email: "revenue@mantahost.ec", password: "hotel123", role: "manager", hotel: "MantaHost Hotel", hotelIds: ["mantahost-hotel", "las-palmeras"], legacyEmails: ["gerente@laspalmeras.com"] },
-  { name: "Juan Recepción", email: "recepcion@mantahost.ec", password: "recep123", role: "receptionist", hotel: "MantaHost Hotel", hotelIds: ["mantahost-hotel", "las-palmeras"], legacyEmails: ["recepcion@laspalmeras.com"] },
+  { name: "Ana Administradora", email: "direccion@voyagermanta.ec", password: "hotel123", role: "admin", hotel: "Hotel Voyager Manta", hotelIds: ["hotel-voyager-manta", "mantahost-hotel", "hostal-el-naufrago"], legacyEmails: ["direccion@mantahost.ec", "direccion@laspalmeras.com"] },
+  { name: "María Revenue", email: "revenue@voyagermanta.ec", password: "hotel123", role: "manager", hotel: "Hotel Voyager Manta", hotelIds: ["hotel-voyager-manta", "mantahost-hotel", "hostal-el-naufrago"], legacyEmails: ["revenue@mantahost.ec", "gerente@laspalmeras.com"] },
+  { name: "Juan Recepción", email: "recepcion@voyagermanta.ec", password: "recep123", role: "receptionist", hotel: "Hotel Voyager Manta", hotelIds: ["hotel-voyager-manta", "mantahost-hotel", "hostal-el-naufrago"], legacyEmails: ["recepcion@mantahost.ec", "recepcion@laspalmeras.com"] },
 ];
 
 const ROLE_LABELS: Record<AdminRole, { label: string; color: string; bg: string; border: string; desc: string }> = {
   superadmin: { label: "Superadmin Cantonal", color: "#b45309", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.35)", desc: "116 hoteles de Manta" },
-  admin: { label: "Administrador de Hotel", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.35)", desc: "Gestión y equipo de su hotel" },
-  manager: { label: "Revenue Manager", color: "#2563eb", bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.35)", desc: "Tarifas y tipos de habitación" },
-  receptionist: { label: "Recepcionista Front Desk", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc: "Reservas y Facturas SRI" },
+  admin: { label: "Administrador de Hotel", color: "#7c3aed", bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.35)", desc: "Switch 10% y equipo de su hotel" },
+  manager: { label: "Revenue Manager", color: "#2563eb", bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.35)", desc: "Tarifas, cupos web e IVA 8%" },
+  receptionist: { label: "Operador Reservas / Recepción", color: "#059669", bg: "rgba(5, 150, 105, 0.12)", border: "rgba(5, 150, 105, 0.35)", desc: "Bandeja, Vouchers QR y pagos" },
 };
 
 export default function AuthPage({
