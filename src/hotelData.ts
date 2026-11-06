@@ -980,7 +980,7 @@ export interface AuditLogEntry {
   role: string;
   hotelId: string;
   hotelName: string;
-  module: "RESERVAS" | "VOUCHERS" | "TARIFAS_IVA" | "SERVICIO_10" | "PAGOS" | "USUARIOS_LOPDP";
+  module: string;
   action: string;
   detail: string;
   ip: string;
@@ -1057,12 +1057,28 @@ export function getAuditLogs(): AuditLogEntry[] {
   return INITIAL_AUDIT_LOGS;
 }
 
-export function addAuditLog(entry: Omit<AuditLogEntry, "id" | "timestamp" | "ip">): AuditLogEntry {
+export interface AuditLogInput {
+  usuario: string;
+  rol: string;
+  modulo: string;
+  accion: string;
+  detalle: string;
+  hotelId?: string;
+  hotelName?: string;
+}
+
+export function addAuditLog(entry: AuditLogInput): AuditLogEntry {
   const logs = getAuditLogs();
   const newEntry: AuditLogEntry = {
-    ...entry,
     id: `AUD-2026-${String(logs.length + 901).padStart(4, "0")}`,
     timestamp: new Date().toISOString().replace("T", " ").slice(0, 19),
+    user: entry.usuario,
+    role: entry.rol,
+    hotelId: entry.hotelId ?? "",
+    hotelName: entry.hotelName ?? "",
+    module: entry.modulo,
+    action: entry.accion,
+    detail: entry.detalle,
     ip: "186.46.120." + Math.floor(10 + Math.random() * 200),
   };
   const updated = [newEntry, ...logs].slice(0, 100);

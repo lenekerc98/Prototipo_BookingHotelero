@@ -1,3 +1,4 @@
+import { tx, useLang } from "./i18n";
 import React, { useState } from "react";
 import { fmtUsd } from "./hotelData";
 
@@ -43,6 +44,7 @@ export default function PaymentLinkModal({
   onClose,
   onPaymentCreated,
 }: PaymentLinkModalProps) {
+  const lang = useLang();
   const [guest, setGuest] = useState(initialGuest || "Carlos Méndez");
   const [amount, setAmount] = useState<number>(initialAmount || 150);
   const [concept, setConcept] = useState(initialConcept || "Estancia y Alojamiento");
@@ -198,14 +200,14 @@ export default function PaymentLinkModal({
 
             <div>
               <label className="block font-medium mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Concepto del cobro *
+                {tx("Concepto del cobro *")}
               </label>
               <input
                 type="text"
                 required
                 value={concept}
                 onChange={e => setConcept(e.target.value)}
-                placeholder="Ej: Garantía de reserva estancia 3 noches"
+                placeholder={tx("Ej: Garantía de reserva estancia 3 noches")}
                 className="w-full rounded-lg border px-3 py-2 text-xs outline-none focus:border-amber-500 transition-colors"
                 style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
               />
@@ -214,7 +216,7 @@ export default function PaymentLinkModal({
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-medium mb-1" style={{ color: "var(--muted-foreground)" }}>
-                  Teléfono WhatsApp (+593 para Ecuador)
+                  {tx("Teléfono WhatsApp (+593 para Ecuador)")}
                 </label>
                 <input
                   type="text"
@@ -228,7 +230,7 @@ export default function PaymentLinkModal({
 
               <div>
                 <label className="block font-medium mb-1" style={{ color: "var(--muted-foreground)" }}>
-                  Email para recibo y comprobante de pago
+                  {tx("Email para recibo y comprobante de pago")}
                 </label>
                 <input
                   type="email"
@@ -244,7 +246,7 @@ export default function PaymentLinkModal({
             {/* Pasarelas de Pago de Ecuador e Internacionales */}
             <div>
               <label className="block font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>
-                Pasarela de Pago Habilitada
+                {tx("Pasarela de Pago Habilitada")}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {GATEWAYS.map(g => (
@@ -261,13 +263,13 @@ export default function PaymentLinkModal({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
                         <span className="font-semibold text-xs truncate" style={{ color: "var(--foreground)" }}>
-                          {g.name}
+                          {tx(g.name)}
                         </span>
                         <span className="mono text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold whitespace-nowrap">
-                          {g.tag}
+                          {tx(g.tag)}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 truncate mt-0.5">{g.desc}</p>
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">{tx(g.desc)}</p>
                     </div>
                   </div>
                 ))}
@@ -285,8 +287,8 @@ export default function PaymentLinkModal({
                 >
                   <option value={24}>24 Horas</option>
                   <option value={48}>48 Horas</option>
-                  <option value={72}>3 Días</option>
-                  <option value={168}>7 Días</option>
+                  <option value={72}>{tx("3 Días")}</option>
+                  <option value={168}>{tx("7 Días")}</option>
                 </select>
               </div>
 
@@ -296,7 +298,7 @@ export default function PaymentLinkModal({
                   onClick={onClose}
                   className="px-4 py-2 rounded text-xs font-medium text-slate-400 hover:text-white transition-colors"
                 >
-                  Cancelar
+                  {tx("Cancelar")}
                 </button>
                 <button
                   type="submit"
@@ -313,7 +315,7 @@ export default function PaymentLinkModal({
             {simulatedSuccess ? (
               <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-800 text-center space-y-2">
                 <span className="text-3xl">🎉</span>
-                <h3 className="font-bold text-base text-emerald-300">¡Pago Recibido con Éxito!</h3>
+                <h3 className="font-bold text-base text-emerald-300">{tx("¡Pago Recibido con Éxito!")}</h3>
                 <p className="text-xs text-emerald-200">
                   El cliente {guest} ha completado el pago de {fmtUsd(amount)} mediante {GATEWAYS.find(g => g.id === gateway)?.name}.
                 </p>
@@ -323,7 +325,7 @@ export default function PaymentLinkModal({
                   onClick={onClose}
                   className="mt-2 px-5 py-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
                 >
-                  Cerrar y Ver Movimientos
+                  {tx("Cerrar y Ver Movimientos")}
                 </button>
               </div>
             ) : (
@@ -331,20 +333,20 @@ export default function PaymentLinkModal({
                 <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
                   <div>
                     <span className="mono text-[10px] text-amber-400 font-bold uppercase tracking-wider block">
-                      Enlace de Pago Creado
+                      {tx("Enlace de Pago Creado")}
                     </span>
                     <span className="font-bold text-base text-white">{fmtUsd(amount)}</span>
                     <span className="text-slate-400 text-xs ml-2">· {concept}</span>
                   </div>
                   <span className="mono text-xs px-2.5 py-1 rounded bg-amber-950 text-amber-300 border border-amber-700 font-semibold">
-                    Pendiente
+                    {tx("Pendiente")}
                   </span>
                 </div>
 
                 {/* The Link with copy button */}
                 <div>
                   <label className="block text-[11px] text-slate-400 font-medium mb-1">
-                    URL directa para el cliente:
+                    {tx("URL directa para el cliente:")}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -375,7 +377,7 @@ export default function PaymentLinkModal({
                   >
                     <span className="text-xl">💬</span>
                     <div>
-                      <p className="font-bold text-xs">Enviar por WhatsApp</p>
+                      <p className="font-bold text-xs">{tx("Enviar por WhatsApp")}</p>
                       <p className="text-[10px] text-emerald-400/80">Mensaje con link al {phone}</p>
                     </div>
                   </a>
@@ -389,7 +391,7 @@ export default function PaymentLinkModal({
                   >
                     <span className="text-xl">✉️</span>
                     <div>
-                      <p className="font-bold text-xs">Enviar por Correo</p>
+                      <p className="font-bold text-xs">{tx("Enviar por Correo")}</p>
                       <p className="text-[10px] text-blue-400/80">Recibo digital a {email}</p>
                     </div>
                   </button>
@@ -398,8 +400,8 @@ export default function PaymentLinkModal({
                 {/* Gateway Simulation */}
                 <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-xs text-white">Validación de Pasarela en Línea</p>
-                    <p className="text-[10px] text-slate-400">Verifica la acreditación inmediata de la transacción vía webhook o pasarela.</p>
+                    <p className="font-semibold text-xs text-white">{tx("Validación de Pasarela en Línea")}</p>
+                    <p className="text-[10px] text-slate-400">{tx("Verifica la acreditación inmediata de la transacción vía webhook o pasarela.")}</p>
                   </div>
 
                   <button
@@ -407,7 +409,7 @@ export default function PaymentLinkModal({
                     onClick={handleSimulatePayment}
                     className="w-full sm:w-auto px-4 py-2 rounded-lg font-semibold text-xs border border-emerald-500/40 bg-emerald-950/60 text-emerald-300 hover:bg-emerald-900 transition-colors whitespace-nowrap cursor-pointer"
                   >
-                    🧪 Simular Pago Exitoso
+                    {tx("🧪 Simular Pago Exitoso")}
                   </button>
                 </div>
 

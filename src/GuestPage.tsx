@@ -15,6 +15,9 @@ import {
   type MyReservation,
 } from "./mantaHotels";
 import MantaMapModal from "./MantaMapModal";
+import { GUEST_RESERVATIONS_KEY, readGuestReservationsRaw } from "./storage";
+import { getRoomAvailability, consumeRoomAvailability, releaseRoomAvailability } from "./availability";
+import { useI18n, useLang, setLang, getLang, txDesc } from "./i18n";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,7 +70,8 @@ const DEMO_RESERVATIONS: MyReservation[] = INITIAL_DEMO_RESERVATIONS;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(n: number) {
-  return new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(n);
+  const locale = getLang() === "en" ? "en-US" : "es-EC";
+  return new Intl.NumberFormat(locale, { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(n);
 }
 function nightsBetween(a: string, b: string) {
   if (!a || !b) return 0;
@@ -79,7 +83,7 @@ function addDays(date: string, n: number) {
   return d.toISOString().split("T")[0];
 }
 function fmtDateShort(d: string) {
-  return new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d + "T12:00:00").toLocaleDateString(getLang() === "en" ? "en-US" : "es-ES", { day: "numeric", month: "short", year: "numeric" });
 }
 function StarsRow({ n }: { n: number }) {
   return (
@@ -113,6 +117,7 @@ function PriceBreakdownBox({
   showToggle = true,
   defaultExpanded = false,
 }: PriceBreakdownProps) {
+  const tx = useI18n();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [ivaPct, setIvaPct] = useState<15 | 8>(() => getActiveIvaPercent());
   const decretoCfg = getIvaDecretoConfig();
@@ -141,20 +146,20 @@ function PriceBreakdownBox({
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Desglose del precio</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{tx("Desglose del precio")}</span>
             {ivaPct === 8 && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                IVA 8% tarifa feriado
+                {tx("IVA 8% tarifa feriado")}
               </span>
             )}
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-xs text-slate-500 font-medium">Precio</span>
+            <span className="text-xs text-slate-500 font-medium">{tx("Precio")}</span>
             <span className="text-xl font-black text-slate-900 tracking-tight">US${subtotal.toFixed(2)}</span>
-            {n > 1 && <span className="text-[11px] text-slate-400">({n} noches)</span>}
+            {n > 1 && <span className="text-[11px] text-slate-400">({n} {tx("noches")})</span>}
           </div>
           <p className="text-[11px] font-semibold text-slate-500 mt-0.5">
-            + US${totalImpuestos.toFixed(2)} de impuestos ({ivaPct}% IVA{hasService10 ? " + 10% Serv." : ""})
+            + US${totalImpuestos.toFixed(2)} {tx("de impuestos")} ({ivaPct}% IVA{hasService10 ? " + 10% Serv." : ""})
           </p>
         </div>
         {showToggle && (
@@ -163,7 +168,7 @@ function PriceBreakdownBox({
             onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
             className="text-xs font-semibold text-sky-600 hover:text-sky-800 transition-colors py-1 px-2.5 rounded-lg hover:bg-sky-50 border border-sky-100 flex items-center gap-1"
           >
-            <span>{expanded ? "Ver menos" : "Ver desglose"}</span>
+            <span>{expanded ? tx("Ver menos") : tx("Ver desglose")}</span>
             <span className="text-[10px]">{expanded ? "▲" : "▼"}</span>
           </button>
         )}
@@ -172,42 +177,42 @@ function PriceBreakdownBox({
       {expanded && (
         <div className="mt-3 pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
           <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
-            <span>Detalle de impuestos y tasas</span>
+            <span>{tx("Detalle de impuestos y tasas")}</span>
           </div>
 
           <div className="rounded-lg p-3 bg-slate-50 border border-slate-200/80 space-y-2">
             <div className="flex items-center gap-1.5 font-semibold text-slate-700 text-[11px] pb-1.5 border-b border-slate-200">
-              <span>Impuestos y cargos: US${totalImpuestos.toFixed(2)}</span>
+              <span>{tx("Impuestos y cargos")}: US${totalImpuestos.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between items-center text-slate-600">
               <span>
-                {ivaPct}% IVA {ivaPct === 8 ? `(${decretoCfg.nombreFeriado})` : ""}
+                {ivaPct}% IVA {ivaPct === 8 ? `(${decretoCfg.decretoNombre})` : ""}
               </span>
               <span className={`font-mono font-medium ${ivaPct === 8 ? "text-emerald-700 font-bold" : ""}`}>US${iva.toFixed(2)}</span>
             </div>
 
             {hasService10 ? (
               <div className="flex justify-between items-center text-emerald-800 font-medium bg-emerald-50 px-2 py-1 rounded border border-emerald-100">
-                <span>10% Servicio turístico</span>
+                <span>{tx("10% Servicio turístico")}</span>
                 <span className="font-mono font-bold">US${servicio.toFixed(2)}</span>
               </div>
             ) : (
               <div className="flex justify-between items-center text-slate-400 italic text-[11px]">
-                <span>10% Servicio turístico (no aplica)</span>
+                <span>{tx("10% Servicio turístico (no aplica)")}</span>
                 <span className="font-mono">US$0.00</span>
               </div>
             )}
           </div>
 
           <div className="flex justify-between items-center pt-1 font-bold text-slate-900 text-sm border-t border-slate-100">
-            <span>Total a pagar</span>
+            <span>{tx("Total a pagar")}</span>
             <span className="text-base font-black text-amber-600 font-mono">US${totalPagar.toFixed(2)}</span>
           </div>
 
           <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-200/80 text-[11px] text-amber-900 leading-tight">
             <div>
-              <strong>Voucher digital de reserva:</strong> Emitido con tu código de confirmación al validar el pago. Preséntalo a tu llegada a {hotelName ? <strong>{hotelName}</strong> : "el alojamiento"}.
+              <strong>{tx("Voucher digital de reserva:")}</strong> {tx("Emitido con tu código de confirmación al validar el pago. Preséntalo a tu llegada a")} {hotelName ? <strong>{hotelName}</strong> : tx("el alojamiento")}.
             </div>
           </div>
         </div>
@@ -229,6 +234,7 @@ function SearchBar({
   onSearch: () => void;
   variant?: "hero" | "sticky";
 }) {
+  const tx = useI18n();
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"parroquias" | "sectores" | "todo">("parroquias");
@@ -269,7 +275,7 @@ function SearchBar({
         <div className="mb-1">
           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <span>📍</span>
-            <span>¿A dónde vas en Manta?</span>
+            <span>{tx("¿A dónde vas en Manta?")}</span>
           </label>
         </div>
 
@@ -295,7 +301,7 @@ function SearchBar({
                 setIsPopOpen(false);
               }
             }}
-            placeholder="Parroquia, playa o sector de Manta..."
+            placeholder={tx("Parroquia, playa o sector de Manta...")}
             className="w-full pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 cursor-pointer shadow-2xs"
           />
 
@@ -304,7 +310,7 @@ function SearchBar({
               type="button"
               onClick={handleClear}
               className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer text-xs font-bold"
-              title="Borrar filtro de destino"
+              title={tx("Borrar filtro de destino")}
             >
               ✕
             </button>
@@ -321,20 +327,20 @@ function SearchBar({
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">🧭</span>
-                  <h4 className="font-bold text-xs text-slate-900">Explora Manta por zona</h4>
+                  <h4 className="font-bold text-xs text-slate-900">{tx("Explora Manta por zona")}</h4>
                   <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                    116 alojamientos
+                    {tx("116 alojamientos")}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Elige una parroquia oficial o una playa turística destacada
+                  {tx("Elige una parroquia oficial o una playa turística destacada")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPopOpen(false)}
                 className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 text-xs flex items-center justify-center cursor-pointer transition-colors"
-                title="Cerrar"
+                title={tx("Cerrar")}
               >
                 ✕
               </button>
@@ -347,8 +353,8 @@ function SearchBar({
                   🗺️
                 </div>
                 <div>
-                  <p className="font-bold text-xs text-white leading-tight">Mapa Geográfico del Cantón</p>
-                  <p className="text-[10px] text-slate-300">Explora las 7 parroquias en el mapa interactivo real</p>
+                  <p className="font-bold text-xs text-white leading-tight">{tx("Mapa Geográfico del Cantón")}</p>
+                  <p className="text-[10px] text-slate-300">{tx("Explora las 7 parroquias en el mapa interactivo real")}</p>
                 </div>
               </div>
               <button
@@ -359,7 +365,7 @@ function SearchBar({
                 }}
                 className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1 hover:scale-105"
               >
-                <span>Abrir Mapa</span>
+                <span>{tx("Abrir Mapa")}</span>
                 <span>↗</span>
               </button>
             </div>
@@ -375,7 +381,7 @@ function SearchBar({
                 className="py-1 px-3 rounded-full whitespace-nowrap transition-all cursor-pointer font-bold flex items-center gap-1.5 text-[11px] bg-amber-500 text-slate-950 shadow-xs hover:bg-amber-400"
               >
                 <span>🗺️</span>
-                <span>Ver Mapa Interactivo</span>
+                <span>{tx("Ver Mapa Interactivo")}</span>
               </button>
               <button
                 type="button"
@@ -387,7 +393,7 @@ function SearchBar({
                 }`}
               >
                 <span>🏛️</span>
-                <span>7 Parroquias Oficiales</span>
+                <span>{tx("7 Parroquias Oficiales")}</span>
               </button>
               <button
                 type="button"
@@ -399,7 +405,7 @@ function SearchBar({
                 }`}
               >
                 <span>🏖️</span>
-                <span>Playas & Sectores</span>
+                <span>{tx("Playas & Sectores")}</span>
               </button>
               <button
                 type="button"
@@ -411,7 +417,7 @@ function SearchBar({
                 }`}
               >
                 <span>⭐</span>
-                <span>Todo Manta</span>
+                <span>{tx("Todo Manta")}</span>
               </button>
             </div>
 
@@ -435,11 +441,11 @@ function SearchBar({
                           </span>
                         </div>
                         <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
-                          {p.count} hot.
+                          {p.count} {tx("hot.")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-1 text-[10px]">
-                        <span className="text-slate-500 truncate max-w-[160px]">{p.desc}</span>
+                        <span className="text-slate-500 truncate max-w-[160px]">{tx(p.desc)}</span>
                         <span
                           className={`text-[8px] font-bold px-1.5 py-0.2 rounded uppercase shrink-0 ${
                             p.type.includes("Rural")
@@ -447,7 +453,7 @@ function SearchBar({
                               : "bg-blue-50 text-blue-800 border border-blue-200"
                           }`}
                         >
-                          {p.type.includes("Rural") ? "Rural" : "Urbana"}
+                          {p.type.includes("Rural") ? tx("Rural") : tx("Urbana")}
                         </span>
                       </div>
                     </button>
@@ -473,13 +479,13 @@ function SearchBar({
                           </span>
                         </div>
                         <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
-                          {s.count} hot.
+                          {s.count} {tx("hot.")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-1 text-[10px]">
-                        <span className="text-slate-500 truncate max-w-[160px]">{s.desc}</span>
+                        <span className="text-slate-500 truncate max-w-[160px]">{tx(s.desc)}</span>
                         <span className="text-[8px] font-bold px-1.5 py-0.2 rounded uppercase shrink-0 bg-amber-50 text-amber-800 border border-amber-200">
-                          {s.badge}
+                          {tx(s.badge)}
                         </span>
                       </div>
                     </button>
@@ -493,16 +499,16 @@ function SearchBar({
                   <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center text-xl mx-auto shadow-2xs">
                     🌊
                   </div>
-                  <p className="font-bold text-slate-900 text-xs">Catálogo Completo de Manta</p>
+                  <p className="font-bold text-slate-900 text-xs">{tx("Catálogo Completo de Manta")}</p>
                   <p className="text-[11px] text-slate-500 max-w-xs mx-auto leading-relaxed">
-                    Visualiza los 116 hoteles, hostales y hosterías registrados en las 7 parroquias del cantón.
+                    {tx("Visualiza los 116 hoteles, hostales y hosterías registrados en las 7 parroquias del cantón.")}
                   </p>
                   <button
                     type="button"
                     onClick={() => handleSelectDestination("")}
                     className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer transition-colors shadow-xs"
                   >
-                    Ver los 116 Alojamientos de Manta
+                    {tx("Ver los 116 Alojamientos de Manta")}
                   </button>
                 </div>
               )}
@@ -510,7 +516,7 @@ function SearchBar({
 
             {/* Pie del Popover */}
             <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-              <span>💡 También puedes escribir directamente el nombre del sector</span>
+              <span>{tx("💡 También puedes escribir directamente el nombre del sector")}</span>
               {params.destination && (
                 <button
                   type="button"
@@ -520,7 +526,7 @@ function SearchBar({
                   }}
                   className="text-amber-700 hover:underline font-semibold cursor-pointer"
                 >
-                  Limpiar filtro
+                  {tx("Limpiar filtro")}
                 </button>
               )}
             </div>
@@ -533,7 +539,7 @@ function SearchBar({
         <div className="min-w-0 sm:w-32">
           <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
             <span>📅</span>
-            <span>Llegada</span>
+            <span>{tx("Llegada")}</span>
           </label>
           <input
             type="date"
@@ -554,7 +560,7 @@ function SearchBar({
         <div className="min-w-0 sm:w-32">
           <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
             <span>📅</span>
-            <span>Salida</span>
+            <span>{tx("Salida")}</span>
           </label>
           <input
             type="date"
@@ -571,7 +577,7 @@ function SearchBar({
       <div className="min-w-0 md:w-32">
         <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
           <span>👥</span>
-          <span>Huéspedes</span>
+          <span>{tx("Huéspedes")}</span>
         </label>
         <select
           className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
@@ -580,7 +586,7 @@ function SearchBar({
         >
           {[1, 2, 3, 4, 5, 6].map(n => (
             <option key={n} value={n}>
-              {n} adulto{n > 1 ? "s" : ""}
+              {n} {n > 1 ? tx("adultos") : tx("adulto")}
             </option>
           ))}
         </select>
@@ -596,7 +602,7 @@ function SearchBar({
         className="w-full md:w-auto px-7 py-2.5 rounded-xl font-black text-sm transition-all whitespace-nowrap cursor-pointer text-center bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
       >
         <span>🔍</span>
-        <span>Buscar Hoteles</span>
+        <span>{tx("Buscar Hoteles")}</span>
       </button>
 
       {/* ─── Modal de Mapa Geográfico Real (Leaflet / CartoDB) ─── */}
@@ -613,6 +619,7 @@ function SearchBar({
 // ─── Invoice modal ────────────────────────────────────────────────────────────
 
 export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => void }) {
+  const tx = useI18n();
   // Buscar datos comerciales del hotel en Manta
   const hotelKey = Object.keys(HOTEL_COMMERCIAL_INFO).find(k => 
     res.hotel.toLowerCase().includes(k.replace(/-/g, " ")) || 
@@ -635,13 +642,13 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</p>
-                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">RESERVA GARANTIZADA</span>
+                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">{tx("RESERVA GARANTIZADA")}</span>
               </div>
               <p className="text-xs text-slate-300">{hotelMeta.razonSocial}</p>
               <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · Manta, Manabí</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER DIGITAL</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{tx("VOUCHER DIGITAL")}</span>
               <p className="font-mono font-bold text-slate-100 text-xs mt-1">REC-{res.id}</p>
               <p className="text-[10px] text-slate-400">Entrada: {fmtDateShort(res.checkIn)}</p>
             </div>
@@ -649,29 +656,29 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
         </div>
 
         <div className="p-3 bg-blue-50 border-b border-blue-200 text-[11px] text-blue-900">
-          <span><strong>Voucher Digital de Reserva:</strong> Certifica tu reserva garantizada y pago en línea. Presenta tu código de reserva en {hotelMeta.nombreComercial} a tu llegada.</span>
+          <span><strong>{tx("Voucher Digital de Reserva:")}</strong> {tx("Certifica tu reserva garantizada y pago en línea. Presenta tu código de reserva en {name} a tu llegada.", { name: hotelMeta.nombreComercial })}</span>
         </div>
 
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Titular de Reserva</p>
-              <p className="font-semibold text-slate-700">Huésped Registrado</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Titular de Reserva")}</p>
+              <p className="font-semibold text-slate-700">{tx("Huésped Registrado")}</p>
               <p className="text-xs text-slate-500 font-mono">Código {res.id}</p>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Establecimiento Destino</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Establecimiento Destino")}</p>
               <p className="font-semibold text-slate-700">{res.hotel}</p>
-              <p className="text-xs text-slate-500">{res.city}</p>
+              <p className="text-xs text-slate-500">{tx(res.city)}</p>
             </div>
           </div>
 
           <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#e2e8f0" }}>
             <table className="w-full text-sm">
-              <thead><tr style={{ background: "#f8fafc" }}><th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500">Detalle de Hospedaje</th><th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500">Monto</th></tr></thead>
+              <thead><tr style={{ background: "#f8fafc" }}><th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500">{tx("Detalle de Hospedaje")}</th><th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500">{tx("Monto")}</th></tr></thead>
               <tbody>
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-2.5"><p className="font-medium text-slate-700">{res.room}</p><p className="text-xs text-slate-400">{res.nights} noche{res.nights > 1 ? "s" : ""} · Entrada {fmtDateShort(res.checkIn)} → Salida {fmtDateShort(res.checkOut)}</p></td>
+                  <td className="px-4 py-2.5"><p className="font-medium text-slate-700">{tx(res.room)}</p><p className="text-xs text-slate-400">{res.nights} noche{res.nights > 1 ? "s" : ""} · Entrada {fmtDateShort(res.checkIn)} → Salida {fmtDateShort(res.checkOut)}</p></td>
                   <td className="px-4 py-2.5 text-right font-medium text-slate-700">{fmt(base)}</td>
                 </tr>
                 <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
@@ -680,17 +687,17 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
                 </tr>
                 {hasServicio ? (
                   <tr style={{ background: "#f8fafc" }}>
-                    <td className="px-4 py-2 text-xs text-emerald-600 font-medium">10% Servicio Turístico (Art. 41 Ley Turismo)</td>
+                    <td className="px-4 py-2 text-xs text-emerald-600 font-medium">{tx("10% Servicio Turístico (Art. 41 Ley Turismo)")}</td>
                     <td className="px-4 py-2 text-right text-xs text-emerald-600 font-bold">{fmt(servicio)}</td>
                   </tr>
                 ) : (
                   <tr style={{ background: "#f8fafc" }}>
-                    <td className="px-4 py-2 text-xs text-slate-400 italic">10% Servicio Turístico (Hostal exento)</td>
+                    <td className="px-4 py-2 text-xs text-slate-400 italic">{tx("10% Servicio Turístico (Hostal exento)")}</td>
                     <td className="px-4 py-2 text-right text-xs text-slate-400">$0.00</td>
                   </tr>
                 )}
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-3 font-bold text-slate-800">Total Liquidado</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{tx("Total Liquidado")}</td>
                   <td className="px-4 py-3 text-right font-bold text-lg" style={{ color: "#f59e0b" }}>{fmt(res.total)}</td>
                 </tr>
               </tbody>
@@ -699,12 +706,12 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
 
           <div className="flex items-center gap-2 rounded-xl p-3" style={{ background: "#d1fae5", border: "1px solid #a7f3d0" }}>
             <span className="text-green-600 font-bold">✓</span>
-            <span className="text-xs font-semibold text-green-700">Cobro liquidado vía pasarela y transferido al hotel</span>
+            <span className="text-xs font-semibold text-green-700">{tx("Cobro liquidado vía pasarela y transferido al hotel")}</span>
           </div>
         </div>
         <div className="px-6 py-4 border-t flex gap-2" style={{ borderColor: "#e2e8f0" }}>
-          <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>Cerrar</button>
-          <button className="flex-1 py-2 rounded-xl text-sm font-bold" style={{ background: "#f59e0b", color: "#0c1220" }}>⬇ Descargar Voucher PDF</button>
+          <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("Cerrar")}</button>
+          <button className="flex-1 py-2 rounded-xl text-sm font-bold" style={{ background: "#f59e0b", color: "#0c1220" }}>{tx("⬇ Descargar Voucher PDF")}</button>
         </div>
       </div>
     </div>
@@ -731,6 +738,7 @@ function AccountView({
   onBack?: () => void;
   initialTab?: "hub" | "reservations" | "personal" | "billing" | "payments" | "about";
 }) {
+  const tx = useI18n();
   const [activeTab, setActiveTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "about">(initialTab);
   const [resFilter, setResFilter] = useState<"all" | "upcoming" | "completed" | "cancelled">("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -775,7 +783,7 @@ function AccountView({
     try {
       localStorage.setItem(`alojamanta_profile_${user.email}`, JSON.stringify(profile));
     } catch {}
-    showToast("Datos de perfil guardados para tus reservas");
+    showToast(tx("Datos de perfil guardados para tus reservas"));
   }
 
   function handleSaveBilling(e: React.FormEvent) {
@@ -783,11 +791,11 @@ function AccountView({
     try {
       localStorage.setItem(`alojamanta_profile_${user.email}`, JSON.stringify(profile));
     } catch {}
-    showToast("✓ Datos de contacto y comprobante actualizados");
+    showToast(tx("✓ Datos de contacto y comprobante actualizados"));
   }
 
   const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-    upcoming: { bg: "#1e3a5f", color: "#93c5fd", label: "Próxima estancia" },
+    upcoming: { bg: "#1e3a5f", color: "#93c5fd", label: tx("Próxima estancia") },
     completed: { bg: "#064e3b", color: "#6ee7b7", label: "Completada" },
     cancelled: { bg: "#450a0a", color: "#fca5a5", label: "Cancelada" },
   };
@@ -823,7 +831,7 @@ function AccountView({
           className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 cursor-pointer"
         >
           <span>←</span>
-          <span>Volver a buscar hoteles</span>
+          <span>{tx("Volver a buscar hoteles")}</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -831,7 +839,7 @@ function AccountView({
             onClick={onLogout}
             className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors font-medium cursor-pointer"
           >
-            Cerrar sesión
+            {tx("Cerrar sesión")}
           </button>
         </div>
       </div>
@@ -849,18 +857,18 @@ function AccountView({
                   {profile.fullName || user.name}
                 </h1>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
-                  ✓ Cuenta Verificada
+                  ✓ {tx("Cuenta Verificada")}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">{user.email} · {profile.phone}</p>
               <p className="text-[11px] text-slate-400 mt-1">
-                Reserva directa oficial · Sin sobreprecios ni cargos ocultos de intermediarios
+                {tx("Reserva directa oficial · Sin sobreprecios ni cargos ocultos de intermediarios")}
               </p>
             </div>
           </div>
 
           <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
-            <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Resumen de cuenta</span>
+            <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">{tx("Resumen de cuenta")}</span>
             <div className="flex items-center gap-3 text-xs">
               <span className="font-bold text-slate-700 font-mono">{allList.length} reservas</span>
               <span className="text-slate-300">|</span>
@@ -872,12 +880,12 @@ function AccountView({
         {/* Barra de pestañas */}
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap scrollbar-none pt-4 text-xs font-semibold">
           {[
-            { id: "hub", label: "Inicio" },
+            { id: "hub", label: tx("Inicio") },
             { id: "reservations", label: `Mis Reservas (${allList.length})` },
-            { id: "personal", label: "Datos personales" },
-            { id: "billing", label: "Comprobantes" },
-            { id: "payments", label: "Medios de pago" },
-            { id: "about", label: "Información" },
+            { id: "personal", label: tx("Datos personales") },
+            { id: "billing", label: tx("Comprobantes") },
+            { id: "payments", label: tx("Medios de pago") },
+            { id: "about", label: tx("Información") },
           ].map(t => (
             <button
               key={t.id}
@@ -902,7 +910,7 @@ function AccountView({
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base">
-                  Estancias y viajes
+                  {tx("Estancias y viajes")}
                 </h3>
                 <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                   {allList.length} activas
@@ -913,21 +921,21 @@ function AccountView({
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Mis reservas y viajes en Manta</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Mis reservas y viajes en Manta")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Vouchers y comprobantes de reserva</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Vouchers y comprobantes de reserva")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={onBack}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Explorar alojamientos en Manta</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Explorar alojamientos en Manta")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -937,10 +945,10 @@ function AccountView({
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base">
-                  Datos del titular
+                  {tx("Datos del titular")}
                 </h3>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  Llegada ágil
+                  {tx("Llegada ágil")}
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -948,21 +956,21 @@ function AccountView({
                   onClick={() => setActiveTab("personal")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Datos personales (Cédula / Pasaporte)</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Datos personales (Cédula / Pasaporte)")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("personal")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Teléfono y WhatsApp de confirmación</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Teléfono y WhatsApp de confirmación")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("personal")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Preferencias de cama y habitación</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Preferencias de cama y habitación")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -972,10 +980,10 @@ function AccountView({
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base">
-                  Comprobantes de pago
+                  {tx("Comprobantes de pago")}
                 </h3>
                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                  Comprobante de Reserva
+                  {tx("Comprobante de Reserva")}
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -983,21 +991,21 @@ function AccountView({
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Datos tributarios (RUC / Cédula)</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Datos tributarios (RUC / Cédula)")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Razón Social y Domicilio fiscal</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Razón Social y Domicilio fiscal")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Emisión en recepción del alojamiento</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Emisión en recepción del alojamiento")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1007,10 +1015,10 @@ function AccountView({
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base">
-                  Cobro y pagos
+                  {tx("Cobro y pagos")}
                 </h3>
                 <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                  Digital seguro
+                  {tx("Digital seguro")}
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1018,21 +1026,21 @@ function AccountView({
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Tarjetas de crédito y débito vinculadas</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Tarjetas de crédito y débito vinculadas")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Cobro local vía PayPhone & DeUna</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Cobro local vía PayPhone & DeUna")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Certificados de acreditación hotelera</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Certificados de acreditación hotelera")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1042,10 +1050,10 @@ function AccountView({
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base">
-                  Acerca de AlojaManta
+                  {tx("Acerca de AlojaManta")}
                 </h3>
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-                  Red Manta
+                  {tx("Red Manta")}
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1053,21 +1061,21 @@ function AccountView({
                   onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">116 Alojamientos catastrados y validados</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("116 Alojamientos catastrados y validados")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Modelo directo sin comisiones abusivas</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Modelo directo sin comisiones abusivas")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Comprobantes digitales y liquidación de reserva</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Comprobantes digitales y liquidación de reserva")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1077,10 +1085,10 @@ function AccountView({
             <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 text-base">
-                  Asistencia al huésped
+                  {tx("Asistencia al huésped")}
                 </h3>
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                  Cantón Manta
+                  {tx("Cantón Manta")}
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1090,21 +1098,21 @@ function AccountView({
                   rel="noopener noreferrer"
                   className="py-2.5 flex items-center justify-between text-left hover:text-emerald-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-emerald-600">WhatsApp Manta: +593 99 876 5432</span>
+                  <span className="text-slate-700 font-medium group-hover:text-emerald-600">{tx("WhatsApp Manta: +593 99 876 5432")}</span>
                   <span className="text-emerald-600 font-bold group-hover:translate-x-1 transition-transform">💬</span>
                 </a>
                 <a
                   href="tel:+59352628900"
                   className="py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Línea Cantonal: +593 5 262 8900</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Línea Cantonal: +593 5 262 8900")}</span>
                   <span className="text-amber-600 font-bold group-hover:translate-x-1 transition-transform">📞</span>
                 </a>
                 <button
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">Consultar reservas y comprobantes</span>
+                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Consultar reservas y comprobantes")}</span>
                   <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1120,10 +1128,10 @@ function AccountView({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border" style={{ borderColor: "#e2e8f0" }}>
             <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs font-semibold">
               {[
-                { id: "all", label: "Todas" },
-                { id: "upcoming", label: "Próximas" },
-                { id: "completed", label: "Completadas" },
-                { id: "cancelled", label: "Canceladas" },
+                { id: "all", label: tx("Todas") },
+                { id: "upcoming", label: tx("Próximas") },
+                { id: "completed", label: tx("Completadas") },
+                { id: "cancelled", label: tx("Canceladas") },
               ].map(f => (
                 <button
                   key={f.id}
@@ -1151,13 +1159,13 @@ function AccountView({
               return (
                 <div key={res.id} className="rounded-2xl border bg-white overflow-hidden shadow-xs hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
                   <div className="flex flex-col sm:flex-row">
-                    <img src={res.image} alt={res.room} className="sm:w-48 w-full object-cover" style={{ height: 140 }} />
+                    <img src={res.image} alt={tx(res.room)} className="sm:w-48 w-full object-cover" style={{ height: 140 }} />
                     <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <p className="font-bold text-slate-900 text-base">{res.hotel}</p>
-                            <p className="text-xs text-slate-500 font-medium">{res.city} · {res.room}</p>
+                            <p className="text-xs text-slate-500 font-medium">{tx(res.city)} · {tx(res.room)}</p>
                           </div>
                           <span className="mono text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider" style={{ background: st.bg, color: st.color }}>
                             {st.label}
@@ -1172,7 +1180,7 @@ function AccountView({
 
                       <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
                         <div>
-                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Código de confirmación</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{tx("Código de confirmación")}</p>
                           <p className="font-mono text-sm font-bold text-slate-800">{res.id}</p>
                         </div>
                         <div className="flex items-center gap-2.5">
@@ -1182,7 +1190,7 @@ function AccountView({
                             className="text-xs px-3.5 py-1.5 rounded-xl font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer flex items-center gap-1"
                           >
                             <span>🧾</span>
-                            <span>Ver Voucher</span>
+                            <span>{tx("Ver Voucher")}</span>
                           </button>
                           {res.status === "upcoming" && (
                             <button
@@ -1194,7 +1202,7 @@ function AccountView({
                               }}
                               className="text-xs px-2.5 py-1.5 rounded-xl font-semibold transition-all border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
                             >
-                              Cancelar
+                              {tx("Cancelar")}
                             </button>
                           )}
                         </div>
@@ -1208,12 +1216,12 @@ function AccountView({
             {filteredReservations.length === 0 && (
               <div className="text-center py-12 rounded-2xl border bg-white" style={{ borderColor: "#e2e8f0" }}>
                 <p className="text-3xl mb-2">🏖️</p>
-                <p className="font-bold text-slate-700 text-sm">No tienes reservas con este filtro</p>
+                <p className="font-bold text-slate-700 text-sm">{tx("No tienes reservas con este filtro")}</p>
                 <button
                   onClick={() => setResFilter("all")}
                   className="mt-3 text-xs text-amber-700 font-semibold underline cursor-pointer"
                 >
-                  Ver todas las reservas
+                  {tx("Ver todas las reservas")}
                 </button>
               </div>
             )}
@@ -1226,16 +1234,16 @@ function AccountView({
         <form onSubmit={handleSaveProfile} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
           <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
             <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-              Datos Personales del Huésped
+              {tx("Datos Personales del Huésped")}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Esta información agiliza la validación de tu reserva en la recepción de los hoteles de Manta.
+              {tx("Esta información agiliza la validación de tu reserva en la recepción de los hoteles de Manta.")}
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Nombre y Apellidos Completos</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Nombre y Apellidos Completos")}</label>
               <input
                 type="text"
                 value={profile.fullName}
@@ -1248,25 +1256,25 @@ function AccountView({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Tipo de Documento</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Tipo de Documento")}</label>
                 <select
                   value={profile.documentType}
                   onChange={e => setProfile({ ...profile, documentType: e.target.value })}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none bg-white"
                   style={{ borderColor: "#cbd5e1" }}
                 >
-                  <option value="Cédula de Identidad (Ecuador)">Cédula de Identidad (Ecuador)</option>
-                  <option value="Pasaporte Internacional">Pasaporte Internacional</option>
-                  <option value="RUC Personal">RUC Personal</option>
+                  <option value="Cédula de Identidad (Ecuador)">{tx("Cédula de Identidad (Ecuador)")}</option>
+                  <option value="Pasaporte Internacional">{tx("Pasaporte Internacional")}</option>
+                  <option value="RUC Personal">{tx("RUC Personal")}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Número de Identificación</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Número de Identificación")}</label>
                 <input
                   type="text"
                   value={profile.documentNumber}
                   onChange={e => setProfile({ ...profile, documentNumber: e.target.value })}
-                  placeholder="Ej: 1314589201"
+                  placeholder={tx("Ej: 1314589201")}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
                   style={{ borderColor: "#cbd5e1" }}
                 />
@@ -1275,7 +1283,7 @@ function AccountView({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Correo Electrónico</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Correo Electrónico")}</label>
                 <input
                   type="email"
                   value={profile.email}
@@ -1285,7 +1293,7 @@ function AccountView({
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Teléfono / WhatsApp</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Teléfono / WhatsApp")}</label>
                 <input
                   type="text"
                   value={profile.phone}
@@ -1297,24 +1305,24 @@ function AccountView({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Ciudad o País de Residencia</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Ciudad o País de Residencia")}</label>
               <input
                 type="text"
                 value={profile.city}
                 onChange={e => setProfile({ ...profile, city: e.target.value })}
-                placeholder="Ej: Quito, Guayaquil, Cuenca, etc."
+                placeholder={tx("Ej: Quito, Guayaquil, Cuenca, etc.")}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
                 style={{ borderColor: "#cbd5e1" }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Preferencia Habitual de Habitación</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Preferencia Habitual de Habitación")}</label>
               <input
                 type="text"
                 value={profile.roomPref}
                 onChange={e => setProfile({ ...profile, roomPref: e.target.value })}
-                placeholder="Ej: Cama King, piso alto, almohadas extras..."
+                placeholder={tx("Ej: Cama King, piso alto, almohadas extras...")}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
                 style={{ borderColor: "#cbd5e1" }}
               />
@@ -1326,13 +1334,13 @@ function AccountView({
                 onClick={() => setActiveTab("hub")}
                 className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
               >
-                Cancelar
+                {tx("Cancelar")}
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
               >
-                Guardar Datos de Huésped
+                {tx("Guardar Datos de Huésped")}
               </button>
             </div>
           </div>
@@ -1346,14 +1354,14 @@ function AccountView({
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
                 <span>🏛️</span>
-                <span>Datos del Huésped y Comprobante de Reserva</span>
+                <span>{tx("Datos del Huésped y Comprobante de Reserva")}</span>
               </h3>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300">
-                15% IVA
+                {tx("15% IVA")}
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              <strong>El establecimiento recibe tus datos verificados para agilizar la validación de tu reserva.</strong> Guarda aquí tus datos para que el hotel emita tus comprobantes de estancia a tu nombre o empresa.
+              <strong>{tx("El establecimiento recibe tus datos verificados para agilizar la validación de tu reserva.")}</strong> Guarda aquí tus datos para que el hotel emita tus comprobantes de estancia a tu nombre o empresa.
             </p>
           </div>
 
@@ -1361,30 +1369,30 @@ function AccountView({
             <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
               <span className="text-base">ℹ️</span>
               <p>
-                La plataforma de reserva procesa el cobro del anticipo y transfiere el importe neto al alojamiento. El hotel entrega tu comprobante de estancia y registro al momento de tu llegada.
+                {tx("La plataforma de reserva procesa el cobro del anticipo y transfiere el importe neto al alojamiento. El hotel entrega tu comprobante de estancia y registro al momento de tu llegada.")}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Cédula o Pasaporte del Huésped</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Cédula o Pasaporte del Huésped")}</label>
                 <input
                   type="text"
                   value={profile.taxId}
                   onChange={e => setProfile({ ...profile, taxId: e.target.value })}
-                  placeholder="Ej: 1314589201001"
+                  placeholder={tx("Ej: 1314589201001")}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
                   style={{ borderColor: "#cbd5e1" }}
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Razón Social o Nombre Fiscal</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Razón Social o Nombre Fiscal")}</label>
                 <input
                   type="text"
                   value={profile.razonSocial}
                   onChange={e => setProfile({ ...profile, razonSocial: e.target.value })}
-                  placeholder="Nombre de empresa o persona natural"
+                  placeholder={tx("Nombre de empresa o persona natural")}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
                   style={{ borderColor: "#cbd5e1" }}
                   required
@@ -1393,12 +1401,12 @@ function AccountView({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Dirección Fiscal en Ecuador</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Dirección Fiscal en Ecuador")}</label>
               <input
                 type="text"
                 value={profile.direccionFiscal}
                 onChange={e => setProfile({ ...profile, direccionFiscal: e.target.value })}
-                placeholder="Calle, número y ciudad"
+                placeholder={tx("Calle, número y ciudad")}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
                 style={{ borderColor: "#cbd5e1" }}
                 required
@@ -1406,7 +1414,7 @@ function AccountView({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Correo para Envío de Comprobante</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Correo para Envío de Comprobante")}</label>
               <input
                 type="email"
                 value={profile.correoComprobante}
@@ -1423,13 +1431,13 @@ function AccountView({
                 onClick={() => setActiveTab("hub")}
                 className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
               >
-                Volver
+                {tx("Volver")}
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
               >
-                Guardar Datos de Reserva
+                {tx("Guardar Datos de Reserva")}
               </button>
             </div>
           </div>
@@ -1442,10 +1450,10 @@ function AccountView({
           <div className="border-b pb-4" style={{ borderColor: "#f1f5f9" }}>
             <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
               <span>💳</span>
-              <span>Medios de Pago y Cobro Digital</span>
+              <span>{tx("Medios de Pago y Cobro Digital")}</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Pasarelas integradas seguras para reservas directas en Manta.
+              {tx("Pasarelas integradas seguras para reservas directas en Manta.")}
             </p>
           </div>
 
@@ -1455,11 +1463,11 @@ function AccountView({
               <div className="flex items-center gap-3">
                 <span className="text-2xl">💳</span>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Visa Débito / Crédito **** 4821</p>
-                  <p className="text-[10px] text-slate-400">Vence 09/28 · Pago digital seguro con 3DS</p>
+                  <p className="text-xs font-bold text-slate-800">{tx("Visa Débito / Crédito **** 4821")}</p>
+                  <p className="text-[10px] text-slate-400">{tx("Vence 09/28 · Pago digital seguro con 3DS")}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Predeterminada</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{tx("Predeterminada")}</span>
             </div>
 
             {/* PayPhone */}
@@ -1471,7 +1479,7 @@ function AccountView({
                   <p className="text-[10px] text-slate-400">Vinculado con número {profile.phone}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Activo</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">{tx("Activo")}</span>
             </div>
 
             {/* DeUna */}
@@ -1480,10 +1488,10 @@ function AccountView({
                 <span className="text-2xl">⚡</span>
                 <div>
                   <p className="text-xs font-bold text-slate-800">DeUna / Banco Pichincha</p>
-                  <p className="text-[10px] text-slate-400">Cobro instantáneo por app móvil sin comisiones extra</p>
+                  <p className="text-[10px] text-slate-400">{tx("Cobro instantáneo por app móvil sin comisiones extra")}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Disponible</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">{tx("Disponible")}</span>
             </div>
           </div>
         </div>
@@ -1497,10 +1505,10 @@ function AccountView({
               <span className="text-3xl">ℹ️</span>
               <div>
                 <h3 className="font-bold text-slate-900 text-xl sm:text-2xl" style={{ fontFamily: "DM Serif Display, serif" }}>
-                  Acerca de AlojaManta
+                  {tx("Acerca de AlojaManta")}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Red oficial de comercialización directa y formalización hotelera del Cantón Manta.
+                  {tx("Red oficial de comercialización directa y formalización hotelera del Cantón Manta.")}
                 </p>
               </div>
             </div>
@@ -1510,10 +1518,10 @@ function AccountView({
             <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800">
               <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
                 <span>🏛️</span>
-                <span>Iniciativa Turística Cantonal de Hospedaje Formal</span>
+                <span>{tx("Iniciativa Turística Cantonal de Hospedaje Formal")}</span>
               </h4>
               <p>
-                <strong>AlojaManta</strong> es la plataforma tecnológica desarrollada para articular de forma transparente la oferta de alojamiento formal en la ciudad y cantón de Manta, Manabí, conectando a huéspedes nacionales y extranjeros directamente con los establecimientos de hospedaje.
+                <strong>AlojaManta</strong> {tx("es la plataforma tecnológica desarrollada para articular de forma transparente la oferta de alojamiento formal en la ciudad y cantón de Manta, Manabí, conectando a huéspedes nacionales y extranjeros directamente con los establecimientos de hospedaje.")}
               </p>
             </div>
 
@@ -1521,48 +1529,48 @@ function AccountView({
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
                 <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                   <span className="text-base">🏨</span>
-                  <span>116 Alojamientos Catastrados</span>
+                  <span>{tx("116 Alojamientos Catastrados")}</span>
                 </div>
                 <p className="text-xs text-slate-600">
-                  Integra hoteles, hostales, hosterías y residencias turísticas legalmente registradas e inspeccionadas en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.
+                  {tx("Integra hoteles, hostales, hosterías y residencias turísticas legalmente registradas e inspeccionadas en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
                 <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                   <span className="text-base">💰</span>
-                  <span>0% Sobreprecio de Intermediarios</span>
+                  <span>{tx("0% Sobreprecio de Intermediarios")}</span>
                 </div>
                 <p className="text-xs text-slate-600">
-                  Elimina el sobreprecio del 18% al 20% habitual de las agencias de viajes online (OTAs) internacionales. La tarifa que pagas va íntegramente a dinamizar el sector hotelero local.
+                  {tx("Elimina el sobreprecio del 18% al 20% habitual de las agencias de viajes online (OTAs) internacionales. La tarifa que pagas va íntegramente a dinamizar el sector hotelero local.")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
                 <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                   <span className="text-base">🏛️</span>
-                  <span>Comprobante de Reserva y Liquidación</span>
+                  <span>{tx("Comprobante de Reserva y Liquidación")}</span>
                 </div>
                 <p className="text-xs text-slate-600">
-                  El comprobante digital con 15% de IVA y confirmación inmediata es emitido por la plataforma al momento de tu reserva online.
+                  {tx("El comprobante digital con 15% de IVA y confirmación inmediata es emitido por la plataforma al momento de tu reserva online.")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
                 <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                   <span className="text-base">📱</span>
-                  <span>Confirmación Digital Inmediata</span>
+                  <span>{tx("Confirmación Digital Inmediata")}</span>
                 </div>
                 <p className="text-xs text-slate-600">
-                  Cada reserva genera un voucher oficial con código de confirmación y token de verificación instantáneo para recepción sin trámites engorrosos ni papeleo innecesario.
+                  {tx("Cada reserva genera un voucher oficial con código de confirmación y token de verificación instantáneo para recepción sin trámites engorrosos ni papeleo innecesario.")}
                 </p>
               </div>
             </div>
 
             <div className="border-t pt-4 border-slate-100">
-              <h4 className="font-bold text-slate-800 text-xs sm:text-sm mb-1.5">Compromiso con el Huésped y la Ciudad</h4>
+              <h4 className="font-bold text-slate-800 text-xs sm:text-sm mb-1.5">{tx("Compromiso con el Huésped y la Ciudad")}</h4>
               <p className="text-xs text-slate-500">
-                Al reservar mediante AlojaManta, aseguras un trato directo con los anfitriones y hoteleros de Manta, políticas de cancelación claras, seguridad en tus pagos digitales y el respaldo de establecimientos que cumplen con los estándares de hospitalidad del puerto manabita.
+                {tx("Al reservar mediante AlojaManta, aseguras un trato directo con los anfitriones y hoteleros de Manta, políticas de cancelación claras, seguridad en tus pagos digitales y el respaldo de establecimientos que cumplen con los estándares de hospitalidad del puerto manabita.")}
               </p>
             </div>
 
@@ -1572,7 +1580,7 @@ function AccountView({
                 onClick={() => setActiveTab("hub")}
                 className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
               >
-                ← Volver al Panel
+                ← {tx("Volver al Panel")}
               </button>
               {onBack && (
                 <button
@@ -1580,7 +1588,7 @@ function AccountView({
                   onClick={onBack}
                   className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer transition-colors"
                 >
-                  Explorar Alojamientos Disponibles →
+                  {tx("Explorar Alojamientos Disponibles →")}
                 </button>
               )}
             </div>
@@ -1600,6 +1608,7 @@ function AboutModal({
   onClose: () => void;
   onExplore?: () => void;
 }) {
+  const tx = useI18n();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -1613,10 +1622,10 @@ function AboutModal({
             <span className="text-2xl">ℹ️</span>
             <div>
               <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-                Acerca de AlojaManta
+                {tx("Acerca de AlojaManta")}
               </h3>
               <p className="text-xs text-slate-500">
-                Red oficial de reservas directas y formalización hotelera del Cantón Manta
+                {tx("Red oficial de reservas directas y formalización hotelera del Cantón Manta")}
               </p>
             </div>
           </div>
@@ -1634,10 +1643,10 @@ function AboutModal({
           <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800">
             <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
               <span>🏛️</span>
-              <span>Iniciativa Turística y Comercial Cantonal</span>
+              <span>{tx("Iniciativa Turística y Comercial Cantonal")}</span>
             </h4>
             <p>
-              <strong>AlojaManta</strong> nace como el ecosistema digital directo para que los visitantes puedan reservar con total seguridad en la planta hotelera formal del cantón Manta (Manabí, Ecuador), sin pagar sobreprecios a intermediarios internacionales.
+              <strong>AlojaManta</strong> {tx("nace como el ecosistema digital directo para que los visitantes puedan reservar con total seguridad en la planta hotelera formal del cantón Manta (Manabí, Ecuador), sin pagar sobreprecios a intermediarios internacionales.")}
             </p>
           </div>
 
@@ -1646,40 +1655,40 @@ function AboutModal({
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
               <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                 <span className="text-base">🏨</span>
-                <span>116 Establecimientos Registrados</span>
+                <span>{tx("116 Establecimientos Registrados")}</span>
               </div>
               <p className="text-[11px] text-slate-600">
-                Catastro completo de hoteles, hostales, hosterías y departamentos en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.
+                {tx("Catastro completo de hoteles, hostales, hosterías y departamentos en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.")}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
               <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                 <span className="text-base">💰</span>
-                <span>0% Comisión de Intermediación (OTA)</span>
+                <span>{tx("0% Comisión de Intermediación (OTA)")}</span>
               </div>
               <p className="text-[11px] text-slate-600">
-                A diferencia de portales foráneos que cobran entre el 18% y 20% al hotelero, aquí se garantiza la tarifa más competitiva y el dinero dinamiza directamente la economía local.
+                {tx("A diferencia de portales foráneos que cobran entre el 18% y 20% al hotelero, aquí se garantiza la tarifa más competitiva y el dinero dinamiza directamente la economía local.")}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
               <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                 <span className="text-base">🏛️</span>
-                <span>Comprobante Oficial de Reserva</span>
+                <span>{tx("Comprobante Oficial de Reserva")}</span>
               </div>
               <p className="text-[11px] text-slate-600">
-                El comprobante oficial con 15% de IVA y detalle de reserva certifica tu estancia y pago anticipado.
+                {tx("El comprobante oficial con 15% de IVA y detalle de reserva certifica tu estancia y pago anticipado.")}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
               <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
                 <span className="text-base">📲</span>
-                <span>Vouchers con Código de Confirmación</span>
+                <span>{tx("Vouchers con Código de Confirmación")}</span>
               </div>
               <p className="text-[11px] text-slate-600">
-                Confirmación instantánea con código de reserva único descargable en PDF o guardado en tu cuenta para un registro ágil en recepción.
+                {tx("Confirmación instantánea con código de reserva único descargable en PDF o guardado en tu cuenta para un registro ágil en recepción.")}
               </p>
             </div>
           </div>
@@ -1687,8 +1696,8 @@ function AboutModal({
           {/* Contacto Directo */}
           <div className="p-4 rounded-xl border border-slate-200 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <p className="font-bold text-slate-900 text-xs">Mesa de Asistencia Turística Manta</p>
-              <p className="text-[11px] text-slate-500">Atención directa para consultas de reserva y orientación en el cantón.</p>
+              <p className="font-bold text-slate-900 text-xs">{tx("Mesa de Asistencia Turística Manta")}</p>
+              <p className="text-[11px] text-slate-500">{tx("Atención directa para consultas de reserva y orientación en el cantón.")}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <a
@@ -1698,14 +1707,14 @@ function AboutModal({
                 className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-colors"
               >
                 <span>💬</span>
-                <span>WhatsApp</span>
+                <span>{tx("WhatsApp")}</span>
               </a>
               <a
                 href="tel:+59352628900"
                 className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors"
               >
                 <span>📞</span>
-                <span>Llamar</span>
+                <span>{tx("Llamar")}</span>
               </a>
             </div>
           </div>
@@ -1713,20 +1722,20 @@ function AboutModal({
 
         {/* Footer */}
         <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-between text-xs" style={{ borderColor: "#e2e8f0" }}>
-          <span className="text-slate-400">Cantón Manta · Manabí · Ecuador</span>
+          <span className="text-slate-400">{tx("Cantón Manta · Manabí · Ecuador")}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
               className="px-4 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-100 cursor-pointer"
             >
-              Cerrar
+              {tx("Cerrar")}
             </button>
             {onExplore && (
               <button
                 onClick={onExplore}
                 className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg cursor-pointer transition-colors shadow-2xs"
               >
-                Explorar Hoteles
+                {tx("Explorar Hoteles")}
               </button>
             )}
           </div>
@@ -1739,6 +1748,7 @@ function AboutModal({
 // ─── Modal Términos y Privacidad LOPDP ────────────────────────────────────────────
 
 function LegalModal({ onClose }: { onClose: () => void }) {
+  const tx = useI18n();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -1752,10 +1762,10 @@ function LegalModal({ onClose }: { onClose: () => void }) {
             <span className="text-2xl">🏛️</span>
             <div>
               <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-                Términos del Servicio y Privacidad LOPDP
+                {tx("Términos del Servicio y Privacidad LOPDP")}
               </h3>
               <p className="text-xs text-slate-500">
-                Normativa tributaria y condiciones de reserva en AlojaManta
+                {tx("Normativa tributaria y condiciones de reserva en AlojaManta")}
               </p>
             </div>
           </div>
@@ -1772,32 +1782,32 @@ function LegalModal({ onClose }: { onClose: () => void }) {
           <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-slate-800">
             <h4 className="font-bold text-blue-950 text-sm mb-1 flex items-center gap-1.5">
               <span>🧾</span>
-              <span>Comprobante Digital de Reserva y Pagos</span>
+              <span>{tx("Comprobante Digital de Reserva y Pagos")}</span>
             </h4>
             <p>
-              La plataforma emite el comprobante de reserva y certificación de pago digital con el desglose del 15% de IVA. El establecimiento hotelero entrega el recibo y comprobante de estancia directamente presentando tu código de reserva a la llegada.
+              {tx("La plataforma emite el comprobante de reserva y certificación de pago digital con el desglose del 15% de IVA. El establecimiento hotelero entrega el recibo y comprobante de estancia directamente presentando tu código de reserva a la llegada.")}
             </p>
           </div>
 
           <div className="space-y-3">
             <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-              <h5 className="font-bold text-slate-900 mb-1">1. Datos Tributarios Requeridos</h5>
+              <h5 className="font-bold text-slate-900 mb-1">{tx("1. Datos Tributarios Requeridos")}</h5>
               <p className="text-[11px] text-slate-600">
-                Puedes registrar previamente tu documento de identidad, nombres completos y correo electrónico desde la pestaña "Comprobantes y Contacto" de tu cuenta para agilizar tu registro en recepción.
+                {tx("Puedes registrar previamente tu documento de identidad, nombres completos y correo electrónico desde la pestaña \"Comprobantes y Contacto\" de tu cuenta para agilizar tu registro en recepción.")}
               </p>
             </div>
 
             <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-              <h5 className="font-bold text-slate-900 mb-1">2. Cancelación y Modificaciones</h5>
+              <h5 className="font-bold text-slate-900 mb-1">{tx("2. Cancelación y Modificaciones")}</h5>
               <p className="text-[11px] text-slate-600">
-                Las políticas de cancelación son transparentes y fijadas por cada establecimiento. Puedes anular o reprogramar tu estancia directamente desde "Mis Reservas" o comunicándote con el hotel a través de los canales de asistencia autorizados.
+                {tx("Las políticas de cancelación son transparentes y fijadas por cada establecimiento. Puedes anular o reprogramar tu estancia directamente desde \"Mis Reservas\" o comunicándote con el hotel a través de los canales de asistencia autorizados.")}
               </p>
             </div>
 
             <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-              <h5 className="font-bold text-slate-900 mb-1">3. Protección y Privacidad de Datos</h5>
+              <h5 className="font-bold text-slate-900 mb-1">{tx("3. Protección y Privacidad de Datos")}</h5>
               <p className="text-[11px] text-slate-600">
-                Tus datos personales y de pago se procesan bajo protocolos cifrados y no son compartidos con terceros comerciales ajenos a la estancia hotelera contratada.
+                {tx("Tus datos personales y de pago se procesan bajo protocolos cifrados y no son compartidos con terceros comerciales ajenos a la estancia hotelera contratada.")}
               </p>
             </div>
           </div>
@@ -1809,7 +1819,7 @@ function LegalModal({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             className="px-5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg cursor-pointer transition-colors"
           >
-            Entendido
+            {tx("Entendido")}
           </button>
         </div>
       </div>
@@ -1830,6 +1840,7 @@ function ConsultReservationModal({
   onViewVoucher: (res: MyReservation) => void;
   onCancelReservation: (resId: string) => void;
 }) {
+  const tx = useI18n();
   const [query, setQuery] = useState("");
   const trimmed = query.trim().toLowerCase();
 
@@ -1855,14 +1866,14 @@ function ConsultReservationModal({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
-                Consultar Reservas de Hotel
+                {tx("Consultar Reservas de Hotel")}
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold border border-amber-300">
                 Manta 2026
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Busca por código de confirmación (ej: RES-4821), correo o nombre del titular
+              {tx("Busca por código de confirmación (ej: RES-4821), correo o nombre del titular")}
             </p>
           </div>
           <button onClick={onClose} className="text-2xl text-slate-400 hover:text-slate-800 cursor-pointer">×</button>
@@ -1875,7 +1886,7 @@ function ConsultReservationModal({
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Escribe RES-4821, tu correo (cmendez@gmail.com) o nombre..."
+              placeholder={tx("Escribe RES-4821, tu correo (cmendez@gmail.com) o nombre...")}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
               style={{ borderColor: "#cbd5e1" }}
               autoFocus
@@ -1883,12 +1894,12 @@ function ConsultReservationModal({
             <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
             {query && (
               <button onClick={() => setQuery("")} className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer">
-                Limpiar
+                {tx("Limpiar")}
               </button>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-xs">
-            <span className="text-slate-400">Códigos rápidos para probar:</span>
+            <span className="text-slate-400">{tx("Códigos rápidos para probar:")}</span>
             {["RES-4821", "RES-5103", "RES-3970", "RES-7720", "RES-8941"].map(c => (
               <button
                 key={c}
@@ -1906,7 +1917,7 @@ function ConsultReservationModal({
           {results.length > 0 ? (
             results.map(res => {
               const statusColors: Record<string, { bg: string; color: string; label: string }> = {
-                upcoming: { bg: "#eff6ff", color: "#1d4ed8", label: "Próxima estancia" },
+                upcoming: { bg: "#eff6ff", color: "#1d4ed8", label: tx("Próxima estancia") },
                 completed: { bg: "#ecfdf5", color: "#047857", label: "Completada / Pagada" },
                 cancelled: { bg: "#fef2f2", color: "#b91c1c", label: "Cancelada" },
               };
@@ -1922,36 +1933,36 @@ function ConsultReservationModal({
                           {st.label}
                         </span>
                       </div>
-                      <p className="text-xs font-semibold text-slate-700 mt-0.5">{res.hotel} · {res.city}</p>
+                      <p className="text-xs font-semibold text-slate-700 mt-0.5">{res.hotel} · {tx(res.city)}</p>
                     </div>
                     <div className="text-left sm:text-right">
-                      <p className="text-xs text-slate-400">Total abonado</p>
+                      <p className="text-xs text-slate-400">{tx("Total abonado")}</p>
                       <p className="font-bold text-base text-amber-600">{fmt(res.total)}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-2.5 text-xs text-slate-600">
                     <div>
-                      <p className="text-slate-400 text-[10px]">Huésped Titular</p>
+                      <p className="text-slate-400 text-[10px]">{tx("Huésped Titular")}</p>
                       <p className="font-medium truncate">{res.guestName}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">Tipo de Habitación</p>
-                      <p className="font-medium truncate">{res.room}</p>
+                      <p className="text-slate-400 text-[10px]">{tx("Tipo de Habitación")}</p>
+                      <p className="font-medium truncate">{tx(res.room)}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">Fechas</p>
+                      <p className="text-slate-400 text-[10px]">{tx("Fechas")}</p>
                       <p className="font-medium">{fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">Duración</p>
+                      <p className="text-slate-400 text-[10px]">{tx("Duración")}</p>
                       <p className="font-medium">{res.nights} noche{res.nights > 1 ? "s" : ""}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2.5 border-t gap-2" style={{ borderColor: "#f1f5f9" }}>
                     <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                      <span>💳</span> {res.payMethod || "Cobro digital liquidado"}
+                      <span>💳</span> {res.payMethod || tx("Cobro digital liquidado")}
                     </span>
                     <div className="flex gap-2">
                       {res.status === "upcoming" && (
@@ -1963,7 +1974,7 @@ function ConsultReservationModal({
                           }}
                           className="px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg border border-red-200 cursor-pointer font-medium"
                         >
-                          Cancelar
+                          {tx("Cancelar")}
                         </button>
                       )}
                       <button
@@ -1973,7 +1984,7 @@ function ConsultReservationModal({
                         className="px-3 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg shadow-xs cursor-pointer flex items-center gap-1"
                       >
                         <span>🧾</span>
-                        <span>Ver Voucher & Comprobante</span>
+                        <span>{tx("Ver Voucher & Comprobante")}</span>
                       </button>
                     </div>
                   </div>
@@ -1983,9 +1994,9 @@ function ConsultReservationModal({
           ) : (
             <div className="text-center py-12">
               <span className="text-4xl block mb-2">🔍</span>
-              <p className="font-bold text-slate-700">No encontramos reservas con ese término</p>
+              <p className="font-bold text-slate-700">{tx("No encontramos reservas con ese término")}</p>
               <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-                Verifica haber escrito correctamente tu código de confirmación (ej: RES-4821) o el correo con el que hiciste la reserva.
+                {tx("Verifica haber escrito correctamente tu código de confirmación (ej: RES-4821) o el correo con el que hiciste la reserva.")}
               </p>
             </div>
           )}
@@ -1993,9 +2004,9 @@ function ConsultReservationModal({
 
         {/* Footer */}
         <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-between text-xs text-slate-500" style={{ borderColor: "#e2e8f0" }}>
-          <span>¿Inquietudes sobre tu estancia? Central Manta: +593 5 262 8900</span>
+          <span>{tx("¿Inquietudes sobre tu estancia? Central Manta: +593 5 262 8900")}</span>
           <button onClick={onClose} className="px-4 py-1.5 bg-white border rounded-lg text-slate-700 font-medium hover:bg-slate-100 cursor-pointer">
-            Cerrar
+            {tx("Cerrar")}
           </button>
         </div>
       </div>
@@ -2016,6 +2027,7 @@ function LoginModal({
   onAdminAccess?: () => void;
   onOpenConsult?: () => void;
 }) {
+  const tx = useI18n();
   const [tab, setTab] = useState<"guest" | "admin">("guest");
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -2026,7 +2038,7 @@ function LoginModal({
   function handleGuestSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) {
-      setError("Completa correo y contraseña.");
+      setError(tx("Completa correo y contraseña."));
       return;
     }
     onGuestLogin({ name: name || email.split("@")[0], email });
@@ -2051,7 +2063,7 @@ function LoginModal({
             <span className="font-bold text-amber-600 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
               AlojaManta
             </span>
-            <p className="text-xs text-slate-500">Acceso al sistema y consulta de reservas</p>
+            <p className="text-xs text-slate-500">{tx("Acceso al sistema y consulta de reservas")}</p>
           </div>
           <button onClick={onClose} className="text-2xl text-slate-400 hover:text-slate-800 cursor-pointer">×</button>
         </div>
@@ -2072,7 +2084,7 @@ function LoginModal({
               tab === "admin" ? "border-amber-500 text-slate-900 bg-white" : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
-            🏨 Personal de Hotel / PMS
+            {tx("🏨 Personal de Hotel / PMS")}
           </button>
         </div>
 
@@ -2082,12 +2094,12 @@ function LoginModal({
               <form onSubmit={handleGuestSubmit} className="space-y-3">
                 {mode === "register" && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nombre y Apellido</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Nombre y Apellido")}</label>
                     <input
                       type="text"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      placeholder="Ej. Carlos Méndez"
+                      placeholder={tx("Ej. Carlos Méndez")}
                       className="w-full px-3 py-2 text-sm border rounded-xl"
                       style={{ borderColor: "#cbd5e1" }}
                       required
@@ -2095,7 +2107,7 @@ function LoginModal({
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Correo Electrónico</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Correo Electrónico")}</label>
                   <input
                     type="email"
                     value={email}
@@ -2107,7 +2119,7 @@ function LoginModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Contraseña</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Contraseña")}</label>
                   <input
                     type="password"
                     value={password}
@@ -2125,7 +2137,7 @@ function LoginModal({
                   type="submit"
                   className="w-full py-2.5 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm cursor-pointer"
                 >
-                  {mode === "login" ? "Ingresar a mi cuenta" : "Crear cuenta"}
+                  {mode === "login" ? tx("Ingresar a mi cuenta") : tx("Crear cuenta")}
                 </button>
               </form>
 
@@ -2134,7 +2146,7 @@ function LoginModal({
                   onClick={() => setMode(mode === "login" ? "register" : "login")}
                   className="text-amber-600 hover:underline font-medium cursor-pointer"
                 >
-                  {mode === "login" ? "¿No tienes cuenta? Regístrate gratis" : "¿Ya tienes cuenta? Inicia sesión"}
+                  {mode === "login" ? tx("¿No tienes cuenta? Regístrate gratis") : tx("¿Ya tienes cuenta? Inicia sesión")}
                 </button>
               </div>
 
@@ -2148,7 +2160,7 @@ function LoginModal({
                     }}
                     className="text-xs text-slate-500 hover:text-amber-700 transition-colors cursor-pointer"
                   >
-                    ¿Buscas una reserva con tu código? <span className="font-semibold underline text-amber-600">Consultar aquí</span>
+                    ¿Buscas una reserva con tu código? <span className="font-semibold underline text-amber-600">{tx("Consultar aquí")}</span>
                   </button>
                 </div>
               )}
@@ -2156,32 +2168,32 @@ function LoginModal({
               {/* Acceso Rápido Demo */}
               <div className="pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
                 <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">
-                  Acceso Rápido de Prueba:
+                  {tx("Acceso Rápido de Prueba:")}
                 </p>
                 <button
                   onClick={() => handleDemoLogin({ name: "Carlos Méndez", email: "cmendez@gmail.com" })}
                   className="w-full py-2 px-3 text-xs rounded-xl border border-amber-300 bg-amber-50 text-amber-900 font-semibold hover:bg-amber-100 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>⚡</span>
-                  <span>Ingresar como Carlos Méndez (3 reservas listas)</span>
+                  <span>{tx("Ingresar como Carlos Méndez (3 reservas listas)")}</span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-                <p className="font-bold">Panel Multi-Hotel Cantón Manta (116 Alojamientos)</p>
+                <p className="font-bold">{tx("Panel Multi-Hotel Cantón Manta (116 Alojamientos)")}</p>
                 <p className="text-[11px] text-amber-800 mt-0.5">
-                  Acceso directo con roles RBAC para los 116 establecimientos oficiales del Catastro de Manta.
+                  {tx("Acceso directo con roles RBAC para los 116 establecimientos oficiales del Catastro de Manta.")}
                 </p>
               </div>
 
               <div className="space-y-2">
                 {[
-                  { role: "Superadmin Cantonal", name: "Carlos Admin", email: "admin@alojamanta.ec", desc: "Supervisión de los 116 hoteles de Manta" },
-                  { role: "Administrador de Hotel", name: "Ana Administradora", email: "direccion@mantahost.ec", desc: "MantaHost Hotel (Gestión integral)" },
-                  { role: "Revenue Manager", name: "María Revenue", email: "revenue@mantahost.ec", desc: "Tarifas, temporadas y tipos de habitación" },
-                  { role: "Recepcionista Mostrador", name: "Juan Recepción", email: "recepcion@mantahost.ec", desc: "Operación de reservas y comprobantes digitales" },
+                  { role: tx("Superadmin Cantonal"), name: "Carlos Admin", email: "admin@alojamanta.ec", desc: tx("Supervisión de los 116 hoteles de Manta") },
+                  { role: tx("Administrador de Hotel"), name: "Ana Administradora", email: "direccion@mantahost.ec", desc: tx("MantaHost Hotel (Gestión integral)") },
+                  { role: "Revenue Manager", name: "María Revenue", email: "revenue@mantahost.ec", desc: tx("Tarifas, temporadas y tipos de habitación") },
+                  { role: tx("Recepcionista Mostrador"), name: "Juan Recepción", email: "recepcion@mantahost.ec", desc: tx("Operación de reservas y comprobantes digitales") },
                 ].map(acc => (
                   <button
                     key={acc.email}
@@ -2196,7 +2208,7 @@ function LoginModal({
                       <p className="text-xs font-bold text-slate-800">{acc.name} <span className="text-[10px] text-amber-600 font-mono">({acc.role})</span></p>
                       <p className="text-[11px] text-slate-400">{acc.desc}</p>
                     </div>
-                    <span className="text-xs text-amber-600 font-bold">Entrar →</span>
+                    <span className="text-xs text-amber-600 font-bold">{tx("Entrar →")}</span>
                   </button>
                 ))}
               </div>
@@ -2208,7 +2220,7 @@ function LoginModal({
                 }}
                 className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-colors cursor-pointer"
               >
-                Abrir pantalla completa de acceso hotelero
+                {tx("Abrir pantalla completa de acceso hotelero")}
               </button>
             </div>
           )}
@@ -2239,6 +2251,7 @@ function BookingModal({
   onGuestLogin: (u: GuestUser) => void;
   onReservationCreated?: (r: MyReservation) => void;
 }) {
+  const tx = useI18n();
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
 
   // RF-04: Planes de Tarifa
@@ -2311,15 +2324,15 @@ function BookingModal({
   const last4 = cardNum.replace(/\s/g, "").slice(-4) || "****";
 
   const STEPS: { k: BookingStep; l: string }[] = user
-    ? [{ k: "details", l: "1. Datos y Tarifa" }, { k: "payment", l: "2. Pago Seguro" }, { k: "invoice", l: "3. Voucher de Reserva" }]
-    : [{ k: "auth", l: "1. Acceso / Invitado" }, { k: "details", l: "2. Datos y Tarifa" }, { k: "payment", l: "3. Pago Seguro" }, { k: "invoice", l: "4. Voucher de Reserva" }];
+    ? [{ k: "details", l: tx("1. Datos y Tarifa") }, { k: "payment", l: tx("2. Pago Seguro") }, { k: "invoice", l: tx("3. Voucher de Reserva") }]
+    : [{ k: "auth", l: tx("1. Acceso / Invitado") }, { k: "details", l: tx("2. Datos y Tarifa") }, { k: "payment", l: tx("3. Pago Seguro") }, { k: "invoice", l: tx("4. Voucher de Reserva") }];
 
   const stepIndex = STEPS.findIndex(s => s.k === step);
 
   function handleAuth(e: React.FormEvent) {
     e.preventDefault();
-    if (!authEmail || !authPass) { setAuthError("Completa todos los campos."); return; }
-    if (authMode === "register" && !authName) { setAuthError("Indica tu nombre."); return; }
+    if (!authEmail || !authPass) { setAuthError(tx("Completa todos los campos.")); return; }
+    if (authMode === "register" && !authName) { setAuthError(tx("Indica tu nombre.")); return; }
     const u: GuestUser = { name: authMode === "register" ? authName : authEmail.split("@")[0], email: authEmail };
     onGuestLogin(u);
     setForm(f => ({ ...f, name: u.name, email: u.email }));
@@ -2331,6 +2344,7 @@ function BookingModal({
   function handlePay(e: React.FormEvent) {
     e.preventDefault();
     if (!cardNum || !cardExp || !cardCvv || !cardHolder) return;
+    if (getRoomAvailability(hotel.id, room) <= 0) return;
     setProcessing(true);
     setTimeout(() => {
       setProcessing(false);
@@ -2361,6 +2375,7 @@ function BookingModal({
         guestPhone: form.phone || "+593 98 421 8890",
         payMethod: "Tarjeta Digital (PayPhone / Kushki)",
       };
+      consumeRoomAvailability(hotel.id, room);
       onReservationCreated?.(newRes);
       window.dispatchEvent(new CustomEvent("alojamanta-new-booking", { detail: newRes }));
     }, 1500);
@@ -2391,14 +2406,14 @@ function BookingModal({
         {/* Room strip (not on invoice) */}
         {step !== "invoice" && (
           <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-            <img src={room.image} alt={room.type} className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
+            <img src={room.image} alt={tx(room.type)} className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="font-bold text-slate-800 text-sm truncate">{hotel.name}</p>
-              <p className="text-xs text-slate-500">{room.type} · {nights}n · {fmtDateShort(params.checkIn)} → {fmtDateShort(params.checkOut)}</p>
+              <p className="text-xs text-slate-500">{tx(room.type)} · {nights}n · {fmtDateShort(params.checkIn)} → {fmtDateShort(params.checkOut)}</p>
             </div>
             <div className="text-right flex-shrink-0">
               <p className="font-bold text-sm" style={{ color: "#f59e0b" }}>{fmt(total)}</p>
-              <p className="text-[10px] text-slate-400">IVA incl.</p>
+              <p className="text-[10px] text-slate-400">{tx("IVA incl.")}</p>
             </div>
             <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs" style={{ background: "#e2e8f0", color: "#64748b" }}>✕</button>
           </div>
@@ -2412,9 +2427,9 @@ function BookingModal({
             <div className="space-y-4">
               <div className="text-center pb-1">
                 <h3 className="font-bold text-slate-800 text-base" style={{ fontFamily: "DM Serif Display, serif" }}>
-                  {authMode === "login" ? "Inicia sesión o reserva como invitado" : "Crea tu cuenta gratis"}
+                  {authMode === "login" ? tx("Inicia sesión o reserva como invitado") : tx("Crea tu cuenta gratis")}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">Accede con tu cuenta o reserva directamente sin necesidad de registrarte</p>
+                <p className="text-xs text-slate-500 mt-1">{tx("Accede con tu cuenta o reserva directamente sin necesidad de registrarte")}</p>
               </div>
 
               {/* Guest Checkout */}
@@ -2423,24 +2438,24 @@ function BookingModal({
                 onClick={() => setStep("details")}
                 className="w-full py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border border-emerald-600 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 cursor-pointer shadow-sm"
               >
-                <span>Continuar como invitado</span>
+                <span>{tx("Continuar como invitado")}</span>
               </button>
 
               <div className="relative flex items-center gap-2">
                 <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
-                <span className="text-[11px] text-slate-400 uppercase font-semibold">o accede con tu cuenta</span>
+                <span className="text-[11px] text-slate-400 uppercase font-semibold">{tx("o accede con tu cuenta")}</span>
                 <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
               </div>
 
               <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "#e2e8f0" }}>
-                {[{ k: "login" as const, l: "Iniciar sesión" }, { k: "register" as const, l: "Registrarme" }].map(m => (
+                {[{ k: "login" as const, l: tx("Iniciar sesión") }, { k: "register" as const, l: tx("Registrarme") }].map(m => (
                   <button key={m.k} onClick={() => setAuthMode(m.k)} className="flex-1 py-2 text-sm font-semibold transition-all" style={{ background: authMode === m.k ? "#f59e0b" : "#f8fafc", color: authMode === m.k ? "#0c1220" : "#64748b" }}>{m.l}</button>
                 ))}
               </div>
               <form onSubmit={handleAuth} className="space-y-3">
                 {authMode === "register" && (
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Nombre completo</label>
+                    <label className="block text-xs text-slate-400 mb-1">{tx("Nombre completo")}</label>
                     <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={authName} onChange={e => setAuthName(e.target.value)} placeholder="María García" />
                   </div>
                 )}
@@ -2449,16 +2464,16 @@ function BookingModal({
                   <input type="email" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="maria@email.com" />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Contraseña</label>
+                  <label className="block text-xs text-slate-400 mb-1">{tx("Contraseña")}</label>
                   <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={authPass} onChange={e => setAuthPass(e.target.value)} placeholder="••••••••" />
                 </div>
                 {authError && <p className="text-xs px-3 py-2 rounded-lg" style={{ background: "#fee2e2", color: "#ef4444" }}>{authError}</p>}
                 <button type="submit" className="w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                  {authMode === "login" ? "Entrar y continuar →" : "Crear cuenta y continuar →"}
+                  {authMode === "login" ? tx("Entrar y continuar →") : tx("Crear cuenta y continuar →")}
                 </button>
               </form>
               <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors" style={{ borderColor: "#e2e8f0", color: "#475569" }}>
-                <span>Continuar con Google</span>
+                <span>{tx("Continuar con Google")}</span>
               </button>
             </div>
           )}
@@ -2466,21 +2481,21 @@ function BookingModal({
           {/* ── STEP: DETAILS ── */}
           {step === "details" && (
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-800">1. Datos del huésped titular</h3>
+              <h3 className="font-bold text-slate-800">{tx("1. Datos del huésped titular")}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Nombre completo del titular *</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Nombre completo del titular *")}</label>
                   <input
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
                     style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    placeholder="Ej: Carlos Mendoza"
+                    placeholder={tx("Ej: Carlos Mendoza")}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Email para voucher y confirmación *</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Email para voucher y confirmación *")}</label>
                   <input
                     type="email"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
@@ -2496,7 +2511,7 @@ function BookingModal({
               {/* Selector dinámico de Tipo de Documento */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Tipo de Documento *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Tipo de Documento *")}</label>
                   <select
                     value={docType}
                     onChange={e => {
@@ -2507,17 +2522,17 @@ function BookingModal({
                     className="w-full px-3 py-2 rounded-lg border text-xs font-semibold outline-none bg-white cursor-pointer"
                     style={{ borderColor: "#cbd5e1" }}
                   >
-                    <option value="CEDULA">Cédula de Identidad (10 dígitos)</option>
-                    <option value="RUC">RUC (13 dígitos / Empresa)</option>
-                    <option value="PASAPORTE">Pasaporte Internacional (Alfanumérico)</option>
+                    <option value="CEDULA">{tx("Cédula de Identidad (10 dígitos)")}</option>
+                    <option value="RUC">{tx("RUC (13 dígitos / Empresa)")}</option>
+                    <option value="PASAPORTE">{tx("Pasaporte Internacional (Alfanumérico)")}</option>
                   </select>
                 </div>
 
                 <div className={docType === "RUC" ? "sm:col-span-1" : "sm:col-span-2"}>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {docType === "CEDULA" && "Cédula de Identidad (10 dígitos) *"}
-                    {docType === "RUC" && "Número de RUC (13 dígitos) *"}
-                    {docType === "PASAPORTE" && "Número de Pasaporte (Alfanumérico) *"}
+                    {docType === "CEDULA" && tx("Cédula de Identidad (10 dígitos) *")}
+                    {docType === "RUC" && tx("Número de RUC (13 dígitos) *")}
+                    {docType === "PASAPORTE" && tx("Número de Pasaporte (Alfanumérico) *")}
                   </label>
                   <input
                     type="text"
@@ -2538,16 +2553,16 @@ function BookingModal({
                     required
                   />
                   {docType === "CEDULA" && form.dni.length > 0 && form.dni.length !== 10 && (
-                    <p className="text-[10px] text-amber-600 mt-0.5">La cédula debe contener exactamente 10 dígitos numéricos.</p>
+                    <p className="text-[10px] text-amber-600 mt-0.5">{tx("La cédula debe contener exactamente 10 dígitos numéricos.")}</p>
                   )}
                   {docType === "RUC" && form.dni.length > 0 && form.dni.length !== 13 && (
-                    <p className="text-[10px] text-amber-600 mt-0.5">El RUC ecuatoriano debe tener 13 dígitos numéricos (termina en 001).</p>
+                    <p className="text-[10px] text-amber-600 mt-0.5">{tx("El RUC ecuatoriano debe tener 13 dígitos numéricos (termina en 001).")}</p>
                   )}
                 </div>
 
                 {docType === "RUC" && (
                   <div className="col-span-1 sm:col-span-3">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Razón Social o Nombre de Empresa *</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Razón Social o Nombre de Empresa *")}</label>
                     <input
                       type="text"
                       value={form.razonSocial}
@@ -2564,7 +2579,7 @@ function BookingModal({
               {/* Teléfono, País, Ciudad y Dirección */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Teléfono / WhatsApp *</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Teléfono / WhatsApp *")}</label>
                   <input
                     type="tel"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
@@ -2576,7 +2591,7 @@ function BookingModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">País</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("País")}</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
@@ -2587,7 +2602,7 @@ function BookingModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Ciudad</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Ciudad")}</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
@@ -2598,7 +2613,7 @@ function BookingModal({
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Dirección domiciliaria o fiscal</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Dirección domiciliaria o fiscal")}</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
@@ -2613,7 +2628,7 @@ function BookingModal({
               {/* Selección de Plan de Tarifa */}
               <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
-                  <span>2. Plan de tarifa</span>
+                  <span>{tx("2. Plan de tarifa")}</span>
                   <span className="text-[10px] font-mono text-amber-700">{fmt(effectiveNightlyRate)} / noche</span>
                 </p>
                 <div className="grid grid-cols-1 gap-2 text-xs">
@@ -2621,8 +2636,8 @@ function BookingModal({
                     <div className="flex items-center gap-2">
                       <input type="radio" name="ratePlan" checked={ratePlan === "flexible"} onChange={() => setRatePlan("flexible")} className="accent-amber-500" />
                       <div>
-                        <p className="font-bold text-slate-800">Tarifa Estándar Flexible (Reembolsable 48h)</p>
-                        <p className="text-[10px] text-slate-500">Cancelación gratuita hasta 48h antes de la Fecha de Entrada</p>
+                        <p className="font-bold text-slate-800">{tx("Tarifa Estándar Flexible (Reembolsable 48h)")}</p>
+                        <p className="text-[10px] text-slate-500">{tx("Cancelación gratuita hasta 48h antes de la Fecha de Entrada")}</p>
                       </div>
                     </div>
                     <span className="font-mono font-bold text-slate-800">{fmt(room.pricePerNight)}/n</span>
@@ -2632,8 +2647,8 @@ function BookingModal({
                     <div className="flex items-center gap-2">
                       <input type="radio" name="ratePlan" checked={ratePlan === "non_refundable"} onChange={() => setRatePlan("non_refundable")} className="accent-emerald-600" />
                       <div>
-                        <p className="font-bold text-emerald-800">Tarifa Promocional No Reembolsable (-10%)</p>
-                        <p className="text-[10px] text-slate-500">10% de descuento inmediato · Pago final sin reembolso</p>
+                        <p className="font-bold text-emerald-800">{tx("Tarifa Promocional No Reembolsable (-10%)")}</p>
+                        <p className="text-[10px] text-slate-500">{tx("10% de descuento inmediato · Pago final sin reembolso")}</p>
                       </div>
                     </div>
                     <span className="font-mono font-bold text-emerald-700">{fmt(Math.round(room.pricePerNight * 0.90 * 100) / 100)}/n</span>
@@ -2644,8 +2659,8 @@ function BookingModal({
                       <div className="flex items-center gap-2">
                         <input type="radio" name="ratePlan" checked={ratePlan === "breakfast_plus"} onChange={() => setRatePlan("breakfast_plus")} className="accent-amber-500" />
                         <div>
-                          <p className="font-bold text-slate-800">Plan con Desayuno Manabita Incluido (+$8/noche)</p>
-                          <p className="text-[10px] text-slate-500">Incluye desayuno costero completo y cancelación flexible</p>
+                          <p className="font-bold text-slate-800">{tx("Plan con Desayuno Manabita Incluido (+$8/noche)")}</p>
+                          <p className="text-[10px] text-slate-500">{tx("Incluye desayuno costero completo y cancelación flexible")}</p>
                         </div>
                       </div>
                       <span className="font-mono font-bold text-slate-800">{fmt(room.pricePerNight + 8)}/n</span>
@@ -2657,15 +2672,15 @@ function BookingModal({
               {/* Extras y Servicios Adicionales */}
               <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
-                  <span>3. Servicios adicionales</span>
+                  <span>{tx("3. Servicios adicionales")}</span>
                   {extrasTotal > 0 && <span className="text-[10px] font-mono font-bold text-emerald-700">+{fmt(extrasTotal)}</span>}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {[
-                    { k: "airport" as const, label: "Traslado Aeropuerto Manta (MEC)", price: "+$15.00" },
-                    { k: "extrabed" as const, label: "Cama supletoria adicional", price: "+$20.00" },
-                    { k: "crib" as const, label: "Cuna para bebé sujeta a cupo", price: "Cortesía $0" },
-                    { k: "lateout" as const, label: "Salida extendida (hasta 16:00h)", price: "+$15.00" },
+                    { k: "airport" as const, label: tx("Traslado Aeropuerto Manta (MEC)"), price: "+$15.00" },
+                    { k: "extrabed" as const, label: tx("Cama supletoria adicional"), price: "+$20.00" },
+                    { k: "crib" as const, label: tx("Cuna para bebé sujeta a cupo"), price: tx("Cortesía $0") },
+                    { k: "lateout" as const, label: tx("Salida extendida (hasta 16:00h)"), price: "+$15.00" },
                   ].map(ext => (
                     <label key={ext.k} className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer ${selectedExtras[ext.k] ? "bg-amber-50 border-amber-400" : "bg-white border-slate-200"}`}>
                       <span className="flex items-center gap-1.5 text-slate-700 font-medium">
@@ -2684,7 +2699,7 @@ function BookingModal({
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Observaciones o hora estimada de arribo</label>
+                <label className="block text-xs text-slate-400 mb-1">{tx("Observaciones o hora estimada de arribo")}</label>
                 <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ej: Llegada en vuelo de las 15:30, preferencia piso alto..." />
               </div>
 
@@ -2698,9 +2713,9 @@ function BookingModal({
                 showToggle={true}
               />
               <div className="flex gap-2">
-                {!user && <button onClick={() => setStep("auth")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>← Atrás</button>}
+                {!user && <button onClick={() => setStep("auth")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("← Atrás")}</button>}
                 <button onClick={() => setStep("payment")} className="flex-1 py-3 rounded-xl font-bold text-sm hover:opacity-90" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                  Continuar al pago seguro →
+                  {tx("Continuar al pago seguro →")}
                 </button>
               </div>
             </div>
@@ -2709,7 +2724,7 @@ function BookingModal({
           {/* ── STEP: PAYMENT ── */}
           {step === "payment" && (
             <form onSubmit={handlePay} className="space-y-4">
-              <h3 className="font-bold text-slate-800">Pago con tarjeta</h3>
+              <h3 className="font-bold text-slate-800">{tx("Pago con tarjeta")}</h3>
               {/* Visual card */}
               <div className="relative rounded-2xl p-5 overflow-hidden" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", minHeight: 140 }}>
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #f59e0b 0%, transparent 60%)" }} />
@@ -2724,11 +2739,11 @@ function BookingModal({
                 </p>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-white/40 text-[9px] uppercase tracking-widest">Titular</p>
-                    <p className="text-white text-sm font-medium truncate max-w-[180px]">{cardHolder || "NOMBRE APELLIDOS"}</p>
+                    <p className="text-white/40 text-[9px] uppercase tracking-widest">{tx("Titular")}</p>
+                    <p className="text-white text-sm font-medium truncate max-w-[180px]">{cardHolder || tx("NOMBRE APELLIDOS")}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white/40 text-[9px] uppercase tracking-widest">Vence</p>
+                    <p className="text-white/40 text-[9px] uppercase tracking-widest">{tx("Vence")}</p>
                     <p className="text-white text-sm font-mono">{cardExp || "MM/AA"}</p>
                   </div>
                 </div>
@@ -2736,11 +2751,11 @@ function BookingModal({
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Titular de la tarjeta</label>
-                  <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none uppercase" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={cardHolder} onChange={e => setCardHolder(e.target.value.toUpperCase())} placeholder="NOMBRE APELLIDOS" required />
+                  <label className="block text-xs text-slate-400 mb-1">{tx("Titular de la tarjeta")}</label>
+                  <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none uppercase" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={cardHolder} onChange={e => setCardHolder(e.target.value.toUpperCase())} placeholder={tx("NOMBRE APELLIDOS")} required />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Número de tarjeta</label>
+                  <label className="block text-xs text-slate-400 mb-1">{tx("Número de tarjeta")}</label>
                   <div className="relative">
                     <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono pr-16" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
                       value={cardNum}
@@ -2757,7 +2772,7 @@ function BookingModal({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Fecha de expiración</label>
+                    <label className="block text-xs text-slate-400 mb-1">{tx("Fecha de expiración")}</label>
                     <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
                       value={cardExp}
                       onChange={e => {
@@ -2774,49 +2789,49 @@ function BookingModal({
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" className="accent-amber-400 rounded" checked={saveCard} onChange={e => setSaveCard(e.target.checked)} />
-                  <span className="text-xs text-slate-500">Guardar tarjeta para futuras reservas</span>
+                  <span className="text-xs text-slate-500">{tx("Guardar tarjeta para futuras reservas")}</span>
                 </label>
               </div>
 
               <div className="rounded-xl p-3 space-y-1.5" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                <div className="flex justify-between text-sm text-slate-500"><span>Subtotal Hospedaje ({nights}n)</span><span>{fmt(roomBase)}</span></div>
+                <div className="flex justify-between text-sm text-slate-500"><span>{tx("Subtotal Hospedaje")} ({nights}n)</span><span>{fmt(roomBase)}</span></div>
                 {extrasTotal > 0 && (
-                  <div className="flex justify-between text-sm text-slate-500"><span>Extras de Alojamiento</span><span>{fmt(extrasTotal)}</span></div>
+                  <div className="flex justify-between text-sm text-slate-500"><span>{tx("Extras de Alojamiento")}</span><span>{fmt(extrasTotal)}</span></div>
                 )}
                 <div className="flex justify-between text-sm text-slate-500">
-                  <span>{ivaPct}% IVA {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}</span>
+                  <span>{ivaPct}% IVA {ivaPct === 8 ? tx("(Decreto Feriado Turístico)") : tx("(Tarifa Ordinaria)")}</span>
                   <span className={ivaPct === 8 ? "text-emerald-700 font-bold" : ""}>{fmt(iva)}</span>
                 </div>
                 {hasService && (
                   <div className="flex justify-between text-sm text-emerald-700 font-medium bg-emerald-50/60 px-2 py-0.5 rounded">
-                    <span>10% Servicio Turístico (Art. 41 Ley Turismo)</span>
+                    <span>{tx("10% Servicio Turístico (Art. 41 Ley Turismo)")}</span>
                     <span className="font-mono font-bold">{fmt(servicio)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-base pt-1.5 border-t" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}><span>Total a cargar</span><span style={{ color: "#f59e0b" }}>{fmt(total)}</span></div>
+                <div className="flex justify-between font-bold text-base pt-1.5 border-t" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}><span>{tx("Total a cargar")}</span><span style={{ color: "#f59e0b" }}>{fmt(total)}</span></div>
               </div>
 
               {/* LOPDP Consent */}
               <label className="flex items-start gap-2 cursor-pointer select-none text-left p-2.5 rounded-lg border bg-slate-50/60 border-slate-200">
                 <input type="checkbox" required defaultChecked className="mt-0.5 accent-amber-500 rounded" />
                 <span className="text-[11px] text-slate-600 leading-tight">
-                  Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la <strong>Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)</strong>. Mis datos personales se tratarán exclusivamente para la reserva y gestión de mi estancia.
+                  {tx("Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la")} <strong>{tx("Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)")}</strong>. {tx("Mis datos personales se tratarán exclusivamente para la reserva y gestión de mi estancia.")}
                 </span>
               </label>
 
               <div className="flex items-center gap-1.5 text-xs text-slate-400 justify-center">
-                <span>🔒</span> Pago tokenizado seguro (PCI-DSS compliant) · Cifrado SSL 256-bit · Sin almacenar CVV
+                <span>🔒</span> {tx("Pago tokenizado seguro (PCI-DSS compliant) · Cifrado SSL 256-bit · Sin almacenar CVV")}
               </div>
 
               <div className="flex gap-2">
-                <button type="button" onClick={() => setStep("details")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>← Atrás</button>
+                <button type="button" onClick={() => setStep("details")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("← Atrás")}</button>
                 <button type="submit" disabled={processing} className="flex-1 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-70" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   {processing ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="60" strokeDashoffset="20" /></svg>
-                      Procesando pago...
+                      {tx("Procesando pago...")}
                     </span>
-                  ) : `Pagar ${fmt(total)} →`}
+                  ) : `${tx("Pagar")} ${fmt(total)} →`}
                 </button>
               </div>
             </form>
@@ -2828,8 +2843,8 @@ function BookingModal({
               {/* Success banner */}
               <div className="text-center py-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mx-auto mb-2" style={{ background: "#d1fae5" }}>✓</div>
-                <h3 className="font-bold text-slate-800 text-base">¡Pago procesado y reserva confirmada!</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Voucher Oficial de Reserva Garantizada y liquidación de pasarela</p>
+                <h3 className="font-bold text-slate-800 text-base">{tx("¡Pago procesado y reserva confirmada!")}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{tx("Voucher Oficial de Reserva Garantizada y liquidación de pasarela")}</p>
               </div>
 
               {/* Electronic payment receipt & Voucher */}
@@ -2839,14 +2854,14 @@ function BookingModal({
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-lg text-amber-400" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</p>
-                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">RESERVA GARANTIZADA</span>
+                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">{tx("RESERVA GARANTIZADA")}</span>
                     </div>
                     <p className="text-xs text-slate-300 font-medium">{hotelMeta.razonSocial}</p>
                     <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · {hotelMeta.city}</p>
                     <p className="text-[10px] text-slate-400">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
                   </div>
                   <div className="text-right">
-                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">VOUCHER DIGITAL</span>
+                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{tx("VOUCHER DIGITAL")}</span>
                     <p className="font-bold mt-1 text-slate-100 font-mono text-xs">{invoiceId}</p>
                     <p className="mono text-[10px] text-slate-400">{issueDate}</p>
                   </div>
@@ -2856,14 +2871,14 @@ function BookingModal({
                 <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-900 leading-tight">
                   <p className="font-bold">Voucher de reserva - {hotel.name}:</p>
                   <p className="text-amber-800 text-[10px] mt-0.5">
-                    Este documento confirma tu reserva garantizada y pago en línea. Presenta tu código de reserva al llegar al hotel para validar tu estancia.
+                    {tx("Este documento confirma tu reserva garantizada y pago en línea. Presenta tu código de reserva al llegar al hotel para validar tu estancia.")}
                   </p>
                 </div>
 
                 {/* Client + hotel */}
                 <div className="grid grid-cols-2 gap-px" style={{ background: "#e2e8f0" }}>
                   <div className="px-4 py-3 bg-white">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Huésped titular</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Huésped titular")}</p>
                     <p className="font-semibold text-slate-800 text-sm">{form.name || user?.name || "Huésped Invitado"}</p>
                     {docType === "RUC" && form.razonSocial && (
                       <p className="text-xs text-slate-600 font-medium">🏢 {form.razonSocial}</p>
@@ -2871,7 +2886,7 @@ function BookingModal({
                     <p className="text-xs text-slate-500">{form.email || user?.email || "invitado@alojamanta.ec"}</p>
                     {form.dni && (
                       <p className="mono text-xs text-slate-500">
-                        {docType === "CEDULA" ? "Cédula: " : docType === "RUC" ? "RUC: " : "Pasaporte: "}
+                        {docType === "CEDULA" ? tx("Cédula: ") : docType === "RUC" ? "RUC: " : tx("Pasaporte: ")}
                         {form.dni}
                       </p>
                     )}
@@ -2883,22 +2898,22 @@ function BookingModal({
                     )}
                   </div>
                   <div className="px-4 py-3 bg-white">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Hotel prestador</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Hotel prestador")}</p>
                     <p className="font-semibold text-slate-800 text-sm">{hotel.name}</p>
                     <p className="text-xs text-slate-500">{hotel.address}</p>
-                    <p className="text-xs text-slate-500">{hotel.city}</p>
+                    <p className="text-xs text-slate-500">{tx(hotel.city)}</p>
                   </div>
                 </div>
 
                 {/* Reservation details */}
                 <div className="px-4 py-3 bg-white" style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Detalle de la estancia reservada</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">{tx("Detalle de la estancia reservada")}</p>
                   <div className="grid grid-cols-4 gap-3 text-xs">
                     {[
-                      { l: "Nº Reserva", v: resId },
-                      { l: "Fecha Entrada", v: `${fmtDateShort(params.checkIn)} · 14:00h` },
-                      { l: "Fecha Salida", v: `${fmtDateShort(params.checkOut)} · 12:00h` },
-                      { l: "Noches", v: String(nights) },
+                      { l: tx("Nº Reserva"), v: resId },
+                      { l: tx("Fecha Entrada"), v: `${fmtDateShort(params.checkIn)} · 14:00h` },
+                      { l: tx("Fecha Salida"), v: `${fmtDateShort(params.checkOut)} · 12:00h` },
+                      { l: tx("Noches"), v: String(nights) },
                     ].map(item => (
                       <div key={item.l}>
                         <p className="text-slate-400">{item.l}</p>
@@ -2912,7 +2927,7 @@ function BookingModal({
                 <table className="w-full text-sm" style={{ borderTop: "1px solid #e2e8f0" }}>
                   <thead style={{ background: "#f8fafc" }}>
                     <tr>
-                      {["Concepto", "Cantidad", "Precio/u.", "Total"].map(h => (
+                      {[tx("Concepto"), tx("Cantidad"), tx("Precio/u."), "Total"].map(h => (
                         <th key={h} className="text-left px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>
                       ))}
                     </tr>
@@ -2920,8 +2935,8 @@ function BookingModal({
                   <tbody>
                     <tr style={{ borderTop: "1px solid #e2e8f0" }}>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-slate-800">{room.type}</p>
-                        <p className="text-xs text-slate-400">{hotel.name} · {room.beds}</p>
+                        <p className="font-semibold text-slate-800">{tx(room.type)}</p>
+                        <p className="text-xs text-slate-400">{hotel.name} · {tx(room.beds)}</p>
                       </td>
                       <td className="px-4 py-3 text-slate-600">{nights} noche{nights > 1 ? "s" : ""}</td>
                       <td className="px-4 py-3 font-mono text-slate-600">{fmt(effectiveNightlyRate)}</td>
@@ -2929,14 +2944,14 @@ function BookingModal({
                     </tr>
                     {extrasTotal > 0 && (
                       <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                        <td className="px-4 py-2 text-xs text-slate-600" colSpan={3}>Servicios adicionales y extras seleccionados</td>
+                        <td className="px-4 py-2 text-xs text-slate-600" colSpan={3}>{tx("Servicios adicionales y extras seleccionados")}</td>
                         <td className="px-4 py-2 font-mono text-xs font-semibold text-slate-800">{fmt(extrasTotal)}</td>
                       </tr>
                     )}
                   </tbody>
                   <tfoot>
                     <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">Subtotal Neto (Hospedaje y Extras)</td>
+                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">{tx("Subtotal Neto (Hospedaje y Extras)")}</td>
                       <td className="px-4 py-2 font-mono text-sm text-slate-700">{fmt(base)}</td>
                     </tr>
                     <tr style={{ background: "#f8fafc" }}>
@@ -2947,12 +2962,12 @@ function BookingModal({
                     </tr>
                     {hasService && (
                       <tr style={{ background: "#f8fafc" }}>
-                        <td colSpan={3} className="px-4 py-2 text-xs text-right text-emerald-700 font-medium">10% Servicio Turístico (Ley Turismo Art. 41)</td>
+                        <td colSpan={3} className="px-4 py-2 text-xs text-right text-emerald-700 font-medium">{tx("10% Servicio Turístico (Ley Turismo Art. 41)")}</td>
                         <td className="px-4 py-2 font-mono text-sm text-emerald-700 font-bold">{fmt(servicio)}</td>
                       </tr>
                     )}
                     <tr style={{ borderTop: "2px solid #e2e8f0" }}>
-                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-slate-800">TOTAL LIQUIDADO</td>
+                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-slate-800">{tx("TOTAL LIQUIDADO")}</td>
                       <td className="px-4 py-3 font-bold font-mono text-lg" style={{ color: "#f59e0b" }}>{fmt(total)}</td>
                     </tr>
                   </tfoot>
@@ -2962,7 +2977,7 @@ function BookingModal({
                 <div className="px-4 py-3 flex items-center gap-3" style={{ background: "#d1fae5", borderTop: "1px solid #a7f3d0" }}>
                   <span className="text-green-600 text-lg">✓</span>
                   <div>
-                    <p className="text-xs font-bold text-green-700">Pago procesado correctamente</p>
+                    <p className="text-xs font-bold text-green-700">{tx("Pago procesado correctamente")}</p>
                     <p className="text-xs text-green-600">Tarjeta **** **** **** {last4} · {fmt(total)} · {issueDate}</p>
                   </div>
                 </div>
@@ -2970,32 +2985,32 @@ function BookingModal({
                 {/* Verification code & Booking Reference */}
                 <div className="px-4 py-3 flex items-center justify-between" style={{ background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Código de Confirmación de Reserva</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{tx("Código de Confirmación de Reserva")}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="font-mono font-bold text-slate-800 tracking-wider text-sm">{resId}</p>
                       <span className="text-slate-300">|</span>
                       <span className="font-mono font-bold text-amber-600 text-xs">PIN: {verifyCode}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Menciona este código o tu nombre al presentarte en el establecimiento.</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{tx("Menciona este código o tu nombre al presentarte en el establecimiento.")}</p>
                   </div>
                   <div className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-center shadow-xs">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Estado</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">{tx("Estado")}</span>
                     <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 justify-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                      Confirmada
+                      {tx("Confirmada")}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-2 pt-3">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>Cerrar</button>
+                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("Cerrar")}</button>
                 <button className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-1.5" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   <span>⬇</span>
-                  <span>Descargar Comprobante & Voucher PDF</span>
+                  <span>{tx("Descargar Comprobante & Voucher PDF")}</span>
                 </button>
               </div>
-              <p className="text-center text-xs text-slate-400 pt-1">Comprobante enviado a <strong>{form.email || user?.email}</strong></p>
+              <p className="text-center text-xs text-slate-400 pt-1">{tx("Comprobante enviado a")} <strong>{form.email || user?.email}</strong></p>
             </div>
           )}
 
@@ -3008,6 +3023,7 @@ function BookingModal({
 // ─── Hotel card ───────────────────────────────────────────────────────────────
 
 function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; onSelect: () => void }) {
+  const tx = useI18n();
   const n = Math.max(nights, 1);
   return (
     <div className="rounded-2xl overflow-hidden border bg-white transition-all hover:shadow-lg cursor-pointer group" style={{ borderColor: "#e2e8f0" }} onClick={onSelect}>
@@ -3015,14 +3031,14 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
         <div className="sm:w-64 flex-shrink-0 relative overflow-hidden" style={{ height: 200 }}>
           <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-            {hotel.tags.slice(0, 2).map(t => <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>{t}</span>)}
+            {hotel.tags.slice(0, 2).map(t => <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>{tx(t)}</span>)}
           </div>
         </div>
         <div className="flex-1 p-4 flex flex-col justify-between">
           <div>
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <div className="flex items-center gap-2 mb-0.5"><StarsRow n={hotel.stars} /><span className="text-xs text-slate-400">{hotel.city}</span></div>
+                <div className="flex items-center gap-2 mb-0.5"><StarsRow n={hotel.stars} /><span className="text-xs text-slate-400">{tx(hotel.city)}</span></div>
                 <h3 className="font-bold text-slate-800 text-base group-hover:text-amber-600 transition-colors">{hotel.name}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">{hotel.address}</p>
               </div>
@@ -3030,38 +3046,38 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
                 <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: "#1e3a5f" }}>
                   <span className="font-bold text-white text-sm">{hotel.rating}</span><span className="text-white/60 text-xs">/ 5</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-0.5">{hotel.reviews} opiniones</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">{hotel.reviews} {tx("opiniones")}</p>
               </div>
             </div>
-            <p className="text-sm text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{hotel.description}</p>
-            <p className="text-xs mt-1 font-medium" style={{ color: "#059669" }}>📍 {hotel.distance}</p>
+            <p className="text-sm text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{txDesc(hotel.description)}</p>
+            <p className="text-xs mt-1 font-medium" style={{ color: "#059669" }}>📍 {tx(hotel.distance)}</p>
             <div className="flex flex-wrap gap-1 mt-2">
-              {hotel.amenities.slice(0, 5).map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{a}</span>)}
+              {hotel.amenities.slice(0, 5).map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{tx(a)}</span>)}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mt-3 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wide">Precio desde</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wide">{tx("Precio desde")}</p>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-slate-900 leading-none">US${hotel.priceFrom}</span>
-                <span className="text-xs text-slate-500 font-medium">/ noche</span>
+                <span className="text-xs text-slate-500 font-medium">{tx("/ noche")}</span>
               </div>
               <p className="text-[11px] font-semibold text-slate-500 mt-1">
-                + US${(((hotel.priceFrom * n) * (getActiveIvaPercent(hotel.id) / 100)) + (hotel.gravaServicio10 ? ((hotel.priceFrom * n) * 0.10) : 0)).toFixed(2)} de impuestos ({n}n)
+                + US${(((hotel.priceFrom * n) * (getActiveIvaPercent(hotel.id) / 100)) + (hotel.gravaServicio10 ? ((hotel.priceFrom * n) * 0.10) : 0)).toFixed(2)} {tx("de impuestos")} ({n}n)
               </p>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                 <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">
                   {hotel.gravaServicio10
-                    ? `${getActiveIvaPercent(hotel.id)}% IVA + 10% Servicio Turístico`
-                    : `${getActiveIvaPercent(hotel.id)}% IVA (Hostal Exento 10% Serv.)`}
+                    ? `${getActiveIvaPercent(hotel.id)}% IVA + ${tx("10% Servicio Turístico")}`
+                    : `${getActiveIvaPercent(hotel.id)}% IVA (${tx("Hostal Exento 10% Serv.")})`}
                 </span>
                 <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                  ✓ Reserva Garantizada
+                  ✓ {tx("Reserva Garantizada")}
                 </span>
               </div>
             </div>
             <button className="px-5 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all self-end sm:self-auto shadow-sm" style={{ background: "#f59e0b", color: "#0c1220" }}>
-              Ver habitaciones →
+              {tx("Ver habitaciones →")}
             </button>
           </div>
         </div>
@@ -3073,44 +3089,45 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
 // ─── Hotel detail ─────────────────────────────────────────────────────────────
 
 function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: SearchParams; onBack: () => void; onBook: (r: RoomOffer) => void }) {
+  const tx = useI18n();
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
   const gallery = [hotel.image, ...hotel.rooms.map(room => room.image)].slice(0, 4);
   const score10 = Math.min(9.9, Math.max(8.2, Number((hotel.rating * 1.98).toFixed(1))));
   const subcriteria = [
-    { label: "Limpieza e Higiene", val: Math.min(10, Number((score10 + 0.2).toFixed(1))) },
-    { label: "Ubicación en Manta", val: Math.min(10, Number((score10 + 0.1).toFixed(1))) },
-    { label: "Atención del Personal", val: score10 },
-    { label: "Relación Calidad-Precio", val: Math.max(8.0, Number((score10 - 0.2).toFixed(1))) },
-    { label: "Conectividad WiFi", val: Math.max(8.1, Number((score10 - 0.1).toFixed(1))) },
+    { label: tx("Limpieza e Higiene"), val: Math.min(10, Number((score10 + 0.2).toFixed(1))) },
+    { label: tx("Ubicación en Manta"), val: Math.min(10, Number((score10 + 0.1).toFixed(1))) },
+    { label: tx("Atención del Personal"), val: score10 },
+    { label: tx("Relación Calidad-Precio"), val: Math.max(8.0, Number((score10 - 0.2).toFixed(1))) },
+    { label: tx("Conectividad WiFi"), val: Math.max(8.1, Number((score10 - 0.1).toFixed(1))) },
   ];
 
   const isRural = hotel.city.includes("Santa Marianita") || hotel.city.includes("San Lorenzo") || hotel.city.includes("San Mateo");
   const landmarks = isRural
     ? [
-        { icon: "🏖️", place: "Playa local / Zona Costera", dist: "0.2 km", time: "3 min a pie" },
-        { icon: "🌴", place: "Playa El Murciélago & Malecón", dist: "14.5 km", time: "20 min en auto" },
-        { icon: "🛍️", place: "Mall del Pacífico", dist: "15.0 km", time: "22 min en auto" },
-        { icon: "✈️", place: "Aeropuerto Internacional Eloy Alfaro (MEC)", dist: "21.0 km", time: "28 min en auto" },
-        { icon: "🚌", place: "Terminal Terrestre Luis Valdiviezo Morán", dist: "22.5 km", time: "30 min en auto" },
+        { icon: "🏖️", place: tx("Playa local / Zona Costera"), dist: "0.2 km", time: tx("3 min a pie") },
+        { icon: "🌴", place: tx("Playa El Murciélago & Malecón"), dist: "14.5 km", time: tx("20 min en auto") },
+        { icon: "🛍️", place: tx("Mall del Pacífico"), dist: "15.0 km", time: tx("22 min en auto") },
+        { icon: "✈️", place: tx("Aeropuerto Internacional Eloy Alfaro (MEC)"), dist: "21.0 km", time: tx("28 min en auto") },
+        { icon: "🚌", place: tx("Terminal Terrestre Luis Valdiviezo Morán"), dist: "22.5 km", time: tx("30 min en auto") },
       ]
     : [
-        { icon: "🌴", place: "Playa El Murciélago & Malecón Escénico", dist: "0.8 km", time: "4 min en auto / 10 min a pie" },
-        { icon: "🛍️", place: "Mall del Pacífico", dist: "1.1 km", time: "5 min en auto" },
-        { icon: "🍽️", place: "Zona Gastronómica Flavio Reyes / Barbasquillo", dist: "1.4 km", time: "5 min en auto" },
-        { icon: "✈️", place: "Aeropuerto Internacional Eloy Alfaro (MEC)", dist: "6.5 km", time: "12 min en auto" },
-        { icon: "🚌", place: "Terminal Terrestre Luis Valdiviezo Morán", dist: "7.8 km", time: "15 min en auto" },
+        { icon: "🌴", place: tx("Playa El Murciélago & Malecón Escénico"), dist: "0.8 km", time: tx("4 min en auto / 10 min a pie") },
+        { icon: "🛍️", place: tx("Mall del Pacífico"), dist: "1.1 km", time: tx("5 min en auto") },
+        { icon: "🍽️", place: tx("Zona Gastronómica Flavio Reyes / Barbasquillo"), dist: "1.4 km", time: tx("5 min en auto") },
+        { icon: "✈️", place: tx("Aeropuerto Internacional Eloy Alfaro (MEC)"), dist: "6.5 km", time: tx("12 min en auto") },
+        { icon: "🚌", place: tx("Terminal Terrestre Luis Valdiviezo Morán"), dist: "7.8 km", time: tx("15 min en auto") },
       ];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-medium mb-5 hover:opacity-70 transition-opacity" style={{ color: "#64748b" }}>← Volver a resultados</button>
+      <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-medium mb-5 hover:opacity-70 transition-opacity" style={{ color: "#64748b" }}>{tx("← Volver a resultados")}</button>
       <div className="rounded-2xl overflow-hidden border mb-6 bg-white" style={{ borderColor: "#e2e8f0" }}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 bg-slate-100">
           {gallery.map((image, index) => (
             <div key={`${image}-${index}`} className={`${index === 0 ? "col-span-2 row-span-2" : ""} overflow-hidden`} style={{ minHeight: index === 0 ? 260 : 128 }}>
               <img
                 src={image}
-                alt={index === 0 ? `Vista principal de ${hotel.name}` : `${hotel.name}, vista ${index + 1}`}
+                alt={index === 0 ? tx("Vista principal de {name}", { name: hotel.name }) : tx("{name}, vista {n}", { name: hotel.name, n: index + 1 })}
                 className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
               />
             </div>
@@ -3119,23 +3136,23 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
         <div className="p-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <div className="flex items-center gap-2 mb-1"><StarsRow n={hotel.stars} /><span className="text-xs text-slate-400">{hotel.city}</span></div>
+              <div className="flex items-center gap-2 mb-1"><StarsRow n={hotel.stars} /><span className="text-xs text-slate-400">{tx(hotel.city)}</span></div>
               <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>{hotel.name}</h1>
-              <p className="text-sm text-slate-400 mt-0.5">📍 {hotel.address} · {hotel.distance}</p>
+              <p className="text-sm text-slate-400 mt-0.5">📍 {hotel.address} · {tx(hotel.distance)}</p>
             </div>
             <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl" style={{ background: "#1e3a5f" }}>
               <span className="text-white font-bold text-xl">{score10}</span>
-              <div><p className="text-amber-300 font-bold text-xs">Excelente (/10)</p><p className="text-white/60 text-[10px]">{hotel.reviews} reseñas verificadas</p></div>
+              <div><p className="text-amber-300 font-bold text-xs">{tx("Excelente (/10)")}</p><p className="text-white/60 text-[10px]">{hotel.reviews} {tx("reseñas verificadas")}</p></div>
             </div>
           </div>
-          <p className="text-sm text-slate-600 mt-3 leading-relaxed">{hotel.description}</p>
+          <p className="text-sm text-slate-600 mt-3 leading-relaxed">{txDesc(hotel.description)}</p>
           <div className="mt-5 pt-4 border-t" style={{ borderColor: "#f1f5f9" }}>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Servicios del alojamiento</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">{tx("Servicios del alojamiento")}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {hotel.amenities.map(a => (
                 <div key={a} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium" style={{ background: "#f8fafc", color: "#475569" }}>
                   <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "#d1fae5", color: "#047857" }}>✓</span>
-                  {a}
+                  {tx(a)}
                 </div>
               ))}
             </div>
@@ -3145,7 +3162,7 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
           <div className="mt-5 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4" style={{ borderColor: "#f1f5f9" }}>
             <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
               <p className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5">
-                Lugares de interés cercanos
+                {tx("Lugares de interés cercanos")}
               </p>
               <div className="space-y-2 text-xs">
                 {landmarks.map(lm => (
@@ -3163,9 +3180,9 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
             <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
               <div className="flex items-center justify-between mb-2.5">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  Puntuación de los huéspedes
+                  {tx("Puntuación de los huéspedes")}
                 </p>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">Opiniones verificadas</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{tx("Opiniones verificadas")}</span>
               </div>
               <div className="space-y-2 text-xs">
                 {subcriteria.map(sc => (
@@ -3186,36 +3203,36 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 mb-5 border" style={{ background: "#fef3c7", borderColor: "#fcd34d" }}>
         <div className="flex flex-wrap gap-4 text-sm font-semibold text-amber-800">
-          <span>Entrada: {fmtDateShort(params.checkIn)} → Salida: {fmtDateShort(params.checkOut)}</span>
-          <span>{nights} noche{nights > 1 ? "s" : ""}</span>
-          <span>{params.adults + params.children} huésped{params.adults + params.children > 1 ? "es" : ""}</span>
+          <span>{tx("Entrada")}: {fmtDateShort(params.checkIn)} → {tx("Salida")}: {fmtDateShort(params.checkOut)}</span>
+          <span>{nights} {nights > 1 ? tx("noches") : tx("noche")}</span>
+          <span>{params.adults + params.children} {params.adults + params.children > 1 ? tx("huéspedes") : tx("huésped")}</span>
         </div>
-        <p className="text-xs text-amber-700">Confirmación inmediata · Cancelación flexible según tarifa</p>
+        <p className="text-xs text-amber-700">{tx("Confirmación inmediata · Cancelación flexible según tarifa")}</p>
       </div>
-      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>Tipos de Habitación y Cupos para Venta Web</h2>
+      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Tipos de Habitación y Cupos para Venta Web")}</h2>
       <div className="space-y-4">
         {hotel.rooms.filter(r => r.capacity >= params.adults).map(room => (
           <div key={room.id} className="rounded-2xl overflow-hidden border bg-white hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
             <div className="flex flex-col sm:flex-row">
               <div className="sm:w-52 flex-shrink-0" style={{ height: 160 }}>
-                <img src={room.image} alt={room.type} className="w-full h-full object-cover" />
+                <img src={room.image} alt={tx(room.type)} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 p-4 flex flex-col justify-between">
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-bold text-slate-800">{room.type}</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{room.beds} · {room.size} m² · hasta {room.capacity} pers.</p>
+                      <h3 className="font-bold text-slate-800">{tx(room.type)}</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">{tx(room.beds)} · {room.size} m² · {tx("hasta")} {room.capacity} {tx("pers.")}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       {room.originalPrice && <p className="text-xs line-through text-slate-400">{fmt(room.originalPrice)}</p>}
                       <p className="text-xl font-bold" style={{ color: "#f59e0b" }}>{fmt(room.pricePerNight)}</p>
-                      <p className="text-[10px] text-slate-400">/ noche base</p>
+                      <p className="text-[10px] text-slate-400">{tx("/ noche base")}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    {room.amenities.map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{a}</span>)}
-                    {room.breakfastIncluded && <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "#d1fae5", color: "#065f46" }}>Desayuno incluido</span>}
+                    {room.amenities.map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{tx(a)}</span>)}
+                    {room.breakfastIncluded && <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "#d1fae5", color: "#065f46" }}>{tx("Desayuno incluido")}</span>}
                   </div>
                 </div>
 
@@ -3230,12 +3247,12 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                   />
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${room.available <= 2 ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
-                        {room.available <= 2 ? `Últimas ${room.available} habitaciones disponibles` : `${room.available} habitaciones disponibles`}
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${getRoomAvailability(hotel.id, room) <= 2 ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+                        {getRoomAvailability(hotel.id, room) <= 2 ? tx("Últimas {n} habitaciones disponibles", { n: getRoomAvailability(hotel.id, room) }) : tx("{n} habitaciones disponibles", { n: getRoomAvailability(hotel.id, room) })}
                       </span>
                     </div>
-                    <button onClick={() => onBook(room)} className="px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                      Reservar Cupo →
+                    <button disabled={getRoomAvailability(hotel.id, room) <= 0} onClick={() => onBook(room)} className="px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: "#f59e0b", color: "#0c1220" }}>
+                      {getRoomAvailability(hotel.id, room) <= 0 ? tx("Agotado") : tx("Reservar Cupo →")}
                     </button>
                   </div>
                 </div>
@@ -3251,11 +3268,13 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
 // ─── Results ──────────────────────────────────────────────────────────────────
 
 function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchParams; onChange: (p: SearchParams) => void; onSearch: () => void; onSelect: (h: Hotel) => void }) {
+  const tx = useI18n();
   const [stars, setStars] = useState<number[]>([]);
   const [maxPrice, setMaxPrice] = useState(250);
   const [classification, setClassification] = useState<string>("all");
   const [parish, setParish] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"price" | "rating">("rating");
+  const [showResultsMap, setShowResultsMap] = useState(false);
   const nights = nightsBetween(params.checkIn, params.checkOut);
   let results = HOTELS.filter(h => {
     const d = !params.destination || h.city.toLowerCase().includes(params.destination.toLowerCase()) || (h.parish && h.parish.toLowerCase().includes(params.destination.toLowerCase()));
@@ -3280,9 +3299,9 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
         <aside className="w-56 flex-shrink-0 hidden lg:block space-y-4">
           <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-slate-700 text-sm">Categoría</h4>
+              <h4 className="font-bold text-slate-700 text-sm">{tx("Categoría")}</h4>
               {stars.length > 0 && (
-                <button onClick={() => setStars([])} className="text-[11px] text-amber-600 hover:underline">Limpiar</button>
+                <button onClick={() => setStars([])} className="text-[11px] text-amber-600 hover:underline">{tx("Limpiar")}</button>
               )}
             </div>
             {[5, 4, 3, 2, 1].map(s => (
@@ -3299,7 +3318,7 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
                     {Array.from({ length: 5 - s }).map((_, i) => <span key={i} style={{ color: "#d1d5db", fontSize: 11 }}>★</span>)}
                   </div>
                   <span className="text-[11px] text-slate-600 font-medium">
-                    {s === 5 ? "5★ Lujo" : s === 4 ? "4★ Primera" : s === 3 ? "3★ Superior" : s === 2 ? "2★ Turista" : "1★ Económico"}
+                    {s === 5 ? tx("5★ Lujo") : s === 4 ? tx("4★ Primera") : s === 3 ? tx("3★ Superior") : s === 2 ? tx("2★ Turista") : tx("1★ Económico")}
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">({HOTELS.filter(h => h.stars === s).length})</span>
@@ -3308,10 +3327,10 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
           </div>
 
           <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-            <h4 className="font-bold text-slate-700 text-sm mb-2">Clasificación</h4>
+            <h4 className="font-bold text-slate-700 text-sm mb-2">{tx("Clasificación")}</h4>
             <div className="space-y-1">
               {[
-                { id: "all", label: "Todos los tipos", count: HOTELS.length },
+                { id: "all", label: tx("Todos los tipos"), count: HOTELS.length },
                 { id: "Hotel", label: "Hotel", count: HOTELS.filter(h => h.classification === "Hotel").length },
                 { id: "Hostal", label: "Hostal", count: HOTELS.filter(h => h.classification === "Hostal").length },
                 { id: "Hostería", label: "Hostería", count: HOTELS.filter(h => h.classification === "Hostería").length },
@@ -3331,13 +3350,13 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
           </div>
 
           <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-            <h4 className="font-bold text-slate-700 text-sm mb-2">Parroquia</h4>
+            <h4 className="font-bold text-slate-700 text-sm mb-2">{tx("Parroquia")}</h4>
             <select
               value={parish}
               onChange={e => setParish(e.target.value)}
               className="w-full text-xs rounded-lg border p-2 bg-slate-50 border-slate-200 text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
             >
-              <option value="all">Todas las parroquias (116)</option>
+              <option value="all">{tx("Todas las parroquias (116)")}</option>
               {Array.from(new Set(HOTELS.map(h => h.parish).filter(Boolean))).sort().map(p => (
                 <option key={p} value={p}>{p} ({HOTELS.filter(h => h.parish === p).length})</option>
               ))}
@@ -3346,7 +3365,7 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
 
           <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
             <div className="flex justify-between items-center mb-2">
-              <h4 className="font-bold text-slate-700 text-sm">Precio máx./noche</h4>
+              <h4 className="font-bold text-slate-700 text-sm">{tx("Precio máx./noche")}</h4>
               <span className="font-bold text-amber-600 text-sm font-mono">${maxPrice}</span>
             </div>
             <input
@@ -3368,22 +3387,32 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
-              <h2 className="font-bold text-slate-800">{results.length} alojamiento{results.length !== 1 ? "s" : ""}{params.destination ? ` en ${params.destination}` : ""}</h2>
-              {nights > 0 && <p className="text-xs text-slate-400">{nights} noche{nights > 1 ? "s" : ""} · {params.adults} adulto{params.adults > 1 ? "s" : ""}</p>}
+              <h2 className="font-bold text-slate-800">{results.length} {results.length !== 1 ? tx("alojamientos") : tx("alojamiento")}{params.destination ? ` ${tx("en")} ${params.destination}` : ""}</h2>
+              {nights > 0 && <p className="text-xs text-slate-400">{nights} {nights > 1 ? tx("noches") : tx("noche")} · {params.adults} {params.adults > 1 ? tx("adultos") : tx("adulto")}</p>}
             </div>
-            <div className="flex gap-1.5 text-xs">
-              <span className="text-slate-400 self-center">Ordenar:</span>
-              {[{ k: "rating" as const, l: "Valoración" }, { k: "price" as const, l: "Precio" }].map(s => (
+            <div className="flex gap-1.5 text-xs items-center">
+              <button onClick={() => setShowResultsMap(true)} className="px-3 py-1.5 rounded-lg font-semibold border bg-white hover:bg-slate-50 transition-all" style={{ borderColor: "#e2e8f0", color: "#334155" }}>🗺️ {tx("Ver en mapa")}</button>
+              <span className="text-slate-400 self-center">{tx("Ordenar:")}</span>
+              {[{ k: "rating" as const, l: tx("Valoración") }, { k: "price" as const, l: tx("Precio") }].map(s => (
                 <button key={s.k} onClick={() => setSortBy(s.k)} className="px-3 py-1.5 rounded-lg font-semibold border transition-all" style={{ background: sortBy === s.k ? "#f59e0b" : "#fff", color: sortBy === s.k ? "#0c1220" : "#64748b", borderColor: sortBy === s.k ? "#f59e0b" : "#e2e8f0" }}>{s.l}</button>
               ))}
             </div>
           </div>
+          <MantaMapModal
+            isOpen={showResultsMap}
+            onClose={() => setShowResultsMap(false)}
+            onSelectDestination={dest => {
+              setShowResultsMap(false);
+              onChange({ ...params, destination: dest });
+            }}
+            hotels={results}
+          />
           <div className="space-y-4">
             {results.map(h => <HotelCard key={h.id} hotel={h} nights={nights} onSelect={() => onSelect(h)} />)}
             {results.length === 0 && (
               <div className="text-center py-16 rounded-2xl border bg-white" style={{ borderColor: "#e2e8f0" }}>
                 <p className="text-4xl mb-3">🏨</p>
-                <p className="font-semibold text-slate-700">No encontramos alojamientos con estos filtros.</p>
+                <p className="font-semibold text-slate-700">{tx("No encontramos alojamientos con estos filtros.")}</p>
               </div>
             )}
           </div>
@@ -3414,6 +3443,7 @@ function HomePage({
   onOpenAbout?: () => void;
   onOpenLegal?: () => void;
 }) {
+  const tx = useI18n();
   const [isHomeMapOpen, setIsHomeMapOpen] = useState(false);
 
   return (
@@ -3424,16 +3454,16 @@ function HomePage({
         </div>
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(12,18,32,0.3) 0%, rgba(12,18,32,0.75) 100%)" }} />
         <div className="relative max-w-5xl mx-auto px-4 pt-12 sm:pt-20 pb-8 sm:pb-12 text-center">
-          <h1 className="text-3xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>Encuentra tu hotel en Manta</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold text-white mb-3 leading-tight" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Encuentra tu hotel en Manta")}</h1>
           <p className="text-white/80 text-sm sm:text-base mb-6 sm:mb-8 max-w-lg mx-auto">
-            Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo, Santa Marianita y San Lorenzo.
+            {tx("Compara y reserva en hoteles, hostales y hosterías de Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo, Santa Marianita y San Lorenzo.")}
           </p>
           <div className="max-w-4xl mx-auto"><SearchBar params={params} onChange={onChange} onSearch={onSearch} /></div>
         </div>
       </div>
       <div className="border-b" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-          {["Pago digital seguro", "Confirmación de reserva inmediata", "Cancelación flexible", "Tarifa directa sin comisiones ocultas", "Atención local en Manta"].map(text => (
+          {[tx("Pago digital seguro"), tx("Confirmación de reserva inmediata"), tx("Cancelación flexible"), tx("Tarifa directa sin comisiones ocultas"), tx("Atención local en Manta")].map(text => (
             <div key={text} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
               <span>{text}</span>
@@ -3444,8 +3474,8 @@ function HomePage({
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
           <div>
-            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>Sectores y Playas de Manta</h2>
-            <p className="text-xs text-slate-500">Distribución en las 7 parroquias del cantón Manta</p>
+            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Sectores y Playas de Manta")}</h2>
+            <p className="text-xs text-slate-500">{tx("Distribución en las 7 parroquias del cantón Manta")}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -3454,10 +3484,10 @@ function HomePage({
               className="px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer hover:scale-105"
             >
               <span>🗺️</span>
-              <span>Ver en Mapa</span>
+              <span>{tx("Ver en Mapa")}</span>
             </button>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-              116 Alojamientos Catastrados
+              {tx("116 Alojamientos Catastrados")}
             </span>
           </div>
         </div>
@@ -3473,15 +3503,15 @@ function HomePage({
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 mb-1 inline-block">
-                  {d.type || "Manta"}
+                  {tx(d.type || "Manta")}
                 </span>
                 <p className="text-white font-bold text-sm leading-tight truncate">{d.city.replace("Manta - ", "")}</p>
-                <p className="text-white/80 text-[10px] mt-0.5">{d.hotels} hoteles</p>
+                <p className="text-white/80 text-[10px] mt-0.5">{d.hotels} {tx("hoteles")}</p>
               </div>
             </button>
           ))}
         </div>
-        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>Alojamientos Destacados de Manta</h2>
+        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Alojamientos Destacados de Manta")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
           {HOTELS.filter(h => h.rating >= 4.4).slice(0, 6).map(h => (
             <button key={h.id} onClick={() => { onChange({ ...params, destination: h.city }); onSearch(); }} className="rounded-2xl overflow-hidden border bg-white text-left hover:shadow-lg group transition-all cursor-pointer" style={{ borderColor: "#e2e8f0" }}>
@@ -3490,16 +3520,16 @@ function HomePage({
                 <div className="flex items-center justify-between mb-0.5"><StarsRow n={h.stars} /><span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "#1e3a5f", color: "#93c5fd" }}>{h.rating}</span></div>
                 <p className="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">{h.name}</p>
                 <p className="text-xs text-slate-400">{h.city}</p>
-                <div className="flex items-baseline gap-1 mt-2"><span className="font-bold" style={{ color: "#f59e0b" }}>desde {fmt(h.priceFrom)}</span><span className="text-xs text-slate-400">/ noche</span></div>
+                <div className="flex items-baseline gap-1 mt-2"><span className="font-bold" style={{ color: "#f59e0b" }}>{tx("desde")} {fmt(h.priceFrom)}</span><span className="text-xs text-slate-400">{tx("/ noche")}</span></div>
               </div>
             </button>
           ))}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            ["Tarifa directa", "Reserva directamente con el establecimiento sin recargos adicionales de intermediarios internacionales."],
-            ["Alojamientos verificados", "Establecimientos registrados y validados en el cantón Manta."],
-            ["Confirmación inmediata", "Comprobante digital emitido al instante con código de reserva para validar a tu llegada."]
+            [tx("Tarifa directa"), tx("Reserva directamente con el establecimiento sin recargos adicionales de intermediarios internacionales.")],
+            [tx("Alojamientos verificados"), tx("Establecimientos registrados y validados en el cantón Manta.")],
+            [tx("Confirmación inmediata"), tx("Comprobante digital emitido al instante con código de reserva para validar a tu llegada.")]
           ].map(([title, desc]) => (
             <div key={title} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xs mb-3">✓</div>
@@ -3513,16 +3543,16 @@ function HomePage({
         <div className="max-w-5xl mx-auto px-4 py-10 flex flex-wrap gap-8 justify-between">
           <div className="max-w-xs space-y-2">
             <p className="font-bold text-white text-xl" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
-            <p className="text-xs text-slate-400 leading-relaxed">Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.</p>
+            <p className="text-xs text-slate-400 leading-relaxed">{tx("Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.")}</p>
             <div className="pt-1">
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                116 Alojamientos Catastrados
+                {tx("116 Alojamientos Catastrados")}
               </span>
             </div>
           </div>
           <div className="flex flex-wrap gap-10 text-xs text-slate-400">
             <div className="space-y-2">
-              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">Sectores y Playas</p>
+              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">{tx("Sectores y Playas")}</p>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Barbasquillo" }); onSearch(); }}
@@ -3553,14 +3583,14 @@ function HomePage({
               </button>
             </div>
             <div className="space-y-2">
-              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">Ayuda & Información</p>
+              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">{tx("Ayuda & Información")}</p>
               {onOpenAbout && (
                 <button
                   type="button"
                   onClick={onOpenAbout}
                   className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
                 >
-                  Acerca de AlojaManta
+                  {tx("Acerca de AlojaManta")}
                 </button>
               )}
               {onOpenConsult && (
@@ -3569,7 +3599,7 @@ function HomePage({
                   onClick={onOpenConsult}
                   className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
                 >
-                  Consultar mi reserva
+                  {tx("Consultar mi reserva")}
                 </button>
               )}
               {onOpenLegal && (
@@ -3578,7 +3608,7 @@ function HomePage({
                   onClick={onOpenLegal}
                   className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
                 >
-                  Términos y Privacidad
+                  {tx("Términos y Privacidad")}
                 </button>
               )}
               <a
@@ -3599,7 +3629,7 @@ function HomePage({
           </div>
         </div>
         <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400" style={{ borderColor: "#1e293b" }}>
-          <span>© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta · 116 Alojamientos Catastrados</span>
+          <span>{tx("© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta · 116 Alojamientos Catastrados")}</span>
           <div className="flex items-center gap-4">
             {onOpenAbout && (
               <button
@@ -3607,7 +3637,7 @@ function HomePage({
                 onClick={onOpenAbout}
                 className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
               >
-                Acerca de la Plataforma
+                {tx("Acerca de la Plataforma")}
               </button>
             )}
             {onOpenLegal && (
@@ -3616,7 +3646,7 @@ function HomePage({
                 onClick={onOpenLegal}
                 className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
               >
-                Comprobantes y Contacto
+                {tx("Comprobantes y Contacto")}
               </button>
             )}
           </div>
@@ -3654,6 +3684,8 @@ export default function GuestPage({
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
 }) {
+  const tx = useI18n();
+  const lang = useLang();
   const [view, setView] = useState<GuestView>("home");
   const [params, setParams] = useState<SearchParams>({
     destination: "",
@@ -3677,7 +3709,7 @@ export default function GuestPage({
   // Reservas persistentes
   const [reservations, setReservations] = useState<MyReservation[]>(() => {
     try {
-      const saved = localStorage.getItem("alojamanta_guest_reservations") || localStorage.getItem("hoteldirekt_guest_reservations");
+      const saved = readGuestReservationsRaw();
       return saved ? JSON.parse(saved) : INITIAL_DEMO_RESERVATIONS;
     } catch {
       return INITIAL_DEMO_RESERVATIONS;
@@ -3686,13 +3718,19 @@ export default function GuestPage({
 
   useEffect(() => {
     try {
-      localStorage.setItem("alojamanta_guest_reservations", JSON.stringify(reservations));
+      localStorage.setItem(GUEST_RESERVATIONS_KEY, JSON.stringify(reservations));
     } catch {
       // Ignorar si no hay storage
     }
   }, [reservations]);
 
   function handleCancelReservation(resId: string) {
+    const target = reservations.find(r => r.id === resId);
+    if (target && target.status === "upcoming") {
+      const hotel = HOTELS.find(h => h.id === target.hotelId);
+      const room = hotel?.rooms.find(r => r.type === target.room);
+      if (hotel && room) releaseRoomAvailability(hotel.id, room);
+    }
     setReservations(prev =>
       prev.map(r => (r.id === resId ? { ...r, status: "cancelled" as const } : r))
     );
@@ -3751,7 +3789,7 @@ export default function GuestPage({
                   type="button"
                   onClick={() => setShowProfileMenu(prev => !prev)}
                   className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-slate-200 hover:border-amber-400 bg-white hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
-                  title="Menú de perfil y cuenta"
+                  title={tx("Menú de perfil y cuenta")}
                 >
                   <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 text-xs flex items-center justify-center font-black shadow-2xs">
                     {user.name.charAt(0).toUpperCase()}
@@ -3761,7 +3799,7 @@ export default function GuestPage({
                       {user.name.split(" ")[0]}
                     </p>
                     <p className="text-[9px] text-slate-500 font-semibold leading-none">
-                      Mi cuenta
+                      {tx("Mi cuenta")}
                     </p>
                   </div>
                   <span className="text-xs text-slate-400">▾</span>
@@ -3786,7 +3824,7 @@ export default function GuestPage({
                           <div className="min-w-0 flex-1">
                             <p className="font-bold text-sm text-white truncate">{user.name}</p>
                             <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 mt-0.5">
-                              Cuenta de Huésped
+                              {tx("Cuenta de Huésped")}
                             </span>
                             <p className="text-[11px] text-slate-400 truncate mt-0.5">{user.email}</p>
                           </div>
@@ -3801,8 +3839,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">🏠</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Centro de mi cuenta</p>
-                            <p className="text-[10px] text-slate-400">Panel general de perfil y servicios</p>
+                            <p className="font-semibold text-slate-800">{tx("Centro de mi cuenta")}</p>
+                            <p className="text-[10px] text-slate-400">{tx("Panel general de perfil y servicios")}</p>
                           </div>
                         </button>
 
@@ -3812,8 +3850,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">🛎️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Mis Reservas y Viajes</p>
-                            <p className="text-[10px] text-slate-400">Ver vouchers y códigos de reserva</p>
+                            <p className="font-semibold text-slate-800">{tx("Mis Reservas y Viajes")}</p>
+                            <p className="text-[10px] text-slate-400">{tx("Ver vouchers y códigos de reserva")}</p>
                           </div>
                         </button>
 
@@ -3823,8 +3861,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">👤</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Datos Personales del Huésped</p>
-                            <p className="text-[10px] text-slate-400">Cédula, contacto y preferencias de estadía</p>
+                            <p className="font-semibold text-slate-800">{tx("Datos Personales del Huésped")}</p>
+                            <p className="text-[10px] text-slate-400">{tx("Cédula, contacto y preferencias de estadía")}</p>
                           </div>
                         </button>
 
@@ -3834,8 +3872,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">🏛️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Datos de Comprobantes y Contacto</p>
-                            <p className="text-[10px] text-slate-400">Datos registrados para la reserva</p>
+                            <p className="font-semibold text-slate-800">{tx("Datos de Comprobantes y Contacto")}</p>
+                            <p className="text-[10px] text-slate-400">{tx("Datos registrados para la reserva")}</p>
                           </div>
                         </button>
 
@@ -3845,8 +3883,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">💳</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Medios de Pago</p>
-                            <p className="text-[10px] text-slate-400">Tarjetas, DeUna y PayPhone</p>
+                            <p className="font-semibold text-slate-800">{tx("Medios de Pago")}</p>
+                            <p className="text-[10px] text-slate-400">{tx("Tarjetas, DeUna y PayPhone")}</p>
                           </div>
                         </button>
 
@@ -3856,8 +3894,8 @@ export default function GuestPage({
                         >
                           <span className="text-base">ℹ️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">Acerca de AlojaManta</p>
-                            <p className="text-[10px] text-slate-400">Información del proyecto y reserva directa</p>
+                            <p className="font-semibold text-slate-800">{tx("Acerca de AlojaManta")}</p>
+                            <p className="text-[10px] text-slate-400">{tx("Información del proyecto y reserva directa")}</p>
                           </div>
                         </button>
                       </div>
@@ -3869,7 +3907,7 @@ export default function GuestPage({
                           className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 transition-colors cursor-pointer"
                         >
                           <span>🚪</span>
-                          <span>Cerrar sesión</span>
+                          <span>{tx("Cerrar sesión")}</span>
                         </button>
                       </div>
                     </div>
@@ -3882,8 +3920,8 @@ export default function GuestPage({
                 className="text-xs sm:text-sm font-bold px-3.5 sm:px-4 py-1.5 rounded-lg hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm text-slate-950 bg-amber-500 hover:bg-amber-400 shrink-0"
               >
                 <span>👤</span>
-                <span className="hidden sm:inline">Iniciar sesión</span>
-                <span className="sm:hidden text-xs font-semibold">Iniciar sesión</span>
+                <span className="hidden sm:inline">{tx("Iniciar sesión")}</span>
+                <span className="sm:hidden text-xs font-semibold">{tx("Iniciar sesión")}</span>
               </button>
             )}
           </div>
@@ -3977,6 +4015,20 @@ export default function GuestPage({
       {showLegalModal && (
         <LegalModal onClose={() => setShowLegalModal(false)} />
       )}
+
+      {/* Selector de idioma Español / English */}
+      <button
+        type="button"
+        onClick={() => setLang(lang === "es" ? "en" : "es")}
+        className="fixed bottom-5 left-5 z-40 h-11 px-3.5 rounded-full shadow-xl border flex items-center gap-1.5 text-xs font-bold transition-transform hover:scale-110 active:scale-90 cursor-pointer bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
+        style={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)" }}
+        title={tx("Cambiar idioma")}
+        aria-label={tx("Cambiar idioma")}
+      >
+        <span style={{ color: lang === "es" ? "#b45309" : "#94a3b8" }}>ES</span>
+        <span className="text-slate-300">|</span>
+        <span style={{ color: lang === "en" ? "#b45309" : "#94a3b8" }}>EN</span>
+      </button>
 
       {/* Botón flotante para cambiar tema (Modo Claro / Modo Oscuro) */}
       {onToggleTheme && (

@@ -1,3 +1,4 @@
+import { tx, useLang, setLang } from "./i18n";
 import { useState } from "react";
 
 export type AdminRole = "superadmin" | "admin" | "manager" | "receptionist";
@@ -46,6 +47,7 @@ export default function AuthPage({
   theme = "light",
   onToggleTheme,
 }: Props) {
+  const lang = useLang();
   const [tab, setTab] = useState<"guest" | "admin">(defaultTab);
   const [guestMode, setGuestMode] = useState<"login" | "register">("login");
 
@@ -63,7 +65,7 @@ export default function AuthPage({
   function handleGuestSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!guestEmail || !guestPass) { setGuestError("Completa todos los campos."); return; }
-    if (guestMode === "register" && !guestName) { setGuestError("Indica tu nombre."); return; }
+    if (guestMode === "register" && !guestName) { setGuestError(tx("Indica tu nombre.")); return; }
     setGuestError("");
     onGuestLogin({ name: guestName || guestEmail.split("@")[0], email: guestEmail });
   }
@@ -74,13 +76,26 @@ export default function AuthPage({
       a => (a.email.toLowerCase() === adminEmail.toLowerCase() || a.legacyEmails?.includes(adminEmail.toLowerCase())) &&
       a.password === adminPass
     );
-    if (!account) { setAdminError("Credenciales incorrectas. Prueba con admin@alojamanta.ec / admin123 o clic en las cuentas demo"); return; }
+    if (!account) { setAdminError(tx("Credenciales incorrectas. Prueba con admin@alojamanta.ec / admin123 o clic en las cuentas demo")); return; }
     setAdminError("");
     onAdminLogin({ name: account.name, email: account.email, role: account.role, hotel: account.hotel, hotelIds: account.hotelIds });
   }
 
   return (
     <div className="min-h-screen flex flex-col transition-colors" style={{ background: "var(--background)", color: "var(--foreground)" }}>
+      {/* Selector de idioma Español / English */}
+      <button
+        type="button"
+        onClick={() => setLang(lang === "es" ? "en" : "es")}
+        className="fixed bottom-5 left-5 z-40 h-11 px-3.5 rounded-full shadow-xl border flex items-center gap-1.5 text-xs font-bold transition-transform hover:scale-110 active:scale-90 cursor-pointer"
+        style={{ background: "var(--card)", borderColor: "var(--border)", color: "var(--foreground)", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)" }}
+        title={tx("Cambiar idioma")}
+        aria-label={tx("Cambiar idioma")}
+      >
+        <span style={{ color: lang === "es" ? "#b45309" : "#94a3b8" }}>ES</span>
+        <span style={{ color: "#94a3b8" }}>|</span>
+        <span style={{ color: lang === "en" ? "#b45309" : "#94a3b8" }}>EN</span>
+      </button>
       {/* Top bar */}
       <header className="flex items-center justify-between px-6 py-4 border-b transition-colors shadow-2xs" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="flex items-center gap-3">
@@ -99,7 +114,7 @@ export default function AuthPage({
               className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all hover:bg-slate-100 hover:border-slate-300 cursor-pointer flex items-center gap-1.5 shadow-2xs"
               style={{ background: "var(--card)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              <span>Portal de Huéspedes</span>
+              <span>{tx("Portal de Huéspedes")}</span>
             </button>
           )}
 
@@ -130,7 +145,7 @@ export default function AuthPage({
                 boxShadow: tab === "guest" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
               }}
             >
-              <span>Soy cliente</span>
+              <span>{tx("Soy cliente")}</span>
             </button>
             <button
               type="button"
@@ -142,7 +157,7 @@ export default function AuthPage({
                 boxShadow: tab === "admin" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
               }}
             >
-              <span>Acceso hotel</span>
+              <span>{tx("Acceso hotel")}</span>
             </button>
           </div>
 
@@ -150,7 +165,7 @@ export default function AuthPage({
           {tab === "guest" && (
             <div className="rounded-2xl border p-6 sm:p-7 shadow-sm transition-colors" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
               <h2 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: "DM Serif Display, serif", color: "var(--foreground)" }}>
-                {guestMode === "login" ? "Accede a tu cuenta" : "Crea tu cuenta"}
+                {guestMode === "login" ? tx("Accede a tu cuenta") : tx("Crea tu cuenta")}
               </h2>
               <p className="text-xs mb-5" style={{ color: "var(--muted-foreground)" }}>
                 {guestMode === "login" ? "Consulta tus reservas, vouchers de pago y más." : "Regístrate gratis para reservar y gestionar tus estancias en Manta."}
@@ -159,7 +174,7 @@ export default function AuthPage({
               <form onSubmit={handleGuestSubmit} className="space-y-3.5">
                 {guestMode === "register" && (
                   <div>
-                    <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>Nombre completo</label>
+                    <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>{tx("Nombre completo")}</label>
                     <input
                       className="w-full px-3.5 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-amber-500/20"
                       style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
@@ -169,7 +184,7 @@ export default function AuthPage({
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>Email</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>{tx("Email")}</label>
                   <input
                     type="email"
                     className="w-full px-3.5 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-amber-500/20"
@@ -179,7 +194,7 @@ export default function AuthPage({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>Contraseña</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>{tx("Contraseña")}</label>
                   <input
                     type="password"
                     className="w-full px-3.5 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-amber-500/20"
@@ -192,7 +207,7 @@ export default function AuthPage({
                   <div className="flex items-start gap-2 pt-1">
                     <input type="checkbox" className="mt-0.5 accent-amber-500" id="terms" />
                     <label htmlFor="terms" className="text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-                      Acepto los <span className="font-semibold" style={{ color: "var(--primary)" }}>Términos de uso</span> y la <span className="font-semibold" style={{ color: "var(--primary)" }}>Política de privacidad</span>
+                      Acepto los <span className="font-semibold" style={{ color: "var(--primary)" }}>{tx("Términos de uso")}</span> y la <span className="font-semibold" style={{ color: "var(--primary)" }}>{tx("Política de privacidad")}</span>
                     </label>
                   </div>
                 )}
@@ -203,7 +218,7 @@ export default function AuthPage({
                   type="submit"
                   className="w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 active:scale-98 transition-all mt-1 bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-xs"
                 >
-                  {guestMode === "login" ? "Iniciar sesión" : "Crear cuenta gratis"}
+                  {guestMode === "login" ? tx("Iniciar sesión") : tx("Crear cuenta gratis")}
                 </button>
               </form>
 
@@ -214,13 +229,13 @@ export default function AuthPage({
                   className="text-xs transition-colors cursor-pointer"
                   style={{ color: "var(--muted-foreground)" }}
                 >
-                  {guestMode === "login" ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
-                  <span className="font-semibold text-amber-600 hover:underline">{guestMode === "login" ? "Regístrate gratis" : "Inicia sesión"}</span>
+                  {guestMode === "login" ? tx("¿No tienes cuenta? ") : tx("¿Ya tienes cuenta? ")}
+                  <span className="font-semibold text-amber-600 hover:underline">{guestMode === "login" ? tx("Regístrate gratis") : tx("Inicia sesión")}</span>
                 </button>
               </div>
 
               <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-                <p className="text-[10px] text-center mb-2.5 font-medium uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>O continúa con</p>
+                <p className="text-[10px] text-center mb-2.5 font-medium uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>{tx("O continúa con")}</p>
                 <div className="flex gap-2">
                   {["Google", "Apple"].map(p => (
                     <button
@@ -243,37 +258,37 @@ export default function AuthPage({
             <div className="rounded-2xl border p-6 sm:p-7 shadow-sm transition-colors" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-xl sm:text-2xl font-bold" style={{ fontFamily: "DM Serif Display, serif", color: "var(--foreground)" }}>
-                  Panel de gestión
+                  {tx("Panel de gestión")}
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase" style={{ background: "rgba(217, 119, 6, 0.15)", color: "#d97706" }}>
-                  Extranet
+                  {tx("Extranet")}
                 </span>
               </div>
-              <p className="text-xs mb-5" style={{ color: "var(--muted-foreground)" }}>Acceso exclusivo para hoteles y administradores de la plataforma.</p>
+              <p className="text-xs mb-5" style={{ color: "var(--muted-foreground)" }}>{tx("Acceso exclusivo para hoteles y administradores de la plataforma.")}</p>
 
               {/* Role preview cards */}
               <div className="grid grid-cols-2 gap-2 mb-5">
                 {(Object.entries(ROLE_LABELS) as [AdminRole, typeof ROLE_LABELS[AdminRole]][]).map(([key, val]) => (
                   <div key={key} className="rounded-xl p-2.5 text-center border transition-all" style={{ background: val.bg, borderColor: val.border }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider leading-tight" style={{ color: val.color }}>{val.label}</p>
-                    <p className="text-[9px] mt-0.5 font-medium opacity-85" style={{ color: val.color }}>{val.desc}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider leading-tight" style={{ color: val.color }}>{tx(val.label)}</p>
+                    <p className="text-[9px] mt-0.5 font-medium opacity-85" style={{ color: val.color }}>{tx(val.desc)}</p>
                   </div>
                 ))}
               </div>
 
               <form onSubmit={handleAdminSubmit} className="space-y-3.5">
                 <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>Email corporativo</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>{tx("Email corporativo")}</label>
                   <input
                     type="email"
                     className="w-full px-3.5 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-amber-500/20"
                     style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
                     value={adminEmail} onChange={e => setAdminEmail(e.target.value)}
-                    placeholder="usuario@mihotel.com"
+                    placeholder={tx("usuario@mihotel.com")}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>Contraseña</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>{tx("Contraseña")}</label>
                   <input
                     type="password"
                     className="w-full px-3.5 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-amber-500/20"
@@ -289,12 +304,12 @@ export default function AuthPage({
                   type="submit"
                   className="w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 active:scale-98 transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-xs"
                 >
-                  Entrar al panel
+                  {tx("Entrar al panel")}
                 </button>
               </form>
 
               <div className="mt-5 pt-4 border-t space-y-2" style={{ borderColor: "var(--border)" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Cuentas demo disponibles (clic para autocompletar)</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>{tx("Cuentas demo disponibles (clic para autocompletar)")}</p>
                 {ADMIN_ACCOUNTS.map(a => {
                   const role = ROLE_LABELS[a.role];
                   return (
@@ -313,7 +328,7 @@ export default function AuthPage({
                         className="mono text-[9px] px-2 py-0.5 rounded-md font-bold uppercase border"
                         style={{ background: role.bg, color: role.color, borderColor: role.border }}
                       >
-                        {role.label}
+                        {tx(role.label)}
                       </span>
                     </button>
                   );

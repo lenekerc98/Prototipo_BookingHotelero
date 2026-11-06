@@ -1,7 +1,9 @@
+import { tx, useLang, setLang, locale } from "./i18n";
 import { useState, useMemo, useEffect } from "react";
 import GuestPage, { InvoiceModal } from "./GuestPage";
 import AuthPage, { type AdminRole, type AdminUser, type GuestUser } from "./AuthPage";
 import SriInvoiceModal from "./SriInvoiceModal";
+import { GUEST_RESERVATIONS_KEY, readGuestReservationsRaw } from "./storage";
 import PaymentLinkModal, { type NewPaymentLinkData } from "./PaymentLinkModal";
 import {
   MANTA_HOTELS,
@@ -299,7 +301,7 @@ const statusLabel: Record<ReservationStatus, string> = {
 };
 
 function fmt(amount: number) {
-  return new Intl.NumberFormat("es-EC", {
+  return new Intl.NumberFormat(locale(), {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
@@ -307,7 +309,7 @@ function fmt(amount: number) {
 }
 
 function fmtDate(d: string) {
-  return new Date(d + "T12:00:00").toLocaleDateString("es-EC", {
+  return new Date(d + "T12:00:00").toLocaleDateString(locale(), {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -327,7 +329,7 @@ function StatusBadge({
     <span
       className={`mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide ${cls}`}
     >
-      {label}
+      {tx(label)}
     </span>
   );
 }
@@ -345,8 +347,8 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
   function toggleIva(enable8: boolean) {
     const updated = {
       ...ivaCfg,
-      ivaReducido8Activo: enable8,
-      actualizadoPor: `${userName} (${new Date().toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" })})`,
+      enabledGlobal: enable8,
+      updatedBy: `${userName} (${new Date().toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" })})`,
     };
     setIvaDecretoConfig(updated);
     setIvaCfgState(updated);
@@ -356,7 +358,7 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
       modulo: "Motor Tributario",
       accion: enable8 ? "ACTIVAR_IVA_8_FERIADO" : "RESTAURAR_IVA_15_ORDINARIO",
       detalle: enable8
-        ? `Activada tarifa reducida de IVA 8% (${updated.nombreFeriado})`
+        ? `Activada tarifa reducida de IVA 8% (${updated.decretoNombre})`
         : "Restaurada tarifa ordinaria de IVA 15%",
     });
   }
@@ -365,30 +367,30 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
     <div
       className="rounded-xl border p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3"
       style={{
-        background: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.08)" : "var(--card)",
-        borderColor: ivaCfg.ivaReducido8Activo ? "rgba(16, 185, 129, 0.4)" : "var(--border)",
+        background: ivaCfg.enabledGlobal ? "rgba(16, 185, 129, 0.08)" : "var(--card)",
+        borderColor: ivaCfg.enabledGlobal ? "rgba(16, 185, 129, 0.4)" : "var(--border)",
       }}
     >
       <div className="flex items-start gap-3">
         <div className="text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
-              Tarifa de IVA aplicable
+              {tx("Tarifa de IVA aplicable")}
             </span>
             <span
               className={`mono text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                ivaCfg.ivaReducido8Activo
+                ivaCfg.enabledGlobal
                   ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                   : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
               }`}
             >
-              {ivaCfg.ivaReducido8Activo ? "Tarifa feriado: IVA 8%" : "Tarifa general: IVA 15%"}
+              {ivaCfg.enabledGlobal ? "Tarifa feriado: IVA 8%" : "Tarifa general: IVA 15%"}
             </span>
           </div>
           <p className="mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            {ivaCfg.ivaReducido8Activo
-              ? `Aplicando reducción temporal al 8% en el motor de reservas (${ivaCfg.nombreFeriado}).`
-              : "Aplicando tarifa de IVA al 15% más 10% de servicio turístico en alojamientos aplicables."}
+            {ivaCfg.enabledGlobal
+              ? `Aplicando reducción temporal al 8% en el motor de reservas (${ivaCfg.decretoNombre}).`
+              : tx("Aplicando tarifa de IVA al 15% más 10% de servicio turístico en alojamientos aplicables.")}
           </p>
         </div>
       </div>
@@ -398,7 +400,7 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
           type="button"
           onClick={() => toggleIva(false)}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
-            !ivaCfg.ivaReducido8Activo
+            !ivaCfg.enabledGlobal
               ? "bg-amber-500 text-slate-950 border-amber-400 shadow-sm"
               : "bg-transparent text-slate-400 border-slate-700 hover:text-white"
           }`}
@@ -409,12 +411,12 @@ function IvaEmergencySwitchBanner({ userName = "Administrador" }: { userName?: s
           type="button"
           onClick={() => toggleIva(true)}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
-            ivaCfg.ivaReducido8Activo
+            ivaCfg.enabledGlobal
               ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm"
               : "bg-transparent text-slate-400 border-slate-700 hover:text-white"
           }`}
         >
-          8% Feriado turístico
+          {tx("8% Feriado turístico")}
         </button>
       </div>
     </div>
@@ -444,7 +446,7 @@ function KpiCard({
         className="text-xs uppercase tracking-widest mb-1"
         style={{ color: "var(--muted-foreground)" }}
       >
-        {label}
+        {tx(label)}
       </p>
       <p
         className="mono text-2xl font-semibold leading-none"
@@ -600,7 +602,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           style={{ borderColor: "var(--border)" }}
         >
           <h2 className="text-lg" style={{ color: "var(--foreground)" }}>
-            Nueva Reserva
+            {tx("Nueva Reserva")}
           </h2>
           <button
             onClick={onClose}
@@ -614,7 +616,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Nombre del huésped *
+                {tx("Nombre del huésped *")}
               </label>
               <input
                 className="w-full px-3 py-2 rounded text-sm border outline-none transition-colors"
@@ -625,12 +627,12 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
                 }}
                 value={form.guestName}
                 onChange={(e) => setForm({ ...form, guestName: e.target.value })}
-                placeholder="Nombre completo"
+                placeholder={tx("Nombre completo")}
               />
             </div>
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Email
+                {tx("Email")}
               </label>
               <input
                 className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -641,14 +643,14 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
                 }}
                 value={form.guestEmail}
                 onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
-                placeholder="correo@ejemplo.com"
+                placeholder={tx("correo@ejemplo.com")}
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Fecha de Entrada (Arribo) *
+                {tx("Fecha de Entrada (Arribo) *")}
               </label>
               <input
                 type="date"
@@ -665,7 +667,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Fecha de Salida *
+                {tx("Fecha de Salida *")}
               </label>
               <input
                 type="date"
@@ -683,7 +685,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-              Tipo de Habitación (Cupo Web) *
+              {tx("Tipo de Habitación (Cupo Web) *")}
             </label>
             <select
               className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -708,7 +710,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Adultos
+                {tx("Adultos")}
               </label>
               <select
                 className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -727,7 +729,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Niños
+                {tx("Niños")}
               </label>
               <select
                 className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -746,7 +748,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Canal
+                {tx("Canal")}
               </label>
               <select
                 className="w-full px-3 py-2 rounded text-sm border outline-none"
@@ -768,7 +770,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-              Observaciones de la reserva
+              {tx("Observaciones de la reserva")}
             </label>
             <textarea
               className="w-full px-3 py-2 rounded text-sm border outline-none resize-none"
@@ -780,7 +782,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Hora estimada de arribo, extras solicitados..."
+              placeholder={tx("Hora estimada de arribo, extras solicitados...")}
             />
           </div>
           {total > 0 && (
@@ -789,7 +791,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               style={{ background: "var(--secondary)" }}
             >
               <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                {nights()} noches × {selectedRoom && fmt(selectedRoom.pricePerNight)}
+                {nights()} noches × {fmt(selectedRoomType.pricePerNight)}
               </span>
               <span className="mono font-semibold" style={{ color: "var(--primary)" }}>
                 {fmt(total)}
@@ -809,7 +811,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               color: "var(--muted-foreground)",
             }}
           >
-            Cancelar
+            {tx("Cancelar")}
           </button>
           <button
             onClick={() => {
@@ -829,7 +831,7 @@ function NewBookingModal({ onClose }: { onClose: () => void }) {
               color: "var(--primary-foreground)",
             }}
           >
-            Confirmar Reserva y Emitir Voucher
+            {tx("Confirmar Reserva y Emitir Voucher")}
           </button>
         </div>
       </div>
@@ -864,10 +866,10 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl leading-tight" style={{ color: "var(--foreground)" }}>
-            Panel de control
+            {tx("Panel de control")}
           </h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Gestión de reservas y ocupación en tiempo real
+            {tx("Gestión de reservas y ocupación en tiempo real")}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -876,14 +878,14 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             onClick={triggerSimulatedBooking}
             className="px-3.5 py-2 rounded text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1.5"
           >
-            <span>Probar sonido de notificación</span>
+            <span>{tx("Probar sonido de notificación")}</span>
           </button>
           <button
             onClick={onNewBooking}
             className="px-4 py-2 rounded text-sm font-semibold transition-all hover:opacity-90 cursor-pointer"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            + Nueva reserva
+            {tx("+ Nueva reserva")}
           </button>
         </div>
       </div>
@@ -906,23 +908,23 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
         <KpiCard
           label="Cupos Web Reservados"
           value={`${occupancyPct}%`}
-          sub={`${reservedCupos} de ${totalHotelCupos} cupos comercializados`}
+          sub={tx("{reserved} de {total} cupos comercializados", { reserved: reservedCupos, total: totalHotelCupos })}
           accent
         />
         <KpiCard
-          label="Revenue Reservas (Ago)"
+          label={tx("Revenue Reservas (Ago)")}
           value={fmt(21600)}
           sub="↑ 8.4% vs julio"
         />
         <KpiCard
-          label="Arribos por Validar"
+          label={tx("Arribos por Validar")}
           value={String(confirmedUpcoming.length)}
-          sub="reservas garantizadas próximas"
+          sub={tx("reservas garantizadas próximas")}
         />
         <KpiCard
-          label="Reservas Validadas"
+          label={tx("Reservas Validadas")}
           value={String(validatedStays.length)}
-          sub="reservas efectivas registradas"
+          sub={tx("reservas efectivas registradas")}
         />
       </div>
 
@@ -935,10 +937,10 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
         >
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
-              Revenue mensual por reservas
+              {tx("Revenue mensual por reservas")}
             </p>
             <span className="mono text-xs px-2 py-0.5 rounded" style={{ background: "var(--muted)", color: "var(--primary)" }}>
-              Últimos 6 meses
+              {tx("Últimos 6 meses")}
             </span>
           </div>
           <BarChart />
@@ -953,13 +955,13 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             <OccupancyRing pct={occupancyPct} />
             <div>
               <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Cupo Web
+                {tx("Cupo Web")}
               </p>
               <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                 {reservedCupos} cupos reservados
               </p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                {totalAvailableCupos} cupos libres para venta online
+                {tx("{n} cupos libres para venta online", { n: totalAvailableCupos })}
               </p>
             </div>
           </div>
@@ -968,7 +970,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ background: "var(--card)", borderColor: "var(--border)" }}
           >
             <p className="text-xs uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
-              Canal de origen de reservas
+              {tx("Canal de origen de reservas")}
             </p>
             <SourceBar />
           </div>
@@ -987,10 +989,10 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Próximos Arribos (Pendientes de Validación)
+              {tx("Próximos Arribos (Pendientes de Validación)")}
             </p>
             <span className="mono text-xs" style={{ color: "var(--primary)" }}>
-              {confirmedUpcoming.length} reservas
+              {confirmedUpcoming.length} {tx("reservas")}
             </span>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--border)" }}>
@@ -1001,7 +1003,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
                     {r.guestName}
                   </p>
                   <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    {r.roomType} · Entrada {fmtDate(r.checkIn)} ({r.nights}n)
+                    {tx(r.roomType)} · {tx("Entrada")} {fmtDate(r.checkIn)} ({r.nights}n)
                   </p>
                 </div>
                 <div className="text-right">
@@ -1025,10 +1027,10 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Reservas Validadas y Liquidadas
+              {tx("Reservas Validadas y Liquidadas")}
             </p>
             <span className="mono text-xs" style={{ color: "#6ee7b7" }}>
-              {validatedStays.length} reservas
+              {validatedStays.length} {tx("reservas")}
             </span>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--border)" }}>
@@ -1039,7 +1041,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
                     {r.guestName}
                   </p>
                   <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    {r.roomType} · {r.source} {r.voucherValidatedAt ? `· Validada: ${r.voucherValidatedAt}` : ""}
+                    {tx(r.roomType)} · {tx(r.source)} {r.voucherValidatedAt ? `· Validada: ${r.voucherValidatedAt}` : ""}
                   </p>
                 </div>
                 <div className="text-right">
@@ -1057,7 +1059,7 @@ function Dashboard({ onNewBooking }: { onNewBooking: () => void }) {
   );
 }
 
-function ReservationsView({ hotelId }: { hotelId: string }) {
+function ReservationsView({ hotelId, hotelName }: { hotelId: string; hotelName: string }) {
   const [reservations, setReservations] = usePersistentState<Reservation[]>(`hoteldirekt.${hotelId}.reservations`, RESERVATIONS);
   const [filter, setFilter] = useState<ReservationStatus | "all">("all");
   const [search, setSearch] = useState("");
@@ -1066,11 +1068,11 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
   const [validationFeedback, setValidationFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<HotelInvoice | null>(null);
 
-  // Sincronizar reservas creadas por huéspedes en el portal web (hoteldirekt_guest_reservations)
+  // Sincronizar reservas creadas por huéspedes en el portal web (GUEST_RESERVATIONS_KEY)
   useEffect(() => {
     function syncGuestBookings() {
       try {
-        const raw = localStorage.getItem("hoteldirekt_guest_reservations");
+        const raw = readGuestReservationsRaw();
         if (!raw) return;
         const guestList: MyReservation[] = JSON.parse(raw);
         const forThisHotel = guestList.filter(g => !g.hotelId || g.hotelId === hotelId);
@@ -1110,7 +1112,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
     () =>
       reservations.map(r => ({
         ...r,
-        status: (r.status === "checkin" ? "validated" : r.status === "checkout" ? "completed" : r.status) as ReservationStatus,
+        status: ((r.status as string) === "checkin" ? "validated" : (r.status as string) === "checkout" ? "completed" : r.status) as ReservationStatus,
       })),
     [reservations]
   );
@@ -1219,10 +1221,10 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-            Bandeja de Reservas
+            {tx("Bandeja de Reservas")}
           </h1>
           <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Gestión de reservas entrantes y validación de vouchers de llegada.
+            {tx("Gestión de reservas entrantes y validación de vouchers de llegada.")}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -1231,14 +1233,14 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             onClick={handleSimulateIncomingWebBooking}
             className="px-3.5 py-2 rounded text-xs font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer flex items-center gap-1.5"
           >
-            <span>Probar sonido de notificación</span>
+            <span>{tx("Probar sonido de notificación")}</span>
           </button>
           <button
             onClick={() => setEditing({ id: "", guestName: "", guestEmail: "", roomNumber: "Cupo Web", roomType: "Doble Estándar", checkIn: "", checkOut: "", nights: 1, status: "confirmed", total: 0, adults: 2, children: 0, source: "Directo Web", notes: "" })}
             className="px-4 py-2 rounded text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            + Nueva Reserva
+            {tx("+ Nueva Reserva")}
           </button>
         </div>
       </div>
@@ -1251,10 +1253,10 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-amber-400">
-              Validar reserva por código de confirmación
+              {tx("Validar reserva por código de confirmación")}
             </p>
             <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-              Ingresa el código (RES-XXXXX) presentado por el huésped para verificar su reserva.
+              {tx("Ingresa el código (RES-XXXXX) presentado por el huésped para verificar su reserva.")}
             </p>
           </div>
           <form
@@ -1276,7 +1278,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
               type="submit"
               className="px-3.5 py-1.5 rounded text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors cursor-pointer whitespace-nowrap"
             >
-              Validar
+              {tx("Validar")}
             </button>
           </form>
         </div>
@@ -1304,7 +1306,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             color: "var(--foreground)",
             minWidth: 220,
           }}
-          placeholder="Buscar por huésped, tipo de habitación, código RES..."
+          placeholder={tx("Buscar por huésped, tipo de habitación, código RES...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -1323,7 +1325,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                 border: `1px solid ${filter === t.key ? "transparent" : "var(--border)"}`,
               }}
             >
-              {t.label}
+              {tx(t.label)}
             </button>
           ))}
         </div>
@@ -1345,7 +1347,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                       className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium"
                       style={{ color: "var(--muted-foreground)" }}
                     >
-                      {h}
+                      {tx(h)}
                     </th>
                   )
                 )}
@@ -1381,10 +1383,10 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-semibold text-xs text-amber-400">
-                      {r.roomType}
+                      {tx(r.roomType)}
                     </p>
                     <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                      {r.adults} ad. {r.children ? `· ${r.children} niñ.` : ""}
+                      {r.adults} {r.adults === 1 ? tx("adulto") : tx("adultos")}{r.children ? ` · ${r.children} ${r.children === 1 ? tx("niño") : tx("niños")}` : ""}
                     </p>
                   </td>
                   <td className="px-4 py-3 mono text-xs whitespace-nowrap" style={{ color: "var(--foreground)" }}>
@@ -1397,7 +1399,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                     {r.nights}
                   </td>
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    {r.source}
+                    {tx(r.source)}
                   </td>
                   <td className="px-4 py-3">
                     <span className="mono font-semibold" style={{ color: "var(--primary)" }}>
@@ -1413,18 +1415,18 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                         <button
                           onClick={() => handleConfirmPending(r)}
                           className="text-[11px] px-2 py-1 rounded font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 cursor-pointer"
-                          title="Confirmar reserva"
+                          title={tx("Confirmar reserva")}
                         >
-                          Confirmar
+                          {tx("Confirmar")}
                         </button>
                       )}
                       {r.status === "confirmed" && (
                         <button
                           onClick={() => handleValidateReservation(r.id)}
                           className="text-[11px] px-2 py-1 rounded font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 cursor-pointer"
-                          title="Validar reserva"
+                          title={tx("Validar reserva")}
                         >
-                          Validar
+                          {tx("Validar")}
                         </button>
                       )}
                       <button
@@ -1441,7 +1443,10 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                             checkOut: r.checkOut,
                             nights: r.nights,
                             base,
-                            tax: Number((r.total - base).toFixed(2)),
+                            iva: Number((r.total - base).toFixed(2)),
+                            hotel: hotelName,
+                            hotelId,
+                            issueDate: new Date().toISOString().slice(0, 10),
                             ivaPercent: ivaPct,
                             total: r.total,
                             status: "paid",
@@ -1450,9 +1455,9 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
                         }}
                         className="text-[11px] px-2 py-1 rounded font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 cursor-pointer"
                       >
-                        Voucher
+                        {tx("Voucher")}
                       </button>
-                      <button onClick={() => setEditing({ ...r })} className="text-[11px] px-2 py-1 rounded transition-colors cursor-pointer" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Editar</button>
+                      <button onClick={() => setEditing({ ...r })} className="text-[11px] px-2 py-1 rounded transition-colors cursor-pointer" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>{tx("Editar")}</button>
                     </div>
                   </td>
                 </tr>
@@ -1462,7 +1467,7 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
         </div>
         {filtered.length === 0 && (
           <p className="text-center py-10 text-sm" style={{ color: "var(--muted-foreground)" }}>
-            No se encontraron reservas con ese filtro
+            {tx("No se encontraron reservas con ese filtro")}
           </p>
         )}
       </div>
@@ -1491,29 +1496,29 @@ function ReservationsView({ hotelId }: { hotelId: string }) {
             });
             setEditing(null);
           }} className="w-full max-w-2xl rounded-xl border p-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <div className="flex items-start justify-between mb-5"><div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Reserva</p><h2 className="text-xl">{editing.id ? "Editar reserva" : "Nueva reserva"}</h2></div><button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }}>×</button></div>
+            <div className="flex items-start justify-between mb-5"><div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Reserva</p><h2 className="text-xl">{editing.id ? tx("Editar reserva") : tx("Nueva reserva")}</h2></div><button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }}>×</button></div>
             <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Nombre del huésped" value={editing.guestName} onChange={guestName => setEditing({ ...editing, guestName })} required />
-              <Field label="Email" type="email" value={editing.guestEmail} onChange={guestEmail => setEditing({ ...editing, guestEmail })} required />
-              <Field label="Tipo de Habitación" value={editing.roomType} onChange={roomType => setEditing({ ...editing, roomType })} required />
+              <Field label={tx("Nombre del huésped")} value={editing.guestName} onChange={guestName => setEditing({ ...editing, guestName })} required />
+              <Field label={tx("Email")} type="email" value={editing.guestEmail} onChange={guestEmail => setEditing({ ...editing, guestEmail })} required />
+              <Field label={tx("Tipo de Habitación")} value={editing.roomType} onChange={roomType => setEditing({ ...editing, roomType })} required />
               <Field label="Cupo Web Asignado" value={editing.roomNumber || "Cupo Web"} onChange={roomNumber => setEditing({ ...editing, roomNumber })} />
-              <Field label="Fecha de Entrada (Arribo)" type="date" value={editing.checkIn} onChange={checkIn => setEditing({ ...editing, checkIn })} required />
-              <Field label="Fecha de Salida" type="date" value={editing.checkOut} onChange={checkOut => setEditing({ ...editing, checkOut })} required />
+              <Field label={tx("Fecha de Entrada (Arribo)")} type="date" value={editing.checkIn} onChange={checkIn => setEditing({ ...editing, checkIn })} required />
+              <Field label={tx("Fecha de Salida")} type="date" value={editing.checkOut} onChange={checkOut => setEditing({ ...editing, checkOut })} required />
               <Field label="Total ($ USD)" type="number" value={String(editing.total)} onChange={total => setEditing({ ...editing, total: Number(total) })} />
-              <Field label="Canal de Origen" value={editing.source} onChange={source => setEditing({ ...editing, source })} />
+              <Field label={tx("Canal de Origen")} value={editing.source} onChange={source => setEditing({ ...editing, source })} />
               <div>
-                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Estado de la Reserva</label>
+                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx("Estado de la Reserva")}</label>
                 <select value={editing.status} onChange={event => setEditing({ ...editing, status: event.target.value as ReservationStatus })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
-                  <option value="pending">Por Confirmar</option>
-                  <option value="confirmed">Confirmada</option>
-                  <option value="validated">Validada</option>
-                  <option value="completed">Liquidada</option>
-                  <option value="cancelled">Cancelada</option>
+                  <option value="pending">{tx("Por Confirmar")}</option>
+                  <option value="confirmed">{tx("Confirmada")}</option>
+                  <option value="validated">{tx("Validada")}</option>
+                  <option value="completed">{tx("Liquidada")}</option>
+                  <option value="cancelled">{tx("Cancelada")}</option>
                 </select>
               </div>
-              <Field label="Adultos" type="number" value={String(editing.adults)} onChange={adults => setEditing({ ...editing, adults: Number(adults) })} />
+              <Field label={tx("Adultos")} type="number" value={String(editing.adults)} onChange={adults => setEditing({ ...editing, adults: Number(adults) })} />
             </div>
-            <div className="flex justify-end gap-2 mt-6"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Guardar reserva</button></div>
+            <div className="flex justify-end gap-2 mt-6"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>{tx("Cancelar")}</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>{tx("Guardar reserva")}</button></div>
           </form>
         </div>
       )}
@@ -1552,7 +1557,7 @@ function RoomsView({
   // Reservas hechas por clientes en la plataforma (sincronizadas con la vista del huésped)
   const [clientReservations, setClientReservations] = useState<MyReservation[]>(() => {
     try {
-      const saved = localStorage.getItem("hoteldirekt_guest_reservations");
+      const saved = readGuestReservationsRaw();
       return saved ? JSON.parse(saved) : INITIAL_DEMO_RESERVATIONS;
     } catch {
       return INITIAL_DEMO_RESERVATIONS;
@@ -1563,7 +1568,7 @@ function RoomsView({
     const updated = clientReservations.map(r => (r.id === resId ? { ...r, status: newStatus } : r));
     setClientReservations(updated);
     try {
-      localStorage.setItem("hoteldirekt_guest_reservations", JSON.stringify(updated));
+      localStorage.setItem(GUEST_RESERVATIONS_KEY, JSON.stringify(updated));
     } catch {}
   }
 
@@ -1601,7 +1606,7 @@ function RoomsView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            Tipos de Habitación & Cupos Disponibles
+            {tx("Tipos de Habitación & Cupos Disponibles")}
           </h1>
           <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
             Hotel activo: <strong style={{ color: "var(--primary)" }}>{currentMantaHotel.name}</strong> ({currentMantaHotel.city})
@@ -1613,7 +1618,7 @@ function RoomsView({
             onClick={onGoToGuestWeb}
             className="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer self-start sm:self-auto"
           >
-            <span>Ver vista pública del huésped</span>
+            <span>{tx("Ver vista pública del huésped")}</span>
           </button>
         )}
       </div>
@@ -1628,7 +1633,7 @@ function RoomsView({
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <span>Habitaciones reservadas</span>
+          <span>{tx("Habitaciones reservadas")}</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
             {hotelReservations.length || clientReservations.length}
           </span>
@@ -1642,7 +1647,7 @@ function RoomsView({
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <span>Inventario en venta web</span>
+          <span>{tx("Inventario en venta web")}</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
             {roomOffers.length}
           </span>
@@ -1656,7 +1661,7 @@ function RoomsView({
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <span>Catálogo general de alojamientos</span>
+          <span>{tx("Catálogo general de alojamientos")}</span>
           <span className="mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
             {MANTA_HOTELS.length}
           </span>
@@ -1671,23 +1676,23 @@ function RoomsView({
             <KpiCard
               label="Camas / Plazas Asignadas"
               value={String(displayedReservations.length)}
-              sub="contratadas por turistas"
+              sub={tx("contratadas por turistas")}
               accent
             />
             <KpiCard
-              label="Noches Totales"
+              label={tx("Noches Totales")}
               value={String(totalNights)}
-              sub="estancias en el hotel"
+              sub={tx("estancias en el hotel")}
             />
             <KpiCard
               label="Total Cobrado en Plataforma"
               value={fmtUsd(totalRevenue)}
-              sub="vía pasarela digital"
+              sub={tx("vía pasarela digital")}
             />
             <KpiCard
-              label="Próximas Llegadas"
+              label={tx("Próximas Llegadas")}
               value={String(displayedReservations.filter(r => r.status === "upcoming").length)}
-              sub="pendientes de arribo"
+              sub={tx("pendientes de arribo")}
             />
           </div>
 
@@ -1698,7 +1703,7 @@ function RoomsView({
                 type="text"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Buscar por cliente, tipo de habitación (ej. Suite, Matrimonial), código (ej. RES-4821)..."
+                placeholder={tx("Buscar por cliente, tipo de habitación (ej. Suite, Matrimonial), código (ej. RES-4821)...")}
                 className="w-full px-3 py-2 pl-9 rounded-lg border text-xs outline-none"
                 style={{
                   background: "var(--card)",
@@ -1728,7 +1733,7 @@ function RoomsView({
                     border: `1px solid ${filterStatus === f.key ? "transparent" : "var(--border)"}`,
                   }}
                 >
-                  {f.label}
+                  {tx(f.label)}
                 </button>
               ))}
             </div>
@@ -1770,7 +1775,7 @@ function RoomsView({
                           className="mono text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide flex-shrink-0"
                           style={{ background: badge.bg, color: badge.color }}
                         >
-                          {badge.label}
+                          {tx(badge.label)}
                         </span>
                       </div>
 
@@ -1778,7 +1783,7 @@ function RoomsView({
                       <div className="grid grid-cols-2 gap-3 py-3 text-xs">
                         <div>
                           <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
-                            Cliente / Huésped
+                            {tx("Cliente / Huésped")}
                           </p>
                           <p className="font-semibold text-slate-200 mt-0.5 truncate">
                             {res.guestName}
@@ -1795,13 +1800,13 @@ function RoomsView({
 
                         <div>
                           <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
-                            Fechas Seleccionadas
+                            {tx("Fechas Seleccionadas")}
                           </p>
                           <p className="font-semibold text-slate-200 mt-0.5">
                             {fmtDate(res.checkIn)} → {fmtDate(res.checkOut)}
                           </p>
                           <p className="text-[11px] text-amber-400">
-                            {res.nights} noche{res.nights > 1 ? "s" : ""} reservada{res.nights > 1 ? "s" : ""}
+                            {tx(res.nights === 1 ? "{n} noche reservada" : "{n} noches reservadas", { n: res.nights })}
                           </p>
                           <p className="text-[11px] text-slate-400 mt-0.5">
                             {res.payMethod || "Cobro digital liquidado"}
@@ -1817,7 +1822,7 @@ function RoomsView({
                     >
                       <div>
                         <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                          Total cobrado
+                          {tx("Total cobrado")}
                         </p>
                         <p className="mono font-bold text-base text-amber-400">
                           {fmtUsd(res.total)}
@@ -1829,7 +1834,7 @@ function RoomsView({
                           onClick={() => setVoucherRes(res)}
                           className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1 cursor-pointer"
                         >
-                          <span>Ver Voucher</span>
+                          <span>{tx("Ver Voucher")}</span>
                         </button>
 
                         {res.status === "upcoming" ? (
@@ -1838,7 +1843,7 @@ function RoomsView({
                             className="px-2.5 py-1.5 rounded-lg text-xs font-medium border text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
                             style={{ borderColor: "rgba(16, 185, 129, 0.4)" }}
                           >
-                            Registrar llegada
+                            {tx("Registrar llegada")}
                           </button>
                         ) : res.status === "completed" ? (
                           <button
@@ -1857,9 +1862,9 @@ function RoomsView({
             </div>
           ) : (
             <div className="text-center py-12 rounded-xl border" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-              <p className="font-semibold text-slate-300">No hay reservas con ese criterio para este hotel</p>
+              <p className="font-semibold text-slate-300">{tx("No hay reservas con ese criterio para este hotel")}</p>
               <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-                Puedes probar con otro filtro o consultar las reservas precargadas.
+                {tx("Puedes probar con otro filtro o consultar las reservas precargadas.")}
               </p>
             </div>
           )}
@@ -1872,7 +1877,7 @@ function RoomsView({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
-                Tipos de Habitación en Oferta Web
+                {tx("Tipos de Habitación en Oferta Web")}
               </h2>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                 Estas son las opciones de habitaciones y cupos disponibles que los turistas pueden reservar en la web de <strong>{currentMantaHotel.name}</strong>.
@@ -1898,7 +1903,7 @@ function RoomsView({
               className="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
             >
               <span>+</span>
-              <span>Ofertar nuevo tipo de habitación</span>
+              <span>{tx("Ofertar nuevo tipo de habitación")}</span>
             </button>
           </div>
 
@@ -1942,10 +1947,10 @@ function RoomsView({
                     <div className="pt-2 border-t flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
                       <div>
                         <p className="text-[10px] uppercase font-bold" style={{ color: "var(--muted-foreground)" }}>
-                          Cupos para venta web
+                          {tx("Cupos para venta web")}
                         </p>
                         <p className="font-mono text-xs font-semibold text-slate-200">
-                          {offer.available > 0 ? `${offer.available} disponibles` : "Agotado en la web"}
+                          {offer.available > 0 ? `${offer.available} disponibles` : tx("Agotado en la web")}
                         </p>
                       </div>
 
@@ -1978,7 +1983,7 @@ function RoomsView({
                     className="flex-1 py-1.5 rounded-lg border text-xs font-medium hover:bg-slate-800 transition-colors cursor-pointer text-slate-300"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    Editar tarifa
+                    {tx("Editar tarifa")}
                   </button>
                   <button
                     onClick={() => {
@@ -1997,7 +2002,7 @@ function RoomsView({
                         ? "border-red-800/60 text-red-300 hover:bg-red-950/50"
                         : "border-emerald-700/60 text-emerald-300 hover:bg-emerald-950/50"
                     }`}
-                    title="Pausar o reanudar venta de este tipo de habitación"
+                    title={tx("Pausar o reanudar venta de este tipo de habitación")}
                   >
                     {offer.available > 0 ? "Pausar venta" : "Activar venta"}
                   </button>
@@ -2014,10 +2019,10 @@ function RoomsView({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
-                Catálogo de los 116 Alojamientos de Manta
+                {tx("Catálogo de los 116 Alojamientos de Manta")}
               </h2>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                Catálogo oficial adscrito al Catastro de Manta 2026. Selecciona cualquier establecimiento para gestionar sus tipos de habitación y cupos.
+                {tx("Catálogo oficial adscrito al Catastro de Manta 2026. Selecciona cualquier establecimiento para gestionar sus tipos de habitación y cupos.")}
               </p>
             </div>
           </div>
@@ -2054,7 +2059,7 @@ function RoomsView({
                     <p className="text-xs text-slate-400 mt-0.5">{h.city}</p>
 
                     <div className="mt-2 text-xs flex items-center justify-between text-slate-300">
-                      <span>Tipos de habitación: <strong>{h.rooms.length} opciones</strong></span>
+                      <span>{tx("Tipos de habitación:")} <strong>{h.rooms.length} opciones</strong></span>
                       <span className="font-mono text-amber-400 font-bold">Desde ${h.priceFrom}</span>
                     </div>
                   </div>
@@ -2062,7 +2067,7 @@ function RoomsView({
                   <div className="mt-3 pt-2.5 border-t" style={{ borderColor: "var(--border)" }}>
                     {isSelected ? (
                       <span className="block text-center text-xs font-bold text-amber-400 py-1">
-                        ● Hotel Activo
+                        {tx("● Hotel Activo")}
                       </span>
                     ) : (
                       <button
@@ -2072,7 +2077,7 @@ function RoomsView({
                         }}
                         className="w-full py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
                       >
-                        Gestionar este hotel →
+                        {tx("Gestionar este hotel →")}
                       </button>
                     )}
                   </div>
@@ -2096,7 +2101,7 @@ function RoomsView({
             <div className="flex items-center justify-between">
               <div>
                 <span className="mono text-[10px] text-amber-400 uppercase tracking-widest font-bold">
-                  Configuración Web
+                  {tx("Configuración Web")}
                 </span>
                 <h3 className="text-lg font-bold text-slate-100">{editingOffer.type}</h3>
               </div>
@@ -2117,7 +2122,7 @@ function RoomsView({
               className="space-y-3"
             >
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Nombre del Tipo de Habitación</label>
+                <label className="block text-xs text-slate-400 mb-1">{tx("Nombre del Tipo de Habitación")}</label>
                 <input
                   type="text"
                   value={editingOffer.type}
@@ -2130,7 +2135,7 @@ function RoomsView({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Tarifa por Noche ($ USD)</label>
+                  <label className="block text-xs text-slate-400 mb-1">{tx("Tarifa por Noche ($ USD)")}</label>
                   <input
                     type="number"
                     min="10"
@@ -2143,7 +2148,7 @@ function RoomsView({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Cupos Web Asignados</label>
+                  <label className="block text-xs text-slate-400 mb-1">{tx("Cupos Web Asignados")}</label>
                   <input
                     type="number"
                     min="0"
@@ -2157,7 +2162,7 @@ function RoomsView({
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Configuración de Camas</label>
+                <label className="block text-xs text-slate-400 mb-1">{tx("Configuración de Camas")}</label>
                 <input
                   type="text"
                   value={editingOffer.beds}
@@ -2173,13 +2178,13 @@ function RoomsView({
                   onClick={() => setEditingOffer(null)}
                   className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white cursor-pointer"
                 >
-                  Cancelar
+                  {tx("Cancelar")}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors cursor-pointer"
                 >
-                  Guardar cambios
+                  {tx("Guardar cambios")}
                 </button>
               </div>
             </form>
@@ -2214,22 +2219,22 @@ function RevenueView() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>
-          Revenue & Análisis
+          {tx("Revenue & Análisis")}
         </h1>
         <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-          Período: Marzo — Agosto 2026
+          {tx("Período: Marzo — Agosto 2026")}
         </p>
       </div>
 
       {/* Summary KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Revenue total (6m)" value={fmt(totalRevenue)} sub="últimos 6 meses" accent />
-        <KpiCard label="Promedio mensual" value={fmt(Math.round(totalRevenue / 6))} sub="por mes" />
-        <KpiCard label="Ocupación media" value={`${avgOccupancy}%`} sub="últimos 6 meses" />
+        <KpiCard label={tx("Revenue total (6m)")} value={fmt(totalRevenue)} sub={tx("últimos 6 meses")} accent />
+        <KpiCard label="Promedio mensual" value={fmt(Math.round(totalRevenue / 6))} sub={tx("por mes")} />
+        <KpiCard label={tx("Ocupación media")} value={`${avgOccupancy}%`} sub={tx("últimos 6 meses")} />
         <KpiCard
           label="RevPAR"
           value={fmt(Math.round((21600 / (totalHotelCupos * 31)) * 100) / 100)}
-          sub="Revenue por cupo web disponible"
+          sub={tx("Revenue por cupo web disponible")}
         />
       </div>
 
@@ -2244,7 +2249,7 @@ function RevenueView() {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              Detalle mensual
+              {tx("Detalle mensual")}
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -2258,7 +2263,7 @@ function RevenueView() {
                         className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium"
                         style={{ color: "var(--muted-foreground)" }}
                       >
-                        {h}
+                        {tx(h)}
                       </th>
                     )
                   )}
@@ -2349,7 +2354,7 @@ function RevenueView() {
             className="text-xs uppercase tracking-widest mb-4"
             style={{ color: "var(--muted-foreground)" }}
           >
-            Revenue por tipo de habitación (Ago)
+            {tx("Revenue por tipo de habitación (Ago)")}
           </p>
           <div className="space-y-3">
             {roomTypeRevenue.map((rt) => (
@@ -2376,7 +2381,7 @@ function RevenueView() {
                   />
                 </div>
                 <p className="mono text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                  {rt.pct}% del total
+                  {rt.pct}% {tx("del total")}
                 </p>
               </div>
             ))}
@@ -2387,7 +2392,7 @@ function RevenueView() {
             style={{ borderColor: "var(--border)" }}
           >
             <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>
-              Por canal (Ago)
+              {tx("Por canal (Ago)")}
             </p>
             <SourceBar />
           </div>
@@ -2502,15 +2507,15 @@ function GuestsView({ hotelId }: { hotelId: string }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-            Directorio de Huéspedes & Ficha de Registro
+            {tx("Directorio de Huéspedes & Ficha de Registro")}
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Cumplimiento LOPDP Ecuador · Validación de Cédula (10 dígitos), RUC (13 dígitos) y Pasaporte
+            {tx("Cumplimiento LOPDP Ecuador · Validación de Cédula (10 dígitos), RUC (13 dígitos) y Pasaporte")}
           </p>
         </div>
         <div className="flex gap-3">
           <span className="mono text-xs px-3 py-1.5 rounded" style={{ background: "var(--card)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}>
-            {guests.length} huéspedes registrados
+            {guests.length} {tx("huéspedes registrados")}
           </span>
           <button
             onClick={() =>
@@ -2536,7 +2541,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
             className="px-3 py-1.5 rounded text-xs font-semibold"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            + Registrar Huésped
+            {tx("+ Registrar Huésped")}
           </button>
         </div>
       </div>
@@ -2544,7 +2549,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
       <input
         value={search}
         onChange={event => setSearch(event.target.value)}
-        placeholder="Buscar por nombre, razón social, cédula, RUC, pasaporte o ciudad..."
+        placeholder={tx("Buscar por nombre, razón social, cédula, RUC, pasaporte o ciudad...")}
         className="w-full max-w-md rounded border px-3 py-2 text-sm outline-none"
         style={{ background: "var(--card)", borderColor: "var(--border)" }}
       />
@@ -2563,7 +2568,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                     className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium"
                     style={{ color: "var(--muted-foreground)" }}
                   >
-                    {h}
+                    {tx(h)}
                   </th>
                 )
               )}
@@ -2608,15 +2613,15 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                       border: "1px solid currentColor",
                     }}
                   >
-                    {g.docType === "RUC" ? "RUC" : g.docType === "PASAPORTE" ? "PASAPORTE" : "CÉDULA"}
+                    {tx(g.docType === "RUC" ? "RUC" : g.docType === "PASAPORTE" ? "PASAPORTE" : "CÉDULA")}
                   </span>
                   <span className="mono font-semibold" style={{ color: "var(--foreground)" }}>
-                    {g.document || "Pendiente"}
+                    {g.document || tx("Pendiente")}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
                   <p className="font-medium text-slate-300">📍 {[g.city, g.country].filter(Boolean).join(", ")}</p>
-                  <p className="text-[11px]">{g.phone || "Sin teléfono"}</p>
+                  <p className="text-[11px]">{g.phone || tx("Sin teléfono")}</p>
                 </td>
                 <td className="px-4 py-3 mono text-center">
                   <span
@@ -2637,15 +2642,15 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
-                    <button onClick={() => setEditing({ ...g })} className="px-2 py-1 rounded text-xs" style={{ background: "var(--muted)" }}>Editar</button>
+                    <button onClick={() => setEditing({ ...g })} className="px-2 py-1 rounded text-xs" style={{ background: "var(--muted)" }}>{tx("Editar")}</button>
                     <button
                       onClick={() => {
-                        if (confirm(`¿Eliminar a ${g.name}?`)) setGuests(items => items.filter(item => item.id !== g.id));
+                        if (confirm(tx("¿Eliminar a {name}?", { name: g.name }))) setGuests(items => items.filter(item => item.id !== g.id));
                       }}
                       className="px-2 py-1 rounded border text-xs"
                       style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}
                     >
-                      Eliminar
+                      {tx("Eliminar")}
                     </button>
                   </div>
                 </td>
@@ -2662,16 +2667,16 @@ function GuestsView({ hotelId }: { hotelId: string }) {
               event.preventDefault();
               // Validations
               if (editing.docType === "CEDULA" && editing.document && !/^\d{10}$/.test(editing.document)) {
-                alert("La Cédula ecuatoriana debe tener exactamente 10 dígitos numéricos.");
+                alert(tx("La Cédula ecuatoriana debe tener exactamente 10 dígitos numéricos."));
                 return;
               }
               if (editing.docType === "RUC") {
                 if (editing.document && !/^\d{13}$/.test(editing.document)) {
-                  alert("El RUC debe tener exactamente 13 dígitos numéricos.");
+                  alert(tx("El RUC debe tener exactamente 13 dígitos numéricos."));
                   return;
                 }
                 if (!editing.razonSocial?.trim()) {
-                  alert("Para huéspedes con RUC, la Razón Social es obligatoria para la facturación.");
+                  alert(tx("Para huéspedes con RUC, la Razón Social es obligatoria para la facturación."));
                   return;
                 }
               }
@@ -2684,8 +2689,8 @@ function GuestsView({ hotelId }: { hotelId: string }) {
           >
             <div className="flex justify-between mb-4">
               <div>
-                <p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Ficha de Registro de Huésped (LOPDP)</p>
-                <h2 className="text-xl font-bold">{editing.id ? "Editar datos del huésped" : "Nuevo registro de huésped"}</h2>
+                <p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>{tx("Ficha de Registro de Huésped (LOPDP)")}</p>
+                <h2 className="text-xl font-bold">{editing.id ? tx("Editar datos del huésped") : tx("Nuevo registro de huésped")}</h2>
               </div>
               <button type="button" onClick={() => setEditing(null)} style={{ color: "var(--muted-foreground)" }} className="text-lg">×</button>
             </div>
@@ -2693,7 +2698,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
             {/* Document type selector */}
             <div className="mb-4">
               <label className="block text-xs mb-1.5 font-medium" style={{ color: "var(--muted-foreground)" }}>
-                Tipo de identificación oficial:
+                {tx("Tipo de identificación oficial:")}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -2719,9 +2724,9 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                     }}
                   >
                     <p className="font-semibold text-xs" style={{ color: editing.docType === tab.id ? "var(--primary)" : "var(--foreground)" }}>
-                      {tab.label}
+                      {tx(tab.label)}
                     </p>
-                    <p className="text-[10px] text-slate-400">{tab.desc}</p>
+                    <p className="text-[10px] text-slate-400">{tx(tab.desc)}</p>
                   </button>
                 ))}
               </div>
@@ -2731,7 +2736,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
               {/* Document number */}
               <div>
                 <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                  {editing.docType === "CEDULA" ? "Número de Cédula (10 dígitos)" : editing.docType === "RUC" ? "Número de RUC (13 dígitos)" : "Número de Pasaporte (Alfanumérico)"} *
+                  {editing.docType === "CEDULA" ? tx("Número de Cédula (10 dígitos)") : editing.docType === "RUC" ? tx("Número de RUC (13 dígitos)") : tx("Número de Pasaporte (Alfanumérico)")} *
                 </label>
                 <input
                   className="w-full px-3 py-2 rounded border text-sm outline-none font-mono"
@@ -2753,7 +2758,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
               {editing.docType === "RUC" ? (
                 <div>
                   <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
-                    Razón Social de la Empresa *
+                    {tx("Razón Social de la Empresa *")}
                   </label>
                   <input
                     className="w-full px-3 py-2 rounded border text-sm outline-none"
@@ -2766,7 +2771,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                 </div>
               ) : (
                 <Field
-                  label="Nacionalidad / País emisor"
+                  label={tx("Nacionalidad / País emisor")}
                   value={editing.country}
                   onChange={country => setEditing({ ...editing, country })}
                   required
@@ -2780,14 +2785,14 @@ function GuestsView({ hotelId }: { hotelId: string }) {
                 required
               />
               <Field
-                label="Correo electrónico"
+                label={tx("Correo electrónico")}
                 type="email"
                 value={editing.email}
                 onChange={email => setEditing({ ...editing, email })}
                 required
               />
               <Field
-                label="Teléfono / Celular (WhatsApp)"
+                label={tx("Teléfono / Celular (WhatsApp)")}
                 value={editing.phone}
                 onChange={phone => setEditing({ ...editing, phone })}
                 required
@@ -2795,7 +2800,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
 
               {editing.docType === "RUC" && (
                 <Field
-                  label="País fiscal"
+                  label={tx("País fiscal")}
                   value={editing.country}
                   onChange={country => setEditing({ ...editing, country })}
                   required
@@ -2803,19 +2808,19 @@ function GuestsView({ hotelId }: { hotelId: string }) {
               )}
 
               <Field
-                label="Ciudad de residencia"
+                label={tx("Ciudad de residencia")}
                 value={editing.city || ""}
                 onChange={city => setEditing({ ...editing, city })}
               />
               <Field
-                label="Dirección de domicilio / tributaria"
+                label={tx("Dirección de domicilio / tributaria")}
                 value={editing.address || ""}
                 onChange={address => setEditing({ ...editing, address })}
               />
 
               <div className="sm:col-span-2">
                 <Field
-                  label="Contacto de emergencia (Nombre y teléfono)"
+                  label={tx("Contacto de emergencia (Nombre y teléfono)")}
                   value={editing.emergencyContact || ""}
                   onChange={emergencyContact => setEditing({ ...editing, emergencyContact })}
                 />
@@ -2826,7 +2831,7 @@ function GuestsView({ hotelId }: { hotelId: string }) {
               
               <div className="sm:col-span-2">
                 <Field
-                  label="Preferencias de alojamiento / Notas especiales"
+                  label={tx("Preferencias de alojamiento / Notas especiales")}
                   value={editing.notes}
                   onChange={notes => setEditing({ ...editing, notes })}
                 />
@@ -2835,10 +2840,10 @@ function GuestsView({ hotelId }: { hotelId: string }) {
 
             <div className="flex justify-end gap-2 mt-6">
               <button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
-                Cancelar
+                {tx("Cancelar")}
               </button>
               <button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
-                Guardar Huésped
+                {tx("Guardar Huésped")}
               </button>
             </div>
           </form>
@@ -2892,7 +2897,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
   const totalIva = invoices.reduce((s, i) => s + i.iva, 0);
 
   function fmtDate(d: string) {
-    return new Date(d + "T12:00:00").toLocaleDateString("es-EC", { day: "2-digit", month: "short", year: "numeric" });
+    return new Date(d + "T12:00:00").toLocaleDateString(locale(), { day: "2-digit", month: "short", year: "numeric" });
   }
 
   function handleCreateQuickInvoice(e: React.FormEvent) {
@@ -2936,7 +2941,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Comprobantes de Pago y Liquidación</h1>
+            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>{tx("Comprobantes de Pago y Liquidación")}</h1>
             <span className="mono text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
               Pasarela PayPhone / DeUna
             </span>
@@ -2947,30 +2952,30 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
           onClick={() => setShowNewInvoiceModal(true)}
           className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-md flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
-          <span>+</span> Registrar Comprobante de Pago
+          <span>+</span> {tx("Registrar Comprobante de Pago")}
         </button>
       </div>
 
       {/* Operational model banner */}
       <div className="p-3.5 rounded-xl border flex items-center justify-between gap-3 text-xs" style={{ background: "rgba(245, 158, 11, 0.08)", borderColor: "rgba(245, 158, 11, 0.25)" }}>
         <div>
-          <p className="font-bold text-amber-400">Cobros digitales y liquidación de estancias</p>
-          <p className="text-slate-400 mt-0.5">Gestión de pagos recibidos por pasarela digital con comprobantes y vouchers asociados a cada reserva.</p>
+          <p className="font-bold text-amber-400">{tx("Cobros digitales y liquidación de estancias")}</p>
+          <p className="text-slate-400 mt-0.5">{tx("Gestión de pagos recibidos por pasarela digital con comprobantes y vouchers asociados a cada reserva.")}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Cobrado en Pasarela (Ago)" value={fmtUsd(totalPaid)} sub={`${invoices.filter(i => i.status === "paid").length} pagos confirmados`} accent />
-        <KpiCard label="Pendiente de cobro" value={fmtUsd(totalPending)} sub={`${invoices.filter(i => i.status === "pending" || i.status === "overdue").length} transacciones`} />
-        <KpiCard label="Comprobantes Emitidos" value={String(invoices.filter(i => i.hotelInvoiceNumber).length || 3)} sub="registrados en el sistema de reservas" />
-        <KpiCard label="Comprobantes Pendientes" value={String(Math.max(0, invoices.length - (invoices.filter(i => i.hotelInvoiceNumber).length || 3)))} sub="por conciliar o liquidar" />
+        <KpiCard label={tx("Cobrado en Pasarela (Ago)")} value={fmtUsd(totalPaid)} sub={`${invoices.filter(i => i.status === "paid").length} ${tx("pagos confirmados")}`} accent />
+        <KpiCard label={tx("Pendiente de cobro")} value={fmtUsd(totalPending)} sub={`${invoices.filter(i => i.status === "pending" || i.status === "overdue").length} transacciones`} />
+        <KpiCard label="Comprobantes Emitidos" value={String(invoices.filter(i => i.hotelInvoiceNumber).length || 3)} sub={tx("registrados en el sistema de reservas")} />
+        <KpiCard label="Comprobantes Pendientes" value={String(Math.max(0, invoices.length - (invoices.filter(i => i.hotelInvoiceNumber).length || 3)))} sub={tx("por conciliar o liquidar")} />
       </div>
 
       {/* Filters */}
       <div className="flex gap-1.5 flex-wrap">
         {[{ k: "all" as const, l: "Todos los Comprobantes" }, { k: "paid" as const, l: "Pagados" }, { k: "pending" as const, l: "Pendientes" }, { k: "overdue" as const, l: "Por Conciliar" }].map(f => (
           <button key={f.k} onClick={() => setStatusFilter(f.k)} className="px-3 py-1.5 rounded text-xs font-medium transition-colors border cursor-pointer" style={{ background: statusFilter === f.k ? "var(--primary)" : "var(--card)", color: statusFilter === f.k ? "var(--primary-foreground)" : "var(--muted-foreground)", borderColor: statusFilter === f.k ? "transparent" : "var(--border)" }}>
-            {f.l}
+            {tx(f.l)}
           </button>
         ))}
       </div>
@@ -2981,7 +2986,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {["Nº Comprobante", "Reserva", "Huésped", "Fecha", "Subtotal", "IVA 15%", "Total USD", "Pasarela", "Estado Pago", "Recibo / Comprobante", ""].map(h => (
-                  <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{h}</th>
+                  <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{tx(h)}</th>
                 ))}
               </tr>
             </thead>
@@ -3002,7 +3007,7 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
                     <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>{fmtUsd(inv.iva)}</td>
                     <td className="px-4 py-3 mono font-semibold text-amber-400">{fmtUsd(inv.total)}</td>
                     <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>{inv.payMethod}</td>
-                    <td className="px-4 py-3"><span className="mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
+                    <td className="px-4 py-3"><span className="mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide" style={{ background: st.bg, color: st.color }}>{tx(st.label)}</span></td>
                     <td className="px-4 py-3">
                       {inv.hotelInvoiceNumber ? (
                         <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1 w-fit">
@@ -3010,13 +3015,13 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
                         </span>
                       ) : (
                         <span className="mono text-[10px] font-medium px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-800/60 flex items-center gap-1 w-fit">
-                          Pendiente
+                          {tx("Pendiente")}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <button onClick={() => setSelected(inv)} className="text-xs px-2.5 py-1 rounded font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors cursor-pointer whitespace-nowrap">
-                        Ver Comprobante
+                        {tx("Ver Comprobante")}
                       </button>
                     </td>
                   </tr>
@@ -3052,13 +3057,13 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
           <form onSubmit={handleCreateQuickInvoice} className="w-full max-w-md rounded-2xl border p-6 space-y-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: "var(--border)" }}>
               <div>
-                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>Registrar Comprobante de Pago</h3>
+                <h3 className="text-base font-bold" style={{ color: "var(--foreground)" }}>{tx("Registrar Comprobante de Pago")}</h3>
                 <p className="text-xs text-amber-500 font-medium">{hotelName} · Pasarela de cobro</p>
               </div>
               <button type="button" onClick={() => setShowNewInvoiceModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
             <div>
-              <label className="block text-xs mb-1 text-slate-400">Razón Social / Nombre del Huésped *</label>
+              <label className="block text-xs mb-1 text-slate-400">{tx("Razón Social / Nombre del Huésped *")}</label>
               <input type="text" required value={newInvGuest} onChange={e => setNewInvGuest(e.target.value)} placeholder="Ej: Diana Salazar" className="w-full rounded border px-3 py-2 text-xs outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }} />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -3067,12 +3072,12 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
                 <input type="text" required value={newInvDoc} onChange={e => setNewInvDoc(e.target.value)} placeholder="1718293847" className="w-full rounded border px-3 py-2 text-xs outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }} />
               </div>
               <div>
-                <label className="block text-xs mb-1 text-slate-400">Noches de Estancia</label>
+                <label className="block text-xs mb-1 text-slate-400">{tx("Noches de Estancia")}</label>
                 <input type="number" min="1" value={newInvNights} onChange={e => setNewInvNights(Number(e.target.value))} className="w-full rounded border px-3 py-2 text-xs outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }} />
               </div>
             </div>
             <div>
-              <label className="block text-xs mb-1 text-slate-400">Subtotal Sin Impuestos (USD) *</label>
+              <label className="block text-xs mb-1 text-slate-400">{tx("Subtotal Sin Impuestos (USD) *")}</label>
               <input type="number" step="0.01" min="1" required value={newInvBase} onChange={e => setNewInvBase(Number(e.target.value))} className="w-full rounded border px-3 py-2 text-xs font-mono font-bold outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }} />
               <div className="flex justify-between text-[11px] text-slate-400 mt-1">
                 <span>IVA 15% (Referencial): {fmtUsd(newInvBase * 0.15)}</span>
@@ -3080,8 +3085,8 @@ function BillingView({ hotelId, hotel }: { hotelId: string; hotel?: PlatformHote
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setShowNewInvoiceModal(false)} className="px-4 py-2 text-xs text-slate-400 hover:text-white">Cancelar</button>
-              <button type="submit" className="px-5 py-2 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 shadow">Registrar Comprobante</button>
+              <button type="button" onClick={() => setShowNewInvoiceModal(false)} className="px-4 py-2 text-xs text-slate-400 hover:text-white">{tx("Cancelar")}</button>
+              <button type="submit" className="px-5 py-2 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 shadow">{tx("Registrar Comprobante")}</button>
             </div>
           </form>
         </div>
@@ -3151,13 +3156,13 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
     failed:    { bg: "rgba(239, 68, 68, 0.15)", color: "#dc2626", label: "Fallido" },
   };
 
-  const fmtDate = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("es-EC", { day: "2-digit", month: "short" });
+  const fmtDate = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(locale(), { day: "2-digit", month: "short" });
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Pagos & Cobros</h1>
+          <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>{tx("Pagos & Cobros")}</h1>
           <p className="text-xs text-amber-500 font-medium mt-0.5">{hotel.name} · {hotel.city}</p>
         </div>
         <button
@@ -3167,26 +3172,26 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
           }}
           className="px-4 py-2.5 rounded-lg font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-lg shadow-amber-500/20 flex items-center gap-2 self-start sm:self-auto cursor-pointer"
         >
-          + Crear link de pago
+          {tx("+ Crear link de pago")}
         </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Cobrado (Ago)" value={fmtUsd(totalCollected)} sub={`${completedPayments.length} pagos completados`} accent />
-        <KpiCard label="Pendiente de cobro" value={fmtUsd(totalPending)} sub={`${pendingPayments.length} cobros en espera`} />
+        <KpiCard label={tx("Cobrado (Ago)")} value={fmtUsd(totalCollected)} sub={`${completedPayments.length} ${tx("pagos completados")}`} accent />
+        <KpiCard label={tx("Pendiente de cobro")} value={fmtUsd(totalPending)} sub={`${pendingPayments.length} cobros en espera`} />
         <KpiCard label="Cobros fallidos" value={fmtUsd(totalFailed)} sub={`${failedPayments.length} requieren seguimiento`} />
-        <KpiCard label="Ticket medio" value={fmtUsd(avgTicket)} sub="por reserva" />
+        <KpiCard label={tx("Ticket medio")} value={fmtUsd(avgTicket)} sub={tx("por reserva")} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Methods breakdown */}
         <div className="rounded-md border p-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--muted-foreground)" }}>Métodos de pago (Ago)</p>
+          <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--muted-foreground)" }}>{tx("Métodos de pago (Ago)")}</p>
           <div className="space-y-3">
             {methods.map(m => (
               <div key={m.name}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs" style={{ color: "var(--foreground)" }}>{m.name}</span>
+                  <span className="text-xs" style={{ color: "var(--foreground)" }}>{tx(m.name)}</span>
                   <div className="flex gap-3">
                     <span className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>{m.count} cobros</span>
                     <span className="mono text-xs font-semibold" style={{ color: "var(--primary)" }}>{fmtUsd(m.amount)}</span>
@@ -3203,7 +3208,7 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
         {/* Pending collections with Quick Link de Pago button */}
         <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Cobros pendientes</p>
+            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{tx("Cobros pendientes")}</p>
             <span className="mono text-xs px-2 py-0.5 rounded font-bold" style={{ background: "rgba(245, 158, 11, 0.15)", color: "#d97706" }}>
               {fmtUsd(totalPending)} pendiente
             </span>
@@ -3215,27 +3220,27 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
                 <div key={p.id} className="flex items-center justify-between px-4 py-3 gap-2">
                   <div>
                     <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{p.guest}</p>
-                    <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>{p.method} · {fmtDate(p.date)}</p>
+                    <p className="mono text-xs" style={{ color: "var(--muted-foreground)" }}>{tx(p.method)} · {fmtDate(p.date)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="mono font-semibold text-sm" style={{ color: "var(--foreground)" }}>{fmtUsd(p.amount)}</span>
-                    <span className="mono text-[10px] px-2 py-0.5 rounded uppercase font-medium" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                    <span className="mono text-[10px] px-2 py-0.5 rounded uppercase font-medium" style={{ background: st.bg, color: st.color }}>{tx(st.label)}</span>
                     <button
                       onClick={() => {
                         setLinkPreload({ guest: p.guest, amount: p.amount, concept: p.concept || `Estancia - ${p.guest}` });
                         setShowLinkModal(true);
                       }}
                       className="px-2 py-1 rounded text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors flex items-center gap-1 cursor-pointer"
-                      title="Generar link de pago para este cliente"
+                      title={tx("Generar link de pago para este cliente")}
                     >
-                      Link
+                      {tx("Link")}
                     </button>
                   </div>
                 </div>
               );
             })}
             {pendingPayments.length === 0 && (
-              <div className="p-4 text-center text-xs text-slate-500">No hay cobros pendientes</div>
+              <div className="p-4 text-center text-xs text-slate-500">{tx("No hay cobros pendientes")}</div>
             )}
           </div>
         </div>
@@ -3244,14 +3249,14 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
       {/* All payments table */}
       <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-          <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Todos los movimientos</p>
+          <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{tx("Todos los movimientos")}</p>
           <span className="text-xs text-slate-400 mono">{payments.length} transacciones registradas</span>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
               {["ID Pago", "Huésped", "Importe (USD)", "Método / Pasarela", "Fecha", "Estado", "Acciones"].map(h => (
-                <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{h}</th>
+                <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{tx(h)}</th>
               ))}
             </tr>
           </thead>
@@ -3263,14 +3268,14 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
                   <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>{p.id}</td>
                   <td className="px-4 py-3 font-medium" style={{ color: "var(--foreground)" }}>
                     <p>{p.guest}</p>
-                    {p.concept && <p className="text-[11px] text-slate-500">{p.concept}</p>}
+                    {p.concept && <p className="text-[11px] text-slate-500">{tx(p.concept)}</p>}
                   </td>
                   <td className="px-4 py-3 mono font-semibold text-amber-400">{fmtUsd(p.amount)}</td>
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                    {p.method}
+                    {tx(p.method)}
                   </td>
                   <td className="px-4 py-3 mono text-xs" style={{ color: "var(--muted-foreground)" }}>{fmtDate(p.date)}</td>
-                  <td className="px-4 py-3"><span className="mono text-[10px] px-2 py-0.5 rounded uppercase font-medium" style={{ background: st.bg, color: st.color }}>{st.label}</span></td>
+                  <td className="px-4 py-3"><span className="mono text-[10px] px-2 py-0.5 rounded uppercase font-medium" style={{ background: st.bg, color: st.color }}>{tx(st.label)}</span></td>
                   <td className="px-4 py-3">
                     {p.status === "pending" ? (
                       <button
@@ -3280,10 +3285,10 @@ function PaymentsView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHote
                         }}
                         className="text-xs px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-colors flex items-center gap-1 cursor-pointer"
                       >
-                        Enviar link
+                        {tx("Enviar link")}
                       </button>
                     ) : (
-                      <span className="text-[11px] text-emerald-400 font-medium">Pagado</span>
+                      <span className="text-[11px] text-emerald-400 font-medium">{tx("Pagado")}</span>
                     )}
                   </td>
                 </tr>
@@ -3370,7 +3375,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>Tarifas & Precios</h1>
+            <h1 className="text-2xl" style={{ color: "var(--foreground)" }}>{tx("Tarifas & Precios")}</h1>
             <span className="mono text-xs px-2.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
               {hotel.name}
             </span>
@@ -3381,7 +3386,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
           onClick={() => setShowNewTariffModal(true)}
           className="px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity bg-amber-500 text-slate-950 shadow self-start sm:self-auto cursor-pointer"
         >
-          + Nueva tarifa especial
+          {tx("+ Nueva tarifa especial")}
         </button>
       </div>
 
@@ -3390,7 +3395,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
 
       {/* Season multipliers */}
       <div>
-        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>Temporadas</p>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>{tx("Temporadas")}</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {seasons.map(s => (
             <div key={s.name} className="rounded-md border p-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
@@ -3414,15 +3419,15 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
 
       {/* Rate matrix */}
       <div>
-        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>Matriz de tarifas por temporada</p>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>{tx("Matriz de tarifas por temporada")}</p>
         <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                <th className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Tipo de habitación</th>
-                <th className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Precio base</th>
+                <th className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>{tx("Tipo de habitación")}</th>
+                <th className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>{tx("Precio base")}</th>
                 {seasons.map(s => <th key={s.name} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>{s.name}</th>)}
-                <th className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Acciones</th>
+                <th className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>{tx("Acciones")}</th>
               </tr>
             </thead>
             <tbody>
@@ -3444,7 +3449,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
                       onClick={() => setEditingRoom(r)}
                       className="text-xs px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
                     >
-                      Editar
+                      {tx("Editar")}
                     </button>
                   </td>
                 </tr>
@@ -3456,20 +3461,20 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
 
       {/* Channel commissions */}
       <div>
-        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>Comisiones por canal</p>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--muted-foreground)" }}>{tx("Comisiones por canal")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {channels.map(ch => (
             <div key={ch.name} className="rounded-md border p-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
               <p className="text-sm font-medium mb-2" style={{ color: "var(--foreground)" }}>{ch.name}</p>
               <div className="flex items-end gap-1">
                 <p className="mono text-2xl font-bold leading-none" style={{ color: ch.commission === 0 ? ch.color : "#e8edf5" }}>{ch.commission}%</p>
-                <p className="text-xs mb-0.5" style={{ color: "var(--muted-foreground)" }}>comisión</p>
+                <p className="text-xs mb-0.5" style={{ color: "var(--muted-foreground)" }}>{tx("comisión")}</p>
               </div>
               {ch.commission === 0 ? (
-                <p className="text-xs mt-1.5 font-semibold" style={{ color: ch.color }}>✓ Sin comisión</p>
+                <p className="text-xs mt-1.5 font-semibold" style={{ color: ch.color }}>{tx("✓ Sin comisión")}</p>
               ) : (
                 <p className="text-xs mt-1.5" style={{ color: "var(--muted-foreground)" }}>
-                  Sobre precio neto. Por $100 → cobras ${100 - ch.commission}
+                  {tx("Sobre precio neto. Por $100 → cobras ${n}", { n: 100 - ch.commission })}
                 </p>
               )}
             </div>
@@ -3486,7 +3491,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
             </h3>
             <p className="text-xs text-amber-500 font-medium">{hotel.name}</p>
             <div>
-              <label className="block text-xs mb-1 text-slate-400">Nuevo Precio Base (USD / noche)</label>
+              <label className="block text-xs mb-1 text-slate-400">{tx("Nuevo Precio Base (USD / noche)")}</label>
               <input
                 type="number"
                 min="10"
@@ -3498,7 +3503,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setEditingRoom(null)} className="px-3 py-1.5 text-xs text-slate-400 hover:text-white">Cancelar</button>
+              <button onClick={() => setEditingRoom(null)} className="px-3 py-1.5 text-xs text-slate-400 hover:text-white">{tx("Cancelar")}</button>
               <button
                 onClick={() => {
                   const input = document.getElementById("editPriceInput") as HTMLInputElement;
@@ -3506,7 +3511,7 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
                 }}
                 className="px-4 py-1.5 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950"
               >
-                Guardar
+                {tx("Guardar")}
               </button>
             </div>
           </div>
@@ -3517,37 +3522,37 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
       {showNewTariffModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3, 7, 18, 0.8)", backdropFilter: "blur(4px)" }}>
           <form onSubmit={handleAddRoom} className="w-full max-w-sm rounded-xl border p-5 space-y-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <h3 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Nueva Tarifa por Tipo de Habitación</h3>
+            <h3 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{tx("Nueva Tarifa por Tipo de Habitación")}</h3>
             <p className="text-xs text-amber-500 font-medium">{hotel.name}</p>
             <div>
-              <label className="block text-xs mb-1 text-slate-400">Nombre de la Habitación / Tarifa *</label>
+              <label className="block text-xs mb-1 text-slate-400">{tx("Nombre de la Habitación / Tarifa *")}</label>
               <input
                 type="text"
                 required
                 value={newRoomType}
                 onChange={e => setNewRoomType(e.target.value)}
-                placeholder="Ej: Habitación Matrimonial Frente al Mar"
+                placeholder={tx("Ej: Habitación Matrimonial Frente al Mar")}
                 className="w-full rounded border px-3 py-2 text-xs outline-none"
                 style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs mb-1 text-slate-400">Icono</label>
+                <label className="block text-xs mb-1 text-slate-400">{tx("Icono")}</label>
                 <select
                   value={newRoomIcon}
                   onChange={e => setNewRoomIcon(e.target.value)}
                   className="w-full rounded border px-2 py-2 text-xs outline-none"
                   style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
                 >
-                  <option value="🛏️">🛏️ Estándar</option>
+                  <option value="🛏️">{tx("🛏️ Estándar")}</option>
                   <option value="⭐🛏️">⭐ Superior</option>
                   <option value="👑🛏️">👑 Suite</option>
                   <option value="🏖️👑">🏖️ Villa</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs mb-1 text-slate-400">Precio Base (USD) *</label>
+                <label className="block text-xs mb-1 text-slate-400">{tx("Precio Base (USD) *")}</label>
                 <input
                   type="number"
                   min="10"
@@ -3560,8 +3565,8 @@ function RatesView({ hotelId, hotel }: { hotelId: string; hotel: PlatformHotel }
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setShowNewTariffModal(false)} className="px-3 py-1.5 text-xs text-slate-400 hover:text-white">Cancelar</button>
-              <button type="submit" className="px-4 py-1.5 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950">Agregar Tarifa</button>
+              <button type="button" onClick={() => setShowNewTariffModal(false)} className="px-3 py-1.5 text-xs text-slate-400 hover:text-white">{tx("Cancelar")}</button>
+              <button type="submit" className="px-4 py-1.5 rounded font-bold text-xs bg-amber-500 hover:bg-amber-400 text-slate-950">{tx("Agregar Tarifa")}</button>
             </div>
           </form>
         </div>
@@ -3781,7 +3786,7 @@ function Field({ label, value, onChange, type = "text", required = false }: {
 }) {
   return (
     <div>
-      <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{label}</label>
+      <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx(label)}</label>
       <input
         type={type}
         required={required}
@@ -3858,7 +3863,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>Catastro Hotelero Oficial de Manta</h1>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>{tx("Catastro Hotelero Oficial de Manta")}</h1>
             <span className="mono text-xs px-2.5 py-0.5 rounded font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
               116 Establecimientos
             </span>
@@ -3871,15 +3876,15 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
           {onResetCatalog && (
             <button
               onClick={() => {
-                if (confirm("¿Restaurar todo el Catastro oficial de Manta con los 116 hoteles del archivo consolidado?")) {
+                if (confirm(tx("¿Restaurar todo el Catastro oficial de Manta con los 116 hoteles del archivo consolidado?"))) {
                   onResetCatalog();
                 }
               }}
-              title="Restaurar y sincronizar todos los 116 hoteles de Manta desde el archivo oficial"
+              title={tx("Restaurar y sincronizar todos los 116 hoteles de Manta desde el archivo oficial")}
               className="px-3 py-2 rounded text-xs font-semibold border flex items-center gap-1.5 transition-colors hover:bg-amber-500/10 cursor-pointer"
               style={{ borderColor: "rgba(245, 158, 11, 0.4)", color: "#f59e0b" }}
             >
-              Restablecer catálogo oficial (116)
+              {tx("Restablecer catálogo oficial (116)")}
             </button>
           )}
           {canDelete && (
@@ -3888,7 +3893,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               className="px-4 py-2 rounded text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer"
               style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
             >
-              <span>+</span> Añadir Hotel
+              <span>+</span> {tx("Añadir Hotel")}
             </button>
           )}
         </div>
@@ -3896,10 +3901,10 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
 
       {/* Platform KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Alojamientos registrados" value={String(activeCount)} sub={`${hotels.length} en el Catastro Cantonal 2026`} />
+        <KpiCard label="Alojamientos registrados" value={String(activeCount)} sub={`${hotels.length} ${tx("en el Catastro Cantonal 2026")}`} />
         <KpiCard label="Revenue plataforma (Ago)" value={fmtUsd(totalRevenue)} sub="reservado en USD Manta" accent />
-        <KpiCard label="Ocupación media cantonal" value={`${avgOccupancy}%`} sub="red oficial de Manta" />
-        <KpiCard label="Capacidad de plazas de hospedaje" value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="plazas autorizadas en catastro" />
+        <KpiCard label={tx("Ocupación media cantonal")} value={`${avgOccupancy}%`} sub="red oficial de Manta" />
+        <KpiCard label={tx("Capacidad de plazas de hospedaje")} value={String(hotels.reduce((s, h) => s + h.rooms, 0))} sub="plazas autorizadas en catastro" />
       </div>
 
       {/* RF-21: Conmutador Rápido de Emergencia IVA 15% / 8% por Decreto Presidencial */}
@@ -3913,7 +3918,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               type="text"
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Buscar por nombre de hotel, sector, dirección, propietario o RUC..."
+              placeholder={tx("Buscar por nombre de hotel, sector, dirección, propietario o RUC...")}
               className="w-full rounded-lg border px-3 py-2 text-xs outline-none"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             />
@@ -3935,10 +3940,10 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              <option value="all">Todas las Modalidades</option>
+              <option value="all">{tx("Todas las Modalidades")}</option>
               <option value="Hotel">Hoteles</option>
-              <option value="Hostal">Hostales</option>
-              <option value="Hostería">Hosterías</option>
+              <option value="Hostal">{tx("Hostales")}</option>
+              <option value="Hostería">{tx("Hosterías")}</option>
             </select>
 
             {/* Stars / Category */}
@@ -3948,12 +3953,12 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              <option value="all">Todas las Categorías</option>
-              <option value="5">5 Estrellas (Lujo)</option>
-              <option value="4">4 Estrellas (Primera)</option>
-              <option value="3">3 Estrellas (Superior)</option>
-              <option value="2">2 Estrellas (Turista)</option>
-              <option value="1">1 Estrella (Económico)</option>
+              <option value="all">{tx("Todas las Categorías")}</option>
+              <option value="5">{tx("5 Estrellas (Lujo)")}</option>
+              <option value="4">{tx("4 Estrellas (Primera)")}</option>
+              <option value="3">{tx("3 Estrellas (Superior)")}</option>
+              <option value="2">{tx("2 Estrellas (Turista)")}</option>
+              <option value="1">{tx("1 Estrella (Económico)")}</option>
             </select>
 
             {/* Sector */}
@@ -3963,7 +3968,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              <option value="all">Todos los Sectores</option>
+              <option value="all">{tx("Todos los Sectores")}</option>
               {sectors.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
 
@@ -3974,9 +3979,9 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               className="rounded-lg border px-2.5 py-2 text-xs outline-none cursor-pointer"
               style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
             >
-              <option value={25}>25 por pág.</option>
-              <option value={50}>50 por pág.</option>
-              <option value={0}>Ver todos (116)</option>
+              <option value={25}>{tx("25 por pág.")}</option>
+              <option value={50}>{tx("50 por pág.")}</option>
+              <option value={0}>{tx("Ver todos (116)")}</option>
             </select>
           </div>
         </div>
@@ -3984,14 +3989,14 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
         {/* Filters summary & clear */}
         <div className="flex items-center justify-between text-xs pt-1 border-t" style={{ borderColor: "var(--border)" }}>
           <span style={{ color: "var(--muted-foreground)" }}>
-            Mostrando <strong>{paginatedHotels.length}</strong> de <strong>{filteredHotels.length}</strong> establecimientos encontrados (Total cantón: {hotels.length})
+            {tx("Mostrando")} <strong>{paginatedHotels.length}</strong> {tx("de")} <strong>{filteredHotels.length}</strong> {tx("establecimientos encontrados")} ({tx("Total cantón")}: {hotels.length})
           </span>
           {(search || categoryFilter !== "all" || classificationFilter !== "all" || sectorFilter !== "all") && (
             <button
               onClick={() => { setSearch(""); setCategoryFilter("all"); setClassificationFilter("all"); setSectorFilter("all"); setPage(1); }}
               className="text-amber-400 hover:underline font-medium cursor-pointer"
             >
-              Limpiar filtros
+              {tx("Limpiar filtros")}
             </button>
           )}
         </div>
@@ -4004,7 +4009,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {["Alojamiento", "Sector / Parroquia", "Modalidad / Cat.", "10% Servicio", "Camas", "Ocupación", "Revenue (Ago)", "Rating", "Estado", ""].map(h => (
-                  <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{h}</th>
+                  <th key={h} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{tx(h)}</th>
                 ))}
               </tr>
             </thead>
@@ -4052,7 +4057,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                           const updated = { ...h, gravaServicio10: !hasServ10 };
                           onSave(updated);
                         }}
-                        title="Clic para activar/desactivar 10% servicio (Art. 41 Ley de Turismo Ecuador)"
+                        title={tx("Clic para activar/desactivar 10% servicio (Art. 41 Ley de Turismo Ecuador)")}
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer border ${
                           hasServ10
                             ? "bg-emerald-950/70 text-emerald-300 border-emerald-700 hover:bg-emerald-900"
@@ -4060,7 +4065,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                         }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${hasServ10 ? "bg-emerald-400" : "bg-slate-500"}`} />
-                        {hasServ10 ? "+10% Activo" : "Sin Servicio"}
+                        {tx(hasServ10 ? "+10% Activo" : "Sin Servicio")}
                       </button>
                     </td>
                     <td className="px-4 py-3 mono text-center" style={{ color: "var(--muted-foreground)" }}>{h.rooms}</td>
@@ -4077,13 +4082,13 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                     </td>
                     <td className="px-4 py-3 mono text-sm font-semibold" style={{ color: "#f59e0b" }}>{h.rating}</td>
                     <td className="px-4 py-3">
-                      <span className="mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide" style={{ background: ss.bg, color: ss.color }}>{ss.label}</span>
+                      <span className="mono text-[10px] font-medium px-2 py-0.5 rounded uppercase tracking-wide" style={{ background: ss.bg, color: ss.color }}>{tx(ss.label)}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
-                        <button onClick={() => onSelect(h.id)} className="text-xs px-2 py-1.5 rounded font-medium transition-colors cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Gestionar</button>
-                        <button onClick={() => setEditing({ ...h })} className="text-xs px-2 py-1.5 rounded border cursor-pointer hover:border-amber-400" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>Editar</button>
-                        {canDelete && <button onClick={() => { if (confirm(`¿Eliminar ${h.name}?`)) onDelete(h.id); }} className="text-xs px-2 py-1.5 rounded border cursor-pointer" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button>}
+                        <button onClick={() => onSelect(h.id)} className="text-xs px-2 py-1.5 rounded font-medium transition-colors cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>{tx("Gestionar")}</button>
+                        <button onClick={() => setEditing({ ...h })} className="text-xs px-2 py-1.5 rounded border cursor-pointer hover:border-amber-400" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("Editar")}</button>
+                        {canDelete && <button onClick={() => { if (confirm(tx("¿Eliminar {name}?", { name: h.name }))) onDelete(h.id); }} className="text-xs px-2 py-1.5 rounded border cursor-pointer" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>{tx("Eliminar")}</button>}
                       </div>
                     </td>
                   </tr>
@@ -4097,7 +4102,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
         {pageSize > 0 && totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t text-xs" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
             <span style={{ color: "var(--muted-foreground)" }}>
-              Página <strong>{page}</strong> de <strong>{totalPages}</strong>
+              {tx("Página")} <strong>{page}</strong> {tx("de")} <strong>{totalPages}</strong>
             </span>
             <div className="flex gap-1.5">
               <button
@@ -4132,7 +4137,7 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                 className="px-3 py-1.5 rounded border disabled:opacity-30 cursor-pointer font-medium"
                 style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
               >
-                Siguiente →
+                {tx("Siguiente →")}
               </button>
             </div>
           </div>
@@ -4153,8 +4158,8 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
           >
             <div className="flex items-start justify-between mb-5">
               <div>
-                <p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Propiedad</p>
-                <h2 className="text-xl">{editing.id ? "Editar hotel" : "Nueva propiedad"}</h2>
+                <p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>{tx("Propiedad")}</p>
+                <h2 className="text-xl">{editing.id ? tx("Editar hotel") : tx("Nueva propiedad")}</h2>
               </div>
               <button type="button" onClick={() => setEditing(null)} className="text-xl" style={{ color: "var(--muted-foreground)" }}>×</button>
             </div>
@@ -4165,17 +4170,17 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
               <Field label="Teléfono" value={editing.phone ?? ""} onChange={phone => setEditing({ ...editing, phone })} />
               <Field label="RUC Ecuador" value={editing.taxId ?? ""} onChange={taxId => setEditing({ ...editing, taxId })} />
               <Field label="Descripción" value={editing.description ?? ""} onChange={description => setEditing({ ...editing, description })} />
-              <Field label="Servicios (separados por comas)" value={(editing.amenities ?? []).join(", ")} onChange={value => setEditing({ ...editing, amenities: value.split(",").map(item => item.trim()).filter(Boolean) })} />
-              <Field label="Galería (URLs separadas por comas)" value={(editing.gallery ?? []).join(", ")} onChange={value => setEditing({ ...editing, gallery: value.split(",").map(item => item.trim()).filter(Boolean) })} />
+              <Field label={tx("Servicios (separados por comas)")} value={(editing.amenities ?? []).join(", ")} onChange={value => setEditing({ ...editing, amenities: value.split(",").map(item => item.trim()).filter(Boolean) })} />
+              <Field label={tx("Galería (URLs separadas por comas)")} value={(editing.gallery ?? []).join(", ")} onChange={value => setEditing({ ...editing, gallery: value.split(",").map(item => item.trim()).filter(Boolean) })} />
               <div>
-                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Estado</label>
+                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx("Estado")}</label>
                 <select value={editing.status} onChange={e => setEditing({ ...editing, status: e.target.value as PlatformHotel["status"] })} className="w-full rounded border px-3 py-2.5 text-sm outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
-                  <option value="active">Activo</option><option value="paused">Pausado</option><option value="pending">Pendiente</option>
+                  <option value="active">{tx("Activo")}</option><option value="paused">{tx("Pausado")}</option><option value="pending">{tx("Pendiente")}</option>
                 </select>
               </div>
-              <Field label="Capacidad de Habitaciones / Plazas" type="number" value={String(editing.rooms)} onChange={rooms => setEditing({ ...editing, rooms: Number(rooms) })} required />
+              <Field label={tx("Capacidad de Habitaciones / Plazas")} type="number" value={String(editing.rooms)} onChange={rooms => setEditing({ ...editing, rooms: Number(rooms) })} required />
               <div>
-                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Categoría Estrellas (1–5)</label>
+                <label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx("Categoría Estrellas (1–5)")}</label>
                 <select value={editing.stars} onChange={e => setEditing({ ...editing, stars: Math.min(5, Math.max(1, Number(e.target.value))) as 1 | 2 | 3 | 4 | 5 })} className="w-full rounded border px-3 py-2.5 text-sm outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
                   {[1, 2, 3, 4, 5].map(s => <option key={s} value={s}>{s} Estrella{s > 1 ? "s" : ""}</option>)}
                 </select>
@@ -4189,14 +4194,14 @@ function HotelsView({ hotels, onSelect, onSave, onDelete, canDelete, onResetCata
                   className="h-4 w-4 rounded accent-amber-500 cursor-pointer"
                 />
                 <label htmlFor="hotel-grava-servicio" className="text-xs cursor-pointer select-none text-slate-200">
-                  <strong className="text-amber-400">Gravar 10% de Servicio Turístico (Art. 41 Ley de Turismo)</strong>
-                  <span className="block text-[11px] text-slate-400">Actívalo para hoteles que cobran la propina legal; desactívalo para hostales o pensiones exentas.</span>
+                  <strong className="text-amber-400">{tx("Gravar 10% de Servicio Turístico (Art. 41 Ley de Turismo)")}</strong>
+                  <span className="block text-[11px] text-slate-400">{tx("Actívalo para hoteles que cobran la propina legal; desactívalo para hostales o pensiones exentas.")}</span>
                 </label>
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-              <button type="button" onClick={() => setEditing(null)} className="px-4 py-2 rounded text-sm" style={{ color: "var(--muted-foreground)" }}>Cancelar</button>
-              <button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Guardar propiedad</button>
+              <button type="button" onClick={() => setEditing(null)} className="px-4 py-2 rounded text-sm" style={{ color: "var(--muted-foreground)" }}>{tx("Cancelar")}</button>
+              <button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>{tx("Guardar propiedad")}</button>
             </div>
           </form>
         </div>
@@ -4243,49 +4248,49 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p className="mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: "var(--primary)" }}>Control de accesos y seguridad</p>
-          <h1 className="text-2xl">Usuarios, Permisos y Registro de Auditoría</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>Asigna cada cuenta a una propiedad, gestiona permisos por rol y revisa el registro de actividad.</p>
+          <p className="mono text-[10px] uppercase tracking-[.18em] mb-1" style={{ color: "var(--primary)" }}>{tx("Control de accesos y seguridad")}</p>
+          <h1 className="text-2xl">{tx("Usuarios, Permisos y Registro de Auditoría")}</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>{tx("Asigna cada cuenta a una propiedad, gestiona permisos por rol y revisa el registro de actividad.")}</p>
         </div>
-        <button onClick={startNewUser} className="px-4 py-2.5 rounded text-sm font-semibold cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>+ Crear usuario</button>
+        <button onClick={startNewUser} className="px-4 py-2.5 rounded text-sm font-semibold cursor-pointer" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>{tx("+ Crear usuario")}</button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard label="Usuarios" value={String(users.length)} sub="cuentas registradas" />
-        <KpiCard label="Activos" value={String(activeUsers)} sub="con acceso habilitado" accent />
-        <KpiCard label="Invitaciones" value={String(users.filter(u => u.status === "invited").length)} sub="pendientes de aceptar" />
-        <KpiCard label="Eventos Auditados" value={String(auditLogs.length)} sub="registros de actividad" />
+        <KpiCard label="Activos" value={String(activeUsers)} sub={tx("con acceso habilitado")} accent />
+        <KpiCard label="Invitaciones" value={String(users.filter(u => u.status === "invited").length)} sub={tx("pendientes de aceptar")} />
+        <KpiCard label="Eventos Auditados" value={String(auditLogs.length)} sub={tx("registros de actividad")} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
         <div className="rounded-md border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div className="p-3 border-b flex items-center gap-3" style={{ borderColor: "var(--border)" }}>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar nombre, email o rol..." className="w-full max-w-sm rounded border px-3 py-2 text-xs outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)" }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder={tx("Buscar nombre, email o rol...")} className="w-full max-w-sm rounded border px-3 py-2 text-xs outline-none" style={{ background: "var(--muted)", borderColor: "var(--border)" }} />
             <span className="mono text-[10px] ml-auto whitespace-nowrap" style={{ color: "var(--muted-foreground)" }}>{visibleUsers.length} cuentas</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Usuario", "Rol", "Hotel asignado", "Estado", "Último acceso", ""].map(label => <th key={label} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{label}</th>)}
+                {["Usuario", "Rol", "Hotel asignado", "Estado", "Último acceso", ""].map(label => <th key={label} className="mono text-left px-4 py-3 text-[10px] uppercase tracking-widest font-medium" style={{ color: "var(--muted-foreground)" }}>{tx(label)}</th>)}
               </tr></thead>
               <tbody>
                 {visibleUsers.map((user, index) => {
                   const role = ROLE_INFO[user.role];
-                  const assignedNames = user.role === "superadmin" ? "Todas las propiedades" : user.hotelIds.map(id => hotels.find(h => h.id === id)?.name).filter(Boolean).join(", ") || "Sin asignar";
+                  const assignedNames = user.role === "superadmin" ? tx("Todas las propiedades") : user.hotelIds.map(id => hotels.find(h => h.id === id)?.name).filter(Boolean).join(", ") || tx("Sin asignar");
                   return (
                     <tr key={user.id} style={{ borderBottom: index < visibleUsers.length - 1 ? "1px solid var(--border)" : "none" }}>
                       <td className="px-4 py-3">
                         <p className="font-medium">{user.name}</p>
                         <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>{user.email}</p>
                       </td>
-                      <td className="px-4 py-3"><span className="mono text-[9px] uppercase px-2 py-1 rounded" style={{ color: role.color, background: role.bg }}>{role.label}</span></td>
+                      <td className="px-4 py-3"><span className="mono text-[9px] uppercase px-2 py-1 rounded" style={{ color: role.color, background: role.bg }}>{tx(role.label)}</span></td>
                       <td className="px-4 py-3 text-xs max-w-48" style={{ color: "var(--muted-foreground)" }}>{assignedNames}</td>
-                      <td className="px-4 py-3"><span className="text-[10px] font-semibold uppercase" style={{ color: user.status === "active" ? "#6ee7b7" : user.status === "invited" ? "#fcd34d" : "#fca5a5" }}>{user.status === "active" ? "Activo" : user.status === "invited" ? "Invitado" : "Bloqueado"}</span></td>
-                      <td className="px-4 py-3 mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>{user.lastAccess}</td>
+                      <td className="px-4 py-3"><span className="text-[10px] font-semibold uppercase" style={{ color: user.status === "active" ? "#6ee7b7" : user.status === "invited" ? "#fcd34d" : "#fca5a5" }}>{tx(user.status === "active" ? "Activo" : user.status === "invited" ? "Invitado" : "Bloqueado")}</span></td>
+                      <td className="px-4 py-3 mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>{relDate(user.lastAccess)}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
-                          <button onClick={() => setEditing({ ...user })} className="px-2 py-1 rounded border text-xs" style={{ borderColor: "var(--border)" }}>Editar</button>
-                          {user.role !== "superadmin" && <button onClick={() => { if (confirm(`¿Eliminar la cuenta de ${user.name}?`)) onDelete(user.id); }} className="px-2 py-1 rounded border text-xs" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>Eliminar</button>}
+                          <button onClick={() => setEditing({ ...user })} className="px-2 py-1 rounded border text-xs" style={{ borderColor: "var(--border)" }}>{tx("Editar")}</button>
+                          {user.role !== "superadmin" && <button onClick={() => { if (confirm(tx("¿Eliminar la cuenta de {name}?", { name: user.name }))) onDelete(user.id); }} className="px-2 py-1 rounded border text-xs" style={{ borderColor: "#7f1d1d", color: "#fca5a5" }}>{tx("Eliminar")}</button>}
                         </div>
                       </td>
                     </tr>
@@ -4297,13 +4302,13 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         </div>
 
         <div className="rounded-md border p-4 h-fit" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>Permisos por rol</p>
+          <p className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "var(--primary)" }}>{tx("Permisos por rol")}</p>
           {[
             ["Superadministrador", "Acceso a todos los establecimientos, configuración de tarifas de IVA y catálogo general."],
             ["Administrador de Hotel", "Gestión de su establecimiento, configuración de servicios adicionales y equipo."],
             ["Revenue Manager", "Gestión de tarifas por temporada, planes tarifarios y disponibilidad de cupos."],
             ["Operador / Recepción", "Bandeja de reservas, validación de llegadas por código y emisión de comprobantes."],
-          ].map(([role, description]) => <div key={role} className="pb-3 mb-3 border-b last:border-0 last:mb-0 last:pb-0" style={{ borderColor: "var(--border)" }}><p className="text-xs font-semibold">{role}</p><p className="text-[11px] mt-1 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{description}</p></div>)}
+          ].map(([role, description]) => <div key={role} className="pb-3 mb-3 border-b last:border-0 last:mb-0 last:pb-0" style={{ borderColor: "var(--border)" }}><p className="text-xs font-semibold">{tx(role)}</p><p className="text-[11px] mt-1 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{tx(description)}</p></div>)}
         </div>
       </div>
 
@@ -4312,14 +4317,14 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
           <div>
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-              Registro de actividad del sistema
+              {tx("Registro de actividad del sistema")}
             </p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              Historial cronológico de cambios de tarifa, validaciones de voucher y nuevas reservas.
+              {tx("Historial cronológico de cambios de tarifa, validaciones de voucher y nuevas reservas.")}
             </p>
           </div>
           <span className="mono text-[10px] px-2 py-1 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-            Solo lectura
+            {tx("Solo lectura")}
           </span>
         </div>
         <div className="overflow-x-auto max-h-72">
@@ -4327,7 +4332,7 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {["ID", "Fecha y Hora", "Usuario", "Rol", "Módulo", "Acción", "Detalle de la Operación", "IP"].map(h => (
-                  <th key={h} className="mono text-left px-3.5 py-2.5 text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>{h}</th>
+                  <th key={h} className="mono text-left px-3.5 py-2.5 text-[10px] uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>{tx(h)}</th>
                 ))}
               </tr>
             </thead>
@@ -4336,11 +4341,11 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
                 <tr key={log.id} style={{ borderBottom: i < auditLogs.length - 1 ? "1px solid var(--border)" : "none" }}>
                   <td className="px-3.5 py-2.5 mono text-[10px] text-amber-400">{log.id}</td>
                   <td className="px-3.5 py-2.5 mono text-[11px] whitespace-nowrap" style={{ color: "var(--muted-foreground)" }}>{log.timestamp}</td>
-                  <td className="px-3.5 py-2.5 font-medium" style={{ color: "var(--foreground)" }}>{log.usuario}</td>
-                  <td className="px-3.5 py-2.5 text-[11px]" style={{ color: "var(--muted-foreground)" }}>{log.rol}</td>
-                  <td className="px-3.5 py-2.5 text-[11px] font-semibold text-sky-400">{log.modulo}</td>
-                  <td className="px-3.5 py-2.5 mono text-[10px] font-bold text-emerald-400">{log.accion}</td>
-                  <td className="px-3.5 py-2.5 text-[11px]" style={{ color: "var(--foreground)" }}>{log.detalle}</td>
+                  <td className="px-3.5 py-2.5 font-medium" style={{ color: "var(--foreground)" }}>{log.user}</td>
+                  <td className="px-3.5 py-2.5 text-[11px]" style={{ color: "var(--muted-foreground)" }}>{tx(log.role)}</td>
+                  <td className="px-3.5 py-2.5 text-[11px] font-semibold text-sky-400">{tx(log.module)}</td>
+                  <td className="px-3.5 py-2.5 mono text-[10px] font-bold text-emerald-400">{log.action}</td>
+                  <td className="px-3.5 py-2.5 text-[11px]" style={{ color: "var(--foreground)" }}>{log.detail}</td>
                   <td className="px-3.5 py-2.5 mono text-[10px]" style={{ color: "var(--muted-foreground)" }}>{log.ip}</td>
                 </tr>
               ))}
@@ -4353,19 +4358,19 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(3, 7, 18, .78)" }}>
           <form onSubmit={e => { e.preventDefault(); onSave({ ...editing, id: editing.id || `usr-${Date.now()}` }); setEditing(null); }} className="w-full max-w-xl rounded-xl border p-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
             <div className="flex items-start justify-between mb-5">
-              <div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>Cuenta de personal</p><h2 className="text-xl">{editing.id ? "Editar usuario" : "Nuevo usuario"}</h2></div>
+              <div><p className="mono text-[10px] uppercase tracking-widest" style={{ color: "var(--primary)" }}>{tx("Cuenta de personal")}</p><h2 className="text-xl">{editing.id ? "Editar usuario" : "Nuevo usuario"}</h2></div>
               <button type="button" onClick={() => setEditing(null)} className="text-xl" style={{ color: "var(--muted-foreground)" }}>×</button>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
-              <Field label="Nombre completo" value={editing.name} onChange={name => setEditing({ ...editing, name })} required />
-              <Field label="Email corporativo" type="email" value={editing.email} onChange={email => setEditing({ ...editing, email })} required />
+              <Field label={tx("Nombre completo")} value={editing.name} onChange={name => setEditing({ ...editing, name })} required />
+              <Field label={tx("Email corporativo")} type="email" value={editing.email} onChange={email => setEditing({ ...editing, email })} required />
               <Field label="Teléfono" value={editing.phone} onChange={phone => setEditing({ ...editing, phone })} />
-              <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Rol</label><select value={editing.role} onChange={e => setEditing({ ...editing, role: e.target.value as AdminRole, hotelIds: e.target.value === "superadmin" ? [] : editing.hotelIds })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>{roleOptions.map(role => <option key={role} value={role}>{ROLE_INFO[role].label}</option>)}</select></div>
-              {editing.role !== "superadmin" && <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Hotel asignado</label><select required value={editing.hotelIds[0] ?? ""} onChange={e => setEditing({ ...editing, hotelIds: [e.target.value] })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}><option value="">Seleccionar hotel</option>{hotels.map(hotel => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}</select></div>}
-              <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>Estado</label><select value={editing.status} onChange={e => setEditing({ ...editing, status: e.target.value as StaffUser["status"] })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}><option value="active">Activo</option><option value="invited">Invitación pendiente</option><option value="blocked">Bloqueado</option></select></div>
+              <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx("Rol")}</label><select value={editing.role} onChange={e => setEditing({ ...editing, role: e.target.value as AdminRole, hotelIds: e.target.value === "superadmin" ? [] : editing.hotelIds })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>{roleOptions.map(role => <option key={role} value={role}>{ROLE_INFO[role].label}</option>)}</select></div>
+              {editing.role !== "superadmin" && <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx("Hotel asignado")}</label><select required value={editing.hotelIds[0] ?? ""} onChange={e => setEditing({ ...editing, hotelIds: [e.target.value] })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}><option value="">{tx("Seleccionar hotel")}</option>{hotels.map(hotel => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}</select></div>}
+              <div><label className="block text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>{tx("Estado")}</label><select value={editing.status} onChange={e => setEditing({ ...editing, status: e.target.value as StaffUser["status"] })} className="w-full rounded border px-3 py-2.5 text-sm" style={{ background: "var(--muted)", borderColor: "var(--border)" }}><option value="active">{tx("Activo")}</option><option value="invited">{tx("Invitación pendiente")}</option><option value="blocked">{tx("Bloqueado")}</option></select></div>
             </div>
-            <div className="rounded p-3 mt-4 text-[11px] leading-relaxed" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Al guardar, el usuario recibirá una invitación para crear su contraseña. Los permisos se aplican automáticamente según su rol y hotel asignado.</div>
-            <div className="flex justify-end gap-2 mt-5"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>Cancelar</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>Guardar usuario</button></div>
+            <div className="rounded p-3 mt-4 text-[11px] leading-relaxed" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>{tx("Al guardar, el usuario recibirá una invitación para crear su contraseña. Los permisos se aplican automáticamente según su rol y hotel asignado.")}</div>
+            <div className="flex justify-end gap-2 mt-5"><button type="button" onClick={() => setEditing(null)} className="px-4 py-2 text-sm" style={{ color: "var(--muted-foreground)" }}>{tx("Cancelar")}</button><button type="submit" className="px-5 py-2 rounded text-sm font-semibold" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>{tx("Guardar usuario")}</button></div>
           </form>
         </div>
       )}
@@ -4375,7 +4380,12 @@ function UsersView({ users, hotels, currentRole, onSave, onDelete }: {
 
 // ─── App root ─────────────────────────────────────────────────────────────────
 
+function relDate(s: string): string {
+  return s.replace(/^Hoy/, tx("Hoy")).replace(/^Ayer/, tx("Ayer")).replace(/^Pendiente$/, tx("Pendiente"));
+}
+
 export default function App() {
+  const lang = useLang();
   const [theme, setTheme] = usePersistentState<"light" | "dark">("hoteldirekt.theme", "light");
   const [appMode, setAppMode] = useState<"auth" | "guest" | "admin">("guest");
   const [authDefaultTab, setAuthDefaultTab] = useState<"guest" | "admin">("guest");
@@ -4457,11 +4467,11 @@ export default function App() {
           <h2 className="text-base font-bold leading-tight" style={{ color: "var(--primary)" }}>
             AlojaManta
           </h2>
-          <p className="text-[10px] text-slate-400 mt-0.5">Portal Cantonal de Alojamientos</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{tx("Portal Cantonal de Alojamientos")}</p>
           {adminUser && (
             <div className="mt-1.5 flex items-center gap-1.5">
               <span className="mono text-[9px] px-1.5 py-0.5 rounded uppercase font-bold" style={{ background: ROLE_INFO[adminUser.role].bg, color: ROLE_INFO[adminUser.role].color }}>
-                {ROLE_INFO[adminUser.role].label}
+                {tx(ROLE_INFO[adminUser.role].label)}
               </span>
               <span className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>{adminUser.name.split(" ")[0]}</span>
             </div>
@@ -4474,7 +4484,7 @@ export default function App() {
             onClick={() => setAppMode("guest")}
             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-xs"
           >
-            <span>Ver portal de huéspedes</span>
+            <span>{tx("Ver portal de huéspedes")}</span>
           </button>
         </div>
 
@@ -4520,7 +4530,7 @@ export default function App() {
                 <span className="w-6 h-6 rounded flex items-center justify-center text-slate-400 group-hover:text-amber-400" style={{ background: "var(--muted)" }}>
                   <NavIcon view={item.view} />
                 </span>
-                <span className="font-medium text-xs">{item.label}</span>
+                <span className="font-medium text-xs">{tx(item.label)}</span>
               </button>
             </div>
           ))}
@@ -4528,12 +4538,29 @@ export default function App() {
 
         {/* Ver web + tema + logout */}
         <div className="px-2 pb-1 space-y-1.5">
+          {/* Selector de idioma Español / English */}
+          <button
+            type="button"
+            onClick={() => setLang(lang === "es" ? "en" : "es")}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer hover:border-amber-500/50 shadow-xs"
+            style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            title={tx("Cambiar idioma")}
+            aria-label={tx("Cambiar idioma")}
+          >
+            <span className="flex items-center gap-1.5">
+              <span>🌐</span>
+              <span>{tx("Idioma")}</span>
+            </span>
+            <span className="mono text-[10px] px-1.5 py-0.5 rounded font-bold uppercase" style={{ background: "var(--secondary)", color: "var(--primary)" }}>
+              {lang === "es" ? "ES" : "EN"}
+            </span>
+          </button>
           {/* Botón de cambio de tema Claro / Oscuro */}
           <button
             onClick={() => setTheme(t => (t === "light" ? "dark" : "light"))}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer hover:border-amber-500/50 shadow-xs"
             style={{ background: "var(--muted)", borderColor: "var(--border)", color: "var(--foreground)" }}
-            title="Alternar entre modo claro y modo oscuro"
+            title={tx("Alternar entre modo claro y modo oscuro")}
           >
             <span className="flex items-center gap-1.5">
               <span>{theme === "light" ? "☀️" : "🌙"}</span>
@@ -4549,14 +4576,14 @@ export default function App() {
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer"
             style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
           >
-            Ver web cliente
+            {tx("Ver web cliente")}
           </button>
           <button
             onClick={() => { setAdminUser(null); setAppMode("auth"); }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer"
             style={{ background: "var(--muted)", color: "#fca5a5" }}
           >
-            ← Cerrar sesión
+            {tx("← Cerrar sesión")}
           </button>
         </div>
 
@@ -4638,7 +4665,7 @@ export default function App() {
           {view === "dashboard" && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-xs px-1 pb-1 border-b" style={{ borderColor: "var(--border)" }}>
-                <span style={{ color: "var(--muted-foreground)" }}>Gestionando:</span>
+                <span style={{ color: "var(--muted-foreground)" }}>{tx("Gestionando:")}</span>
                 <span className="font-semibold" style={{ color: "var(--primary)" }}>{activeHotel?.name}</span>
                 <span style={{ color: "var(--muted-foreground)" }}>·</span>
                 <span style={{ color: "var(--muted-foreground)" }}>{activeHotel?.city}</span>
@@ -4646,7 +4673,7 @@ export default function App() {
               <Dashboard onNewBooking={() => setShowModal(true)} />
             </div>
           )}
-          {view === "reservations" && activeHotel && <ReservationsView key={activeHotel.id} hotelId={activeHotel.id} />}
+          {view === "reservations" && activeHotel && <ReservationsView key={activeHotel.id} hotelId={activeHotel.id} hotelName={activeHotel.name} />}
           {view === "rooms" && activeHotel && (
             <RoomsView
               key={activeHotel.id}

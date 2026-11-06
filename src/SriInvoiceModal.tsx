@@ -1,3 +1,4 @@
+import { tx, useLang } from "./i18n";
 import React, { useState } from "react";
 import { HOTEL_COMMERCIAL_INFO, fmtUsd, getActiveIvaPercent } from "./hotelData";
 
@@ -70,6 +71,7 @@ export default function SriInvoiceModal({
   onMarkPaid,
   onRegisterHotelInvoice,
 }: SriInvoiceModalProps) {
+  const lang = useLang();
   const [viewTab, setViewTab] = useState<"voucher" | "reception">("voucher");
   const [copiedData, setCopiedData] = useState(false);
   const [hotelInvoiceInput, setHotelInvoiceInput] = useState(invoice.hotelInvoiceNumber || "");
@@ -157,11 +159,11 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
         >
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-            <span className="font-semibold text-sm tracking-wide text-amber-400">Comprobante de reserva</span>
+            <span className="font-semibold text-sm tracking-wide text-amber-400">{tx("Comprobante de reserva")}</span>
             <span className="text-slate-400">·</span>
-            <span className="font-mono text-slate-300">Pago en línea</span>
+            <span className="font-mono text-slate-300">{tx("Pago en línea")}</span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-950 text-emerald-300 border border-emerald-800">
-              Pago confirmado
+              {tx("Pago confirmado")}
             </span>
           </div>
 
@@ -174,7 +176,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   viewTab === "voucher" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-300 hover:text-white"
                 }`}
               >
-                Voucher de reserva
+                {tx("Voucher de reserva")}
               </button>
               <button
                 onClick={() => setViewTab("reception")}
@@ -182,14 +184,14 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   viewTab === "reception" ? "bg-amber-500 text-slate-950 font-bold" : "text-slate-300 hover:text-white"
                 }`}
               >
-                Datos del huésped
+                {tx("Datos del huésped")}
               </button>
             </div>
 
             <button
               onClick={onClose}
               className="w-7 h-7 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-base cursor-pointer"
-              title="Cerrar"
+              title={tx("Cerrar")}
             >
               ×
             </button>
@@ -203,7 +205,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               {hotelMeta.nombreComercial} · RUC: {hotelMeta.ruc}
             </p>
             <p className="text-[10px] text-amber-800 mt-0.5">
-              Reserva garantizada con pago confirmado. Presenta este comprobante o su código de reserva a tu llegada.
+              {tx("Reserva garantizada con pago confirmado. Presenta este comprobante o su código de reserva a tu llegada.")}
             </p>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -213,7 +215,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               </span>
             ) : (
               <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-400">
-                Recibo: Pendiente de entrega
+                {tx("Recibo: Pendiente de entrega")}
               </span>
             )}
           </div>
@@ -230,13 +232,13 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center font-bold text-lg mx-auto mb-2">
                   ✓
                 </div>
-                <p className="mono text-[10px] uppercase tracking-widest text-amber-400 font-bold">Voucher de Reserva Garantizada</p>
+                <p className="mono text-[10px] uppercase tracking-widest text-amber-400 font-bold">{tx("Voucher de Reserva Garantizada")}</p>
                 <h2 className="text-2xl font-bold mt-1 text-white" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</h2>
                 <p className="text-xs text-slate-300">{hotelMeta.razonSocial} · RUC: {hotelMeta.ruc}</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">{hotelMeta.dirMatriz} · Manta, Ecuador</p>
 
                 <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs text-slate-200">
-                  <span>Autorización pasarela:</span>
+                  <span>{tx("Autorización pasarela:")}</span>
                   <span className="font-mono font-bold text-amber-300">{authCode}</span>
                 </div>
               </div>
@@ -250,15 +252,15 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                     <p className="font-mono font-bold text-slate-800 text-sm">{voucherCode}</p>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Código Reserva</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">{tx("Código Reserva")}</span>
                     <p className="font-mono font-bold text-amber-600 text-sm">{invoice.resId}</p>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Fecha de Pago</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">{tx("Fecha de Pago")}</span>
                     <p className="font-medium text-slate-700">{invoice.issueDate || "2026-08-15"}</p>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Método de Pago</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400">{tx("Método de Pago")}</span>
                     <p className="font-medium text-slate-700">
                       {invoice.payMethod}
                     </p>
@@ -269,25 +271,25 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
                     <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
-                      Datos del huésped
+                      {tx("Datos del huésped")}
                     </p>
                     <div className="space-y-1 text-slate-600">
-                      <p><strong className="text-slate-800">Nombre:</strong> {invoice.guest}</p>
-                      <p><strong className="text-slate-800">Identificación:</strong> <span className="font-mono">{clientDoc}</span></p>
+                      <p><strong className="text-slate-800">{tx("Nombre:")}</strong> {invoice.guest}</p>
+                      <p><strong className="text-slate-800">{tx("Identificación:")}</strong> <span className="font-mono">{clientDoc}</span></p>
                       <p><strong className="text-slate-800">Email:</strong> {clientEmail}</p>
-                      <p><strong className="text-slate-800">Teléfono:</strong> {clientPhone}</p>
+                      <p><strong className="text-slate-800">{tx("Teléfono:")}</strong> {clientPhone}</p>
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl border border-slate-200 bg-white">
                     <p className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
-                      Detalle de la estancia
+                      {tx("Detalle de la estancia")}
                     </p>
                     <div className="space-y-1 text-slate-600">
-                      <p><strong className="text-slate-800">Habitación:</strong> {roomDescription}</p>
+                      <p><strong className="text-slate-800">{tx("Habitación:")}</strong> {roomDescription}</p>
                       <p><strong className="text-slate-800">Entrada:</strong> <span className="font-mono">{invoice.checkIn} (desde 14:00h)</span></p>
                       <p><strong className="text-slate-800">Salida:</strong> <span className="font-mono">{invoice.checkOut} (hasta 12:00h)</span></p>
-                      <p><strong className="text-slate-800">Duración:</strong> {invoice.nights} noche{invoice.nights > 1 ? "s" : ""}</p>
+                      <p><strong className="text-slate-800">{tx("Duración:")}</strong> {invoice.nights} noche{invoice.nights > 1 ? "s" : ""}</p>
                     </div>
                   </div>
                 </div>
@@ -299,7 +301,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                       <tr>
                         <th className="px-3.5 py-2">Concepto</th>
                         <th className="px-3.5 py-2 text-center">Noches</th>
-                        <th className="px-3.5 py-2 text-right">Precio/noche</th>
+                        <th className="px-3.5 py-2 text-right">{tx("Precio/noche")}</th>
                         <th className="px-3.5 py-2 text-right">Subtotal</th>
                       </tr>
                     </thead>
@@ -328,17 +330,17 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                     </div>
                     {hasService10 ? (
                       <div className="flex justify-between w-72 text-slate-600">
-                        <span>10% Servicio turístico:</span>
+                        <span>{tx("10% Servicio turístico:")}</span>
                         <span>{fmtUsd(servicio10)}</span>
                       </div>
                     ) : (
                       <div className="flex justify-between w-72 text-slate-400 text-[11px]">
-                        <span>10% Servicio turístico:</span>
+                        <span>{tx("10% Servicio turístico:")}</span>
                         <span>$0.00</span>
                       </div>
                     )}
                     <div className="flex justify-between w-72 pt-2 mt-1 border-t border-slate-300 font-bold text-slate-900 text-sm">
-                      <span>Total pagado (USD):</span>
+                      <span>{tx("Total pagado (USD):")}</span>
                       <span className="text-amber-600">{fmtUsd(computedTotal)}</span>
                     </div>
                   </div>
@@ -347,7 +349,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 {/* Fiscal Note Box */}
                 <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 leading-relaxed text-[11px]">
                   <p className="font-bold mb-1 text-xs">
-                    Información de llegada
+                    {tx("Información de llegada")}
                   </p>
                   <p>
                     Presenta este voucher digital o código de confirmación al llegar a <strong>{hotelMeta.nombreComercial}</strong> para validar tu reserva y coordinar los detalles de tu estancia.
@@ -358,15 +360,15 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className="px-3.5 py-2 rounded-lg border border-slate-200 bg-slate-50 text-center min-w-[120px]">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Confirmación</span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">{tx("Confirmación")}</span>
                       <p className="font-mono font-bold text-slate-900 text-sm tracking-wider">RES-{seqDigits}</p>
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800 text-[11px]">Voucher de reserva garantizada</p>
-                      <p className="text-[10px] text-slate-500">Válido en la recepción del hotel</p>
+                      <p className="font-bold text-slate-800 text-[11px]">{tx("Voucher de reserva garantizada")}</p>
+                      <p className="text-[10px] text-slate-500">{tx("Válido en la recepción del hotel")}</p>
                       <p className="font-mono text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                        ESTADO: CONFIRMADO
+                        {tx("ESTADO: CONFIRMADO")}
                       </p>
                     </div>
                   </div>
@@ -386,10 +388,10 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">
-                      Número de recibo o factura del hotel
+                      {tx("Número de recibo o factura del hotel")}
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Ingresa el número de recibo o comprobante asignado en recepción para este huésped.
+                      {tx("Ingresa el número de recibo o comprobante asignado en recepción para este huésped.")}
                     </p>
                   </div>
                   {savedHotelInvoice && (
@@ -413,7 +415,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                       type="submit"
                       className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
                     >
-                      Guardar
+                      {tx("Guardar")}
                     </button>
                     {savedHotelInvoice && (
                       <button
@@ -421,7 +423,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                         onClick={() => setIsEditingInvoiceNum(false)}
                         className="px-3 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-800"
                       >
-                        Cancelar
+                        {tx("Cancelar")}
                       </button>
                     )}
                   </form>
@@ -429,7 +431,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                   <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
                     <div>
                       <p className="text-xs font-bold text-emerald-900">
-                        Nº de comprobante del hotel:
+                        {tx("Nº de comprobante del hotel:")}
                       </p>
                       <p className="font-mono text-sm font-bold text-emerald-700">
                         #{savedHotelInvoice}
@@ -440,7 +442,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
                       onClick={() => setIsEditingInvoiceNum(true)}
                       className="text-xs text-emerald-800 underline font-medium hover:text-emerald-950 cursor-pointer"
                     >
-                      Editar número
+                      {tx("Editar número")}
                     </button>
                   </div>
                 )}
@@ -450,7 +452,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               <div className="p-4 rounded-xl border bg-white shadow-sm space-y-3" style={{ borderColor: "#cbd5e1" }}>
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                    Datos del huésped
+                    {tx("Datos del huésped")}
                   </h4>
                   <button
                     onClick={handleCopyGuestBillingData}
@@ -462,29 +464,29 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Nombre completo</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{tx("Nombre completo")}</span>
                     <p className="font-bold text-slate-800 text-sm select-all">{invoice.guest}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Identificación</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{tx("Identificación")}</span>
                     <p className="font-mono font-bold text-slate-800 text-sm select-all">{clientDoc}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Correo electrónico</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{tx("Correo electrónico")}</span>
                     <p className="font-medium text-slate-700 select-all">{clientEmail}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Teléfono</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{tx("Teléfono")}</span>
                     <p className="font-medium text-slate-700 select-all">{clientPhone}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 sm:col-span-2">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Dirección</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{tx("Dirección")}</span>
                     <p className="font-medium text-slate-700 select-all">{clientAddress}</p>
                   </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-slate-100 border border-slate-200 text-xs">
-                  <p className="font-bold text-slate-800 mb-1">Resumen de cobro:</p>
+                  <p className="font-bold text-slate-800 mb-1">{tx("Resumen de cobro:")}</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="p-2 rounded bg-white">
                       <p className="text-[10px] text-slate-400">Subtotal</p>
@@ -509,7 +511,7 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
         {/* Modal footer */}
         <div className="px-6 py-3.5 border-t flex flex-wrap items-center justify-between gap-3 bg-white" style={{ borderColor: "#cbd5e1" }}>
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span>Transacción procesada de forma segura</span>
+            <span>{tx("Transacción procesada de forma segura")}</span>
             <span>·</span>
             <span className="mono">{authCode}</span>
           </div>
@@ -519,13 +521,13 @@ Comprobante Pago: ${voucherCode} (Aut: ${authCode})`;
               onClick={handlePrint}
               className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-300 hover:bg-slate-100 text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              Imprimir comprobante
+              {tx("Imprimir comprobante")}
             </button>
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-colors cursor-pointer"
             >
-              Cerrar
+              {tx("Cerrar")}
             </button>
           </div>
         </div>

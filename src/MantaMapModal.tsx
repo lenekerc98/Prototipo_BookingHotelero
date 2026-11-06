@@ -1,3 +1,4 @@
+import { tx, useLang } from "./i18n";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import type { Hotel } from "./mantaHotels";
@@ -131,6 +132,7 @@ export default function MantaMapModal({
   onSelectDestination,
   hotels = [],
 }: MantaMapModalProps) {
+  const lang = useLang();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
@@ -282,14 +284,14 @@ export default function MantaMapModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-sm sm:text-base text-white">
-                  Sectorización Geográfica del Cantón Manta
+                  {tx("Sectorización Geográfica del Cantón Manta")}
                 </h3>
                 <span className="text-[10px] font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-600">
-                  7 Parroquias Oficiales · 116 Alojamientos
+                  {tx("7 Parroquias Oficiales · 116 Alojamientos")}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Explora las zonas y playas en el mapa real para elegir dónde hospedarte
+                {tx("Explora las zonas y playas en el mapa real para elegir dónde hospedarte")}
               </p>
             </div>
           </div>
@@ -298,7 +300,7 @@ export default function MantaMapModal({
             type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors text-sm"
-            title="Cerrar mapa"
+            title={tx("Cerrar mapa")}
           >
             ✕
           </button>
@@ -307,7 +309,7 @@ export default function MantaMapModal({
         {/* ─── Barra de Filtros Rápidos y Selector de Capa ─── */}
         <div className="px-5 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2 shrink-0">
           <div className="flex items-center gap-1.5 text-xs font-semibold">
-            <span className="text-slate-500 text-[11px] mr-1">Filtrar por:</span>
+            <span className="text-slate-500 text-[11px] mr-1">{tx("Filtrar por:")}</span>
             <button
               type="button"
               onClick={() => handleFilterClick("todos")}
@@ -317,7 +319,7 @@ export default function MantaMapModal({
                   : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
               }`}
             >
-              Todas (7)
+              {tx("Todas")} (7)
             </button>
             <button
               type="button"
@@ -355,7 +357,7 @@ export default function MantaMapModal({
               }`}
             >
               <span>🗺️</span>
-              <span>Callejero</span>
+              <span>{tx("Callejero")}</span>
             </button>
             <button
               type="button"
@@ -367,7 +369,7 @@ export default function MantaMapModal({
               }`}
             >
               <span>🛰️</span>
-              <span>Satélite Real</span>
+              <span>{tx("Satélite Real")}</span>
             </button>
           </div>
         </div>
@@ -380,14 +382,14 @@ export default function MantaMapModal({
 
             {/* Leyenda flotante sobre el mapa */}
             <div className="absolute bottom-3 left-3 z-[400] bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl shadow-lg border border-slate-200 text-[10px] text-slate-700 space-y-1 select-none pointer-events-auto">
-              <p className="font-bold text-slate-900 text-[11px]">Simbología de Sectores</p>
+              <p className="font-bold text-slate-900 text-[11px]">{tx("Simbología de Sectores")}</p>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-amber-400"></span>
-                <span>Parroquia Urbana (Tarqui, Manta, Esteros, San Mateo, Eloy)</span>
+                <span>{tx("Parroquia Urbana (Tarqui, Manta, Esteros, San Mateo, Eloy)")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-900 border border-emerald-400"></span>
-                <span>Parroquia Rural (Santa Marianita, San Lorenzo)</span>
+                <span>{tx("Parroquia Rural (Santa Marianita, San Lorenzo)")}</span>
               </div>
             </div>
           </div>
@@ -412,7 +414,7 @@ export default function MantaMapModal({
                           : "bg-blue-100 text-blue-900 border border-blue-300"
                       }`}
                     >
-                      {selectedSector.badge}
+                      {tx(selectedSector.badge)}
                     </span>
                   </div>
                 </div>
@@ -425,7 +427,7 @@ export default function MantaMapModal({
               </div>
 
               <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-3">
-                {selectedSector.desc}
+                {tx(selectedSector.desc)}
               </p>
 
               <div className="flex flex-wrap gap-1 mb-3">
@@ -434,7 +436,7 @@ export default function MantaMapModal({
                     key={h}
                     className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200"
                   >
-                    ✓ {h}
+                    ✓ {tx(h)}
                   </span>
                 ))}
               </div>
@@ -452,7 +454,7 @@ export default function MantaMapModal({
             {/* Lista Desplazable de las Parroquias */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 divide-y divide-slate-100 text-xs">
               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">
-                Seleccionar otra parroquia oficial
+                {tx("Seleccionar otra parroquia oficial")}
               </p>
               {displayedSectors.map(sec => {
                 const isSelected = selectedSector.id === sec.id;
@@ -474,7 +476,7 @@ export default function MantaMapModal({
                           {sec.name}
                         </p>
                         <p className="text-[10px] text-slate-400 truncate">
-                          {sec.highlights.join(" · ")}
+                          {sec.highlights.map(h => tx(h)).join(" · ")}
                         </p>
                       </div>
                     </div>
