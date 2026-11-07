@@ -3031,7 +3031,7 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
         <div className="sm:w-64 flex-shrink-0 relative overflow-hidden" style={{ height: 200 }}>
           <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-            {hotel.tags.slice(0, 2).map(t => <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.55)", color: "var(--card)" }}>{tx(t)}</span>)}
+            {hotel.tags.slice(0, 2).map(t => <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.55)", color: "#ffffff" }}>{tx(t)}</span>)}
           </div>
         </div>
         <div className="flex-1 p-4 flex flex-col justify-between">
@@ -3774,7 +3774,7 @@ export default function GuestPage({
       <header className="sticky top-0 z-30 border-b shadow-xs" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
           <button onClick={handleLogoClick} className="flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0">
-            <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>
+            <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "var(--foreground)" }}>
               AlojaManta
             </span>
             <span className="hidden sm:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
