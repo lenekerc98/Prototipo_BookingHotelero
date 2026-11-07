@@ -89,7 +89,7 @@ function StarsRow({ n }: { n: number }) {
   return (
     <span className="flex gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} style={{ color: i < n ? "#f59e0b" : "#e2e8f0", fontSize: 11 }}>★</span>
+        <span key={i} style={{ color: i < n ? "#f59e0b" : "var(--border)", fontSize: 11 }}>★</span>
       ))}
     </span>
   );
@@ -141,12 +141,12 @@ function PriceBreakdownBox({
   const totalPagar = Number((subtotal + totalImpuestos).toFixed(2));
 
   return (
-    <div className={`rounded-xl border bg-white p-3.5 shadow-sm text-left transition-all ${className}`} style={{ borderColor: "#e2e8f0" }}>
+    <div className={`rounded-xl border bg-card p-3.5 shadow-sm text-left transition-all ${className}`} style={{ borderColor: "var(--border)" }}>
       {/* Resumen de precio */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{tx("Desglose del precio")}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider ttext-muted-foreground">{tx("Desglose del precio")}</span>
             {ivaPct === 8 && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
                 {tx("IVA 8% tarifa feriado")}
@@ -154,11 +154,11 @@ function PriceBreakdownBox({
             )}
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-xs text-slate-500 font-medium">{tx("Precio")}</span>
-            <span className="text-xl font-black text-slate-900 tracking-tight">US${subtotal.toFixed(2)}</span>
-            {n > 1 && <span className="text-[11px] text-slate-400">({n} {tx("noches")})</span>}
+            <span className="text-xs ttext-muted-foreground font-medium">{tx("Precio")}</span>
+            <span className="text-xl font-black text-foreground tracking-tight">US${subtotal.toFixed(2)}</span>
+            {n > 1 && <span className="text-[11px] ttext-muted-foreground">({n} {tx("noches")})</span>}
           </div>
-          <p className="text-[11px] font-semibold text-slate-500 mt-0.5">
+          <p className="text-[11px] font-semibold ttext-muted-foreground mt-0.5">
             + US${totalImpuestos.toFixed(2)} {tx("de impuestos")} ({ivaPct}% IVA{hasService10 ? " + 10% Serv." : ""})
           </p>
         </div>
@@ -175,17 +175,17 @@ function PriceBreakdownBox({
       </div>
 
       {expanded && (
-        <div className="mt-3 pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
-          <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
+        <div className="mt-3 pt-3 border-t border-border space-y-2.5 text-xs ttext-muted-foreground">
+          <div className="flex items-center gap-1.5 font-bold text-foreground text-[11px]">
             <span>{tx("Detalle de impuestos y tasas")}</span>
           </div>
 
-          <div className="rounded-lg p-3 bg-slate-50 border border-slate-200/80 space-y-2">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-700 text-[11px] pb-1.5 border-b border-slate-200">
+          <div className="rounded-lg p-3 bg-background border border-border/80 space-y-2">
+            <div className="flex items-center gap-1.5 font-semibold text-foreground text-[11px] pb-1.5 border-b border-border">
               <span>{tx("Impuestos y cargos")}: US${totalImpuestos.toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between items-center text-slate-600">
+            <div className="flex justify-between items-center ttext-muted-foreground">
               <span>
                 {ivaPct}% IVA {ivaPct === 8 ? `(${decretoCfg.decretoNombre})` : ""}
               </span>
@@ -198,14 +198,14 @@ function PriceBreakdownBox({
                 <span className="font-mono font-bold">US${servicio.toFixed(2)}</span>
               </div>
             ) : (
-              <div className="flex justify-between items-center text-slate-400 italic text-[11px]">
+              <div className="flex justify-between items-center ttext-muted-foreground italic text-[11px]">
                 <span>{tx("10% Servicio turístico (no aplica)")}</span>
                 <span className="font-mono">US$0.00</span>
               </div>
             )}
           </div>
 
-          <div className="flex justify-between items-center pt-1 font-bold text-slate-900 text-sm border-t border-slate-100">
+          <div className="flex justify-between items-center pt-1 font-bold text-foreground text-sm border-t border-border">
             <span>{tx("Total a pagar")}</span>
             <span className="text-base font-black text-amber-600 font-mono">US${totalPagar.toFixed(2)}</span>
           </div>
@@ -265,22 +265,22 @@ function SearchBar({
     <div
       className={`w-full max-w-full flex flex-col md:flex-row gap-2.5 md:items-end ${
         variant === "hero"
-          ? "p-3 sm:p-4 rounded-2xl bg-white shadow-xl shadow-slate-900/10 border border-slate-200/90"
-          : "p-2.5 rounded-2xl border border-slate-200 bg-white shadow-xs"
+          ? "p-3 sm:p-4 rounded-2xl bg-card shadow-xl shadow-slate-900/10 border border-border/90"
+          : "p-2.5 rounded-2xl border border-border bg-card shadow-xs"
       }`}
-      style={{ borderColor: variant === "sticky" ? "#e2e8f0" : undefined }}
+      style={{ borderColor: variant === "sticky" ? "var(--border)" : undefined }}
     >
       {/* ─── Selector de Destino Moderno (Solid Clean Popover) ─── */}
       <div className="flex-1 min-w-0 relative" ref={popoverRef}>
         <div className="mb-1">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+          <label className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground flex items-center gap-1">
             <span>📍</span>
             <span>{tx("¿A dónde vas en Manta?")}</span>
           </label>
         </div>
 
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ttext-muted-foreground">
             <span className="text-sm">🔍</span>
           </div>
 
@@ -302,14 +302,14 @@ function SearchBar({
               }
             }}
             placeholder={tx("Parroquia, playa o sector de Manta...")}
-            className="w-full pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 cursor-pointer shadow-2xs"
+            className="w-full pl-8 pr-8 py-2.5 rounded-xl border border-border bg-background hover:bg-card focus:bg-card text-sm font-semibold text-foreground placeholder:ttext-muted-foreground outline-none transition-all focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 cursor-pointer shadow-2xs"
           />
 
           {params.destination && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer text-xs font-bold"
+              className="absolute inset-y-0 right-0 pr-2.5 flex items-center ttext-muted-foreground hover:text-foreground cursor-pointer text-xs font-bold"
               title={tx("Borrar filtro de destino")}
             >
               ✕
@@ -320,26 +320,26 @@ function SearchBar({
         {/* ─── Modern Travel Explorer Popover (Airbnb Style: 100% Light, Espacioso y Visual) ─── */}
         {isPopOpen && (
           <div
-            className="absolute left-0 top-full mt-2 w-full sm:w-[500px] max-w-[96vw] rounded-2xl bg-white border border-slate-200/90 shadow-2xl shadow-slate-900/15 z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 top-full mt-2 w-full sm:w-[500px] max-w-[96vw] rounded-2xl bg-card border border-border/90 shadow-2xl shadow-slate-900/15 z-50 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Header Amigable y Luminoso (Sin barras negras) */}
-            <div className="px-4 pt-3.5 pb-2.5 bg-white border-b border-slate-100 flex items-center justify-between">
+            <div className="px-4 pt-3.5 pb-2.5 bg-card border-b border-border flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">🧭</span>
-                  <h4 className="font-bold text-xs text-slate-900">{tx("Explora Manta por zona")}</h4>
+                  <h4 className="font-bold text-xs text-foreground">{tx("Explora Manta por zona")}</h4>
                   <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
                     {tx("116 alojamientos")}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[11px] ttext-muted-foreground mt-0.5">
                   {tx("Elige una parroquia oficial o una playa turística destacada")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPopOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 text-xs flex items-center justify-center cursor-pointer transition-colors"
+                className="w-7 h-7 rounded-full bg-muted hover:bg-slate-200 ttext-muted-foreground hover:text-foreground text-xs flex items-center justify-center cursor-pointer transition-colors"
                 title={tx("Cerrar")}
               >
                 ✕
@@ -371,7 +371,7 @@ function SearchBar({
             </div>
 
             {/* Chips de Categoría Rápidos */}
-            <div className="px-4 py-2 bg-slate-50/70 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+            <div className="px-4 py-2 bg-background/70 border-b border-border flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
               <button
                 type="button"
                 onClick={() => {
@@ -389,7 +389,7 @@ function SearchBar({
                 className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "parroquias"
                     ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                    : "bg-card ttext-muted-foreground border border-border hover:bg-muted"
                 }`}
               >
                 <span>🏛️</span>
@@ -401,7 +401,7 @@ function SearchBar({
                 className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "sectores"
                     ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                    : "bg-card ttext-muted-foreground border border-border hover:bg-muted"
                 }`}
               >
                 <span>🏖️</span>
@@ -413,7 +413,7 @@ function SearchBar({
                 className={`py-1 px-2.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-semibold flex items-center gap-1 text-[11px] ${
                   activeTab === "todo"
                     ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                    : "bg-card ttext-muted-foreground border border-border hover:bg-muted"
                 }`}
               >
                 <span>⭐</span>
@@ -431,21 +431,21 @@ function SearchBar({
                       key={p.name}
                       type="button"
                       onClick={() => handleSelectDestination(p.query)}
-                      className="p-2.5 rounded-xl border border-slate-150 hover:border-amber-300 bg-white hover:bg-amber-50/40 text-left transition-all cursor-pointer group flex flex-col justify-between hover:shadow-sm"
+                      className="p-2.5 rounded-xl border border-slate-150 hover:border-amber-300 bg-card hover:bg-amber-50/40 text-left transition-all cursor-pointer group flex flex-col justify-between hover:shadow-sm"
                     >
                       <div className="flex items-start justify-between gap-1 mb-1.5">
                         <div className="flex items-center gap-2">
                           <span className="text-base group-hover:scale-110 transition-transform">{p.icon}</span>
-                          <span className="font-bold text-slate-900 text-xs group-hover:text-amber-900">
+                          <span className="font-bold text-foreground text-xs group-hover:text-amber-900">
                             {p.name}
                           </span>
                         </div>
-                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
+                        <span className="text-[10px] font-semibold ttext-muted-foreground bg-muted px-1.5 py-0.2 rounded-md">
                           {p.count} {tx("hot.")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-1 text-[10px]">
-                        <span className="text-slate-500 truncate max-w-[160px]">{tx(p.desc)}</span>
+                        <span className="ttext-muted-foreground truncate max-w-[160px]">{tx(p.desc)}</span>
                         <span
                           className={`text-[8px] font-bold px-1.5 py-0.2 rounded uppercase shrink-0 ${
                             p.type.includes("Rural")
@@ -469,21 +469,21 @@ function SearchBar({
                       key={s.name}
                       type="button"
                       onClick={() => handleSelectDestination(s.query)}
-                      className="p-2.5 rounded-xl border border-slate-150 hover:border-amber-300 bg-white hover:bg-amber-50/40 text-left transition-all cursor-pointer group flex flex-col justify-between hover:shadow-sm"
+                      className="p-2.5 rounded-xl border border-slate-150 hover:border-amber-300 bg-card hover:bg-amber-50/40 text-left transition-all cursor-pointer group flex flex-col justify-between hover:shadow-sm"
                     >
                       <div className="flex items-start justify-between gap-1 mb-1.5">
                         <div className="flex items-center gap-2">
                           <span className="text-base group-hover:scale-110 transition-transform">{s.icon}</span>
-                          <span className="font-bold text-slate-900 text-xs group-hover:text-amber-900">
+                          <span className="font-bold text-foreground text-xs group-hover:text-amber-900">
                             {s.name}
                           </span>
                         </div>
-                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-md">
+                        <span className="text-[10px] font-semibold ttext-muted-foreground bg-muted px-1.5 py-0.2 rounded-md">
                           {s.count} {tx("hot.")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-1 text-[10px]">
-                        <span className="text-slate-500 truncate max-w-[160px]">{tx(s.desc)}</span>
+                        <span className="ttext-muted-foreground truncate max-w-[160px]">{tx(s.desc)}</span>
                         <span className="text-[8px] font-bold px-1.5 py-0.2 rounded uppercase shrink-0 bg-amber-50 text-amber-800 border border-amber-200">
                           {tx(s.badge)}
                         </span>
@@ -495,12 +495,12 @@ function SearchBar({
 
               {/* Pestaña 3: Todo el Cantón */}
               {activeTab === "todo" && (
-                <div className="p-4 text-center space-y-2 bg-slate-50/70 rounded-xl border border-slate-150">
+                <div className="p-4 text-center space-y-2 bg-background/70 rounded-xl border border-slate-150">
                   <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center text-xl mx-auto shadow-2xs">
                     🌊
                   </div>
-                  <p className="font-bold text-slate-900 text-xs">{tx("Catálogo Completo de Manta")}</p>
-                  <p className="text-[11px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                  <p className="font-bold text-foreground text-xs">{tx("Catálogo Completo de Manta")}</p>
+                  <p className="text-[11px] ttext-muted-foreground max-w-xs mx-auto leading-relaxed">
                     {tx("Visualiza los 116 hoteles, hostales y hosterías registrados en las 7 parroquias del cantón.")}
                   </p>
                   <button
@@ -515,7 +515,7 @@ function SearchBar({
             </div>
 
             {/* Pie del Popover */}
-            <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+            <div className="px-4 py-2 bg-background border-t border-border flex items-center justify-between text-[10px] ttext-muted-foreground">
               <span>{tx("💡 También puedes escribir directamente el nombre del sector")}</span>
               {params.destination && (
                 <button
@@ -537,13 +537,13 @@ function SearchBar({
       {/* ─── Fechas (Llegada & Salida) ─── */}
       <div className="grid grid-cols-2 gap-2 md:flex md:gap-2">
         <div className="min-w-0 sm:w-32">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 ttext-muted-foreground text-left flex items-center gap-1">
             <span>📅</span>
             <span>{tx("Llegada")}</span>
           </label>
           <input
             type="date"
-            className="w-full px-2.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
+            className="w-full px-2.5 py-2.5 rounded-xl border border-border bg-background/70 hover:bg-card focus:bg-card text-xs sm:text-sm font-semibold outline-none text-foreground focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
             style={{ colorScheme: "light" }}
             value={params.checkIn}
             min={todayStr()}
@@ -558,13 +558,13 @@ function SearchBar({
         </div>
 
         <div className="min-w-0 sm:w-32">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 ttext-muted-foreground text-left flex items-center gap-1">
             <span>📅</span>
             <span>{tx("Salida")}</span>
           </label>
           <input
             type="date"
-            className="w-full px-2.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
+            className="w-full px-2.5 py-2.5 rounded-xl border border-border bg-background/70 hover:bg-card focus:bg-card text-xs sm:text-sm font-semibold outline-none text-foreground focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
             style={{ colorScheme: "light" }}
             value={params.checkOut}
             min={params.checkIn ? addDays(params.checkIn, 1) : addDays(todayStr(), 1)}
@@ -575,12 +575,12 @@ function SearchBar({
 
       {/* ─── Huéspedes ─── */}
       <div className="min-w-0 md:w-32">
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-slate-500 text-left flex items-center gap-1">
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 ttext-muted-foreground text-left flex items-center gap-1">
           <span>👥</span>
           <span>{tx("Huéspedes")}</span>
         </label>
         <select
-          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white focus:bg-white text-sm font-semibold outline-none text-slate-800 focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
+          className="w-full px-3 py-2.5 rounded-xl border border-border bg-background/70 hover:bg-card focus:bg-card text-sm font-semibold outline-none text-foreground focus:ring-2 focus:ring-amber-500/25 focus:border-amber-400 transition-all cursor-pointer shadow-2xs"
           value={params.adults}
           onChange={e => onChange({ ...params, adults: Number(e.target.value) })}
         >
@@ -636,8 +636,8 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md rounded-2xl border overflow-hidden shadow-2xl" style={{ background: "#fff" }}>
-        <div className="px-6 py-5 border-b" style={{ borderColor: "#e2e8f0", background: "#0c1220" }}>
+      <div className="w-full max-w-md rounded-2xl border overflow-hidden shadow-2xl" style={{ background: "var(--card)" }}>
+        <div className="px-6 py-5 border-b" style={{ borderColor: "var(--border)", background: "#0c1220" }}>
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -645,12 +645,12 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
                 <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">{tx("RESERVA GARANTIZADA")}</span>
               </div>
               <p className="text-xs text-slate-300">{hotelMeta.razonSocial}</p>
-              <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · Manta, Manabí</p>
+              <p className="text-[10px] ttext-muted-foreground font-mono">RUC: {hotelMeta.ruc} · Manta, Manabí</p>
             </div>
             <div className="text-right">
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{tx("VOUCHER DIGITAL")}</span>
               <p className="font-mono font-bold text-slate-100 text-xs mt-1">REC-{res.id}</p>
-              <p className="text-[10px] text-slate-400">Entrada: {fmtDateShort(res.checkIn)}</p>
+              <p className="text-[10px] ttext-muted-foreground">Entrada: {fmtDateShort(res.checkIn)}</p>
             </div>
           </div>
         </div>
@@ -662,42 +662,42 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Titular de Reserva")}</p>
-              <p className="font-semibold text-slate-700">{tx("Huésped Registrado")}</p>
-              <p className="text-xs text-slate-500 font-mono">Código {res.id}</p>
+              <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Titular de Reserva")}</p>
+              <p className="font-semibold text-foreground">{tx("Huésped Registrado")}</p>
+              <p className="text-xs ttext-muted-foreground font-mono">Código {res.id}</p>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Establecimiento Destino")}</p>
-              <p className="font-semibold text-slate-700">{res.hotel}</p>
-              <p className="text-xs text-slate-500">{tx(res.city)}</p>
+              <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Establecimiento Destino")}</p>
+              <p className="font-semibold text-foreground">{res.hotel}</p>
+              <p className="text-xs ttext-muted-foreground">{tx(res.city)}</p>
             </div>
           </div>
 
-          <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#e2e8f0" }}>
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
             <table className="w-full text-sm">
-              <thead><tr style={{ background: "#f8fafc" }}><th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500">{tx("Detalle de Hospedaje")}</th><th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500">{tx("Monto")}</th></tr></thead>
+              <thead><tr style={{ background: "var(--background)" }}><th className="text-left px-4 py-2.5 text-xs font-bold ttext-muted-foreground">{tx("Detalle de Hospedaje")}</th><th className="text-right px-4 py-2.5 text-xs font-bold ttext-muted-foreground">{tx("Monto")}</th></tr></thead>
               <tbody>
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-2.5"><p className="font-medium text-slate-700">{tx(res.room)}</p><p className="text-xs text-slate-400">{res.nights} noche{res.nights > 1 ? "s" : ""} · Entrada {fmtDateShort(res.checkIn)} → Salida {fmtDateShort(res.checkOut)}</p></td>
-                  <td className="px-4 py-2.5 text-right font-medium text-slate-700">{fmt(base)}</td>
+                  <td className="px-4 py-2.5"><p className="font-medium text-foreground">{tx(res.room)}</p><p className="text-xs ttext-muted-foreground">{res.nights} noche{res.nights > 1 ? "s" : ""} · Entrada {fmtDateShort(res.checkIn)} → Salida {fmtDateShort(res.checkOut)}</p></td>
+                  <td className="px-4 py-2.5 text-right font-medium text-foreground">{fmt(base)}</td>
                 </tr>
-                <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
-                  <td className="px-4 py-2 text-xs text-slate-500">IVA ({ivaPct}% {ivaPct === 8 ? "Decreto Feriado Turístico" : "Tarifa Ordinaria"})</td>
-                  <td className="px-4 py-2 text-right text-xs text-slate-500">{fmt(iva)}</td>
+                <tr style={{ borderTop: "1px solid #e2e8f0", background: "var(--background)" }}>
+                  <td className="px-4 py-2 text-xs ttext-muted-foreground">IVA ({ivaPct}% {ivaPct === 8 ? "Decreto Feriado Turístico" : "Tarifa Ordinaria"})</td>
+                  <td className="px-4 py-2 text-right text-xs ttext-muted-foreground">{fmt(iva)}</td>
                 </tr>
                 {hasServicio ? (
-                  <tr style={{ background: "#f8fafc" }}>
+                  <tr style={{ background: "var(--background)" }}>
                     <td className="px-4 py-2 text-xs text-emerald-600 font-medium">{tx("10% Servicio Turístico (Art. 41 Ley Turismo)")}</td>
                     <td className="px-4 py-2 text-right text-xs text-emerald-600 font-bold">{fmt(servicio)}</td>
                   </tr>
                 ) : (
-                  <tr style={{ background: "#f8fafc" }}>
-                    <td className="px-4 py-2 text-xs text-slate-400 italic">{tx("10% Servicio Turístico (Hostal exento)")}</td>
-                    <td className="px-4 py-2 text-right text-xs text-slate-400">$0.00</td>
+                  <tr style={{ background: "var(--background)" }}>
+                    <td className="px-4 py-2 text-xs ttext-muted-foreground italic">{tx("10% Servicio Turístico (Hostal exento)")}</td>
+                    <td className="px-4 py-2 text-right text-xs ttext-muted-foreground">$0.00</td>
                   </tr>
                 )}
                 <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-3 font-bold text-slate-800">{tx("Total Liquidado")}</td>
+                  <td className="px-4 py-3 font-bold text-foreground">{tx("Total Liquidado")}</td>
                   <td className="px-4 py-3 text-right font-bold text-lg" style={{ color: "#f59e0b" }}>{fmt(res.total)}</td>
                 </tr>
               </tbody>
@@ -709,8 +709,8 @@ export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: ()
             <span className="text-xs font-semibold text-green-700">{tx("Cobro liquidado vía pasarela y transferido al hotel")}</span>
           </div>
         </div>
-        <div className="px-6 py-4 border-t flex gap-2" style={{ borderColor: "#e2e8f0" }}>
-          <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("Cerrar")}</button>
+        <div className="px-6 py-4 border-t flex gap-2" style={{ borderColor: "var(--border)" }}>
+          <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("Cerrar")}</button>
           <button className="flex-1 py-2 rounded-xl text-sm font-bold" style={{ background: "#f59e0b", color: "#0c1220" }}>{tx("⬇ Descargar Voucher PDF")}</button>
         </div>
       </div>
@@ -828,7 +828,7 @@ function AccountView({
       <div className="flex items-center justify-between gap-4 mb-6">
         <button
           onClick={onBack}
-          className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5 cursor-pointer"
+          className="text-xs sm:text-sm font-semibold ttext-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 cursor-pointer"
         >
           <span>←</span>
           <span>{tx("Volver a buscar hoteles")}</span>
@@ -845,32 +845,32 @@ function AccountView({
       </div>
 
       {/* Tarjeta de Encabezado del Huésped */}
-      <div className="rounded-2xl border bg-white p-5 sm:p-6 mb-6 shadow-xs" style={{ borderColor: "#e2e8f0" }}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b" style={{ borderColor: "#f1f5f9" }}>
+      <div className="rounded-2xl border bg-card p-5 sm:p-6 mb-6 shadow-xs" style={{ borderColor: "var(--border)" }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b" style={{ borderColor: "var(--muted)" }}>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center text-2xl font-black shadow-md shrink-0">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900" style={{ fontFamily: "DM Serif Display, serif" }}>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground" style={{ fontFamily: "DM Serif Display, serif" }}>
                   {profile.fullName || user.name}
                 </h1>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
                   ✓ {tx("Cuenta Verificada")}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">{user.email} · {profile.phone}</p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-xs ttext-muted-foreground mt-0.5">{user.email} · {profile.phone}</p>
+              <p className="text-[11px] ttext-muted-foreground mt-1">
                 {tx("Reserva directa oficial · Sin sobreprecios ni cargos ocultos de intermediarios")}
               </p>
             </div>
           </div>
 
-          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
-            <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">{tx("Resumen de cuenta")}</span>
+          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 bg-background sm:bg-transparent p-3 sm:p-0 rounded-xl">
+            <span className="text-[11px] ttext-muted-foreground uppercase tracking-wider font-semibold">{tx("Resumen de cuenta")}</span>
             <div className="flex items-center gap-3 text-xs">
-              <span className="font-bold text-slate-700 font-mono">{allList.length} reservas</span>
+              <span className="font-bold text-foreground font-mono">{allList.length} reservas</span>
               <span className="text-slate-300">|</span>
               <span className="font-bold text-amber-600 font-mono">{totalNights} noches</span>
             </div>
@@ -893,7 +893,7 @@ function AccountView({
               className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 activeTab === t.id
                   ? "bg-slate-900 text-white shadow-xs"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  : "ttext-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <span>{t.label}</span>
@@ -907,9 +907,9 @@ function AccountView({
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Card 1: Estancias y Viajes */}
-            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-2xl border bg-card p-5 hover:shadow-md transition-shadow" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {tx("Estancias y viajes")}
                 </h3>
                 <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
@@ -921,30 +921,30 @@ function AccountView({
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Mis reservas y viajes en Manta")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Mis reservas y viajes en Manta")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Vouchers y comprobantes de reserva")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Vouchers y comprobantes de reserva")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={onBack}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Explorar alojamientos en Manta")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Explorar alojamientos en Manta")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
 
             {/* Card 2: Gestión de la cuenta y Llegada */}
-            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-2xl border bg-card p-5 hover:shadow-md transition-shadow" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {tx("Datos del titular")}
                 </h3>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -956,30 +956,30 @@ function AccountView({
                   onClick={() => setActiveTab("personal")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Datos personales (Cédula / Pasaporte)")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Datos personales (Cédula / Pasaporte)")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("personal")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Teléfono y WhatsApp de confirmación")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Teléfono y WhatsApp de confirmación")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("personal")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Preferencias de cama y habitación")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Preferencias de cama y habitación")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
 
             {/* Card 3: Comprobantes y Contacto */}
-            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-2xl border bg-card p-5 hover:shadow-md transition-shadow" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {tx("Comprobantes de pago")}
                 </h3>
                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
@@ -991,33 +991,33 @@ function AccountView({
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Datos tributarios (RUC / Cédula)")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Datos tributarios (RUC / Cédula)")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Razón Social y Domicilio fiscal")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Razón Social y Domicilio fiscal")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Emisión en recepción del alojamiento")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Emisión en recepción del alojamiento")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
 
             {/* Card 4: Medios de Pago Digitales */}
-            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-2xl border bg-card p-5 hover:shadow-md transition-shadow" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {tx("Cobro y pagos")}
                 </h3>
-                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold ttext-muted-foreground bg-muted px-2 py-0.5 rounded">
                   {tx("Digital seguro")}
                 </span>
               </div>
@@ -1026,30 +1026,30 @@ function AccountView({
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Tarjetas de crédito y débito vinculadas")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Tarjetas de crédito y débito vinculadas")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Cobro local vía PayPhone & DeUna")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Cobro local vía PayPhone & DeUna")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Certificados de acreditación hotelera")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Certificados de acreditación hotelera")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
 
             {/* Card 5: Acerca de AlojaManta */}
-            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-2xl border bg-card p-5 hover:shadow-md transition-shadow" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {tx("Acerca de AlojaManta")}
                 </h3>
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
@@ -1061,33 +1061,33 @@ function AccountView({
                   onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("116 Alojamientos catastrados y validados")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("116 Alojamientos catastrados y validados")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Modelo directo sin comisiones abusivas")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Modelo directo sin comisiones abusivas")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Comprobantes digitales y liquidación de reserva")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Comprobantes digitales y liquidación de reserva")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
 
             {/* Card 6: Atención y Asistencia al Huésped */}
-            <div className="rounded-2xl border bg-white p-5 hover:shadow-md transition-shadow" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-2xl border bg-card p-5 hover:shadow-md transition-shadow" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {tx("Asistencia al huésped")}
                 </h3>
-                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold ttext-muted-foreground bg-muted px-2 py-0.5 rounded">
                   {tx("Cantón Manta")}
                 </span>
               </div>
@@ -1098,22 +1098,22 @@ function AccountView({
                   rel="noopener noreferrer"
                   className="py-2.5 flex items-center justify-between text-left hover:text-emerald-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-emerald-600">{tx("WhatsApp Manta: +593 99 876 5432")}</span>
+                  <span className="text-foreground font-medium group-hover:text-emerald-600">{tx("WhatsApp Manta: +593 99 876 5432")}</span>
                   <span className="text-emerald-600 font-bold group-hover:translate-x-1 transition-transform">💬</span>
                 </a>
                 <a
                   href="tel:+59352628900"
                   className="py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Línea Cantonal: +593 5 262 8900")}</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Línea Cantonal: +593 5 262 8900")}</span>
                   <span className="text-amber-600 font-bold group-hover:translate-x-1 transition-transform">📞</span>
                 </a>
                 <button
                   onClick={() => setActiveTab("reservations")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-slate-700 font-medium group-hover:text-amber-600">{tx("Consultar reservas y comprobantes")}</span>
-                  <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Consultar reservas y comprobantes")}</span>
+                  <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </div>
@@ -1125,7 +1125,7 @@ function AccountView({
       {activeTab === "reservations" && (
         <div className="space-y-5">
           {/* Filtros */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border" style={{ borderColor: "#e2e8f0" }}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3.5 rounded-2xl border" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs font-semibold">
               {[
                 { id: "all", label: tx("Todas") },
@@ -1139,7 +1139,7 @@ function AccountView({
                   className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                     resFilter === f.id
                       ? "bg-amber-500 text-slate-950 font-bold shadow-xs"
-                      : "text-slate-600 hover:bg-slate-100"
+                      : "ttext-muted-foreground hover:bg-muted"
                   }`}
                 >
                   {f.label} ({f.id === "all" ? allList.length : allList.filter(x => x.status === f.id).length})
@@ -1147,7 +1147,7 @@ function AccountView({
               ))}
             </div>
 
-            <span className="text-xs text-slate-400">
+            <span className="text-xs ttext-muted-foreground">
               Mostrando {filteredReservations.length} de {allList.length} reservas
             </span>
           </div>
@@ -1157,34 +1157,34 @@ function AccountView({
             {filteredReservations.map(res => {
               const st = statusStyle[res.status] || statusStyle.upcoming;
               return (
-                <div key={res.id} className="rounded-2xl border bg-white overflow-hidden shadow-xs hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
+                <div key={res.id} className="rounded-2xl border bg-card overflow-hidden shadow-xs hover:shadow-md transition-all" style={{ borderColor: "var(--border)" }}>
                   <div className="flex flex-col sm:flex-row">
                     <img src={res.image} alt={tx(res.room)} className="sm:w-48 w-full object-cover" style={{ height: 140 }} />
                     <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="font-bold text-slate-900 text-base">{res.hotel}</p>
-                            <p className="text-xs text-slate-500 font-medium">{tx(res.city)} · {tx(res.room)}</p>
+                            <p className="font-bold text-foreground text-base">{res.hotel}</p>
+                            <p className="text-xs ttext-muted-foreground font-medium">{tx(res.city)} · {tx(res.room)}</p>
                           </div>
                           <span className="mono text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider" style={{ background: st.bg, color: st.color }}>
                             {st.label}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-2 flex items-center gap-2">
+                        <p className="text-xs ttext-muted-foreground mt-2 flex items-center gap-2">
                           <span>📅 {fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</span>
                           <span>·</span>
                           <span>🌙 {res.nights} noche{res.nights > 1 ? "s" : ""}</span>
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: "var(--muted)" }}>
                         <div>
-                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{tx("Código de confirmación")}</p>
-                          <p className="font-mono text-sm font-bold text-slate-800">{res.id}</p>
+                          <p className="text-[10px] ttext-muted-foreground uppercase tracking-wider font-semibold">{tx("Código de confirmación")}</p>
+                          <p className="font-mono text-sm font-bold text-foreground">{res.id}</p>
                         </div>
                         <div className="flex items-center gap-2.5">
-                          <p className="font-black text-lg text-slate-900">{fmt(res.total)}</p>
+                          <p className="font-black text-lg text-foreground">{fmt(res.total)}</p>
                           <button
                             onClick={() => onViewVoucher(res)}
                             className="text-xs px-3.5 py-1.5 rounded-xl font-bold transition-all bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs cursor-pointer flex items-center gap-1"
@@ -1214,9 +1214,9 @@ function AccountView({
             })}
 
             {filteredReservations.length === 0 && (
-              <div className="text-center py-12 rounded-2xl border bg-white" style={{ borderColor: "#e2e8f0" }}>
+              <div className="text-center py-12 rounded-2xl border bg-card" style={{ borderColor: "var(--border)" }}>
                 <p className="text-3xl mb-2">🏖️</p>
-                <p className="font-bold text-slate-700 text-sm">{tx("No tienes reservas con este filtro")}</p>
+                <p className="font-bold text-foreground text-sm">{tx("No tienes reservas con este filtro")}</p>
                 <button
                   onClick={() => setResFilter("all")}
                   className="mt-3 text-xs text-amber-700 font-semibold underline cursor-pointer"
@@ -1231,37 +1231,37 @@ function AccountView({
 
       {/* ─── TAB 3: DATOS PERSONALES ─── */}
       {activeTab === "personal" && (
-        <form onSubmit={handleSaveProfile} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
-          <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
-            <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+        <form onSubmit={handleSaveProfile} className="rounded-2xl border bg-card p-6 shadow-xs max-w-2xl" style={{ borderColor: "var(--border)" }}>
+          <div className="border-b pb-4 mb-5" style={{ borderColor: "var(--muted)" }}>
+            <h3 className="font-bold text-foreground text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
               {tx("Datos Personales del Huésped")}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs ttext-muted-foreground mt-0.5">
               {tx("Esta información agiliza la validación de tu reserva en la recepción de los hoteles de Manta.")}
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Nombre y Apellidos Completos")}</label>
+              <label className="block text-xs font-bold text-foreground mb-1">{tx("Nombre y Apellidos Completos")}</label>
               <input
                 type="text"
                 value={profile.fullName}
                 onChange={e => setProfile({ ...profile, fullName: e.target.value })}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                style={{ borderColor: "#cbd5e1" }}
+                style={{ borderColor: "var(--border)" }}
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Tipo de Documento")}</label>
+                <label className="block text-xs font-bold text-foreground mb-1">{tx("Tipo de Documento")}</label>
                 <select
                   value={profile.documentType}
                   onChange={e => setProfile({ ...profile, documentType: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none bg-white"
-                  style={{ borderColor: "#cbd5e1" }}
+                  className="w-full px-3 py-2 text-sm border rounded-xl outline-none bg-card"
+                  style={{ borderColor: "var(--border)" }}
                 >
                   <option value="Cédula de Identidad (Ecuador)">{tx("Cédula de Identidad (Ecuador)")}</option>
                   <option value="Pasaporte Internacional">{tx("Pasaporte Internacional")}</option>
@@ -1269,62 +1269,62 @@ function AccountView({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Número de Identificación")}</label>
+                <label className="block text-xs font-bold text-foreground mb-1">{tx("Número de Identificación")}</label>
                 <input
                   type="text"
                   value={profile.documentNumber}
                   onChange={e => setProfile({ ...profile, documentNumber: e.target.value })}
                   placeholder={tx("Ej: 1314589201")}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
-                  style={{ borderColor: "#cbd5e1" }}
+                  style={{ borderColor: "var(--border)" }}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Correo Electrónico")}</label>
+                <label className="block text-xs font-bold text-foreground mb-1">{tx("Correo Electrónico")}</label>
                 <input
                   type="email"
                   value={profile.email}
                   disabled
-                  className="w-full px-3 py-2 text-sm border rounded-xl bg-slate-50 text-slate-500 cursor-not-allowed"
-                  style={{ borderColor: "#cbd5e1" }}
+                  className="w-full px-3 py-2 text-sm border rounded-xl bg-background ttext-muted-foreground cursor-not-allowed"
+                  style={{ borderColor: "var(--border)" }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Teléfono / WhatsApp")}</label>
+                <label className="block text-xs font-bold text-foreground mb-1">{tx("Teléfono / WhatsApp")}</label>
                 <input
                   type="text"
                   value={profile.phone}
                   onChange={e => setProfile({ ...profile, phone: e.target.value })}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
-                  style={{ borderColor: "#cbd5e1" }}
+                  style={{ borderColor: "var(--border)" }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Ciudad o País de Residencia")}</label>
+              <label className="block text-xs font-bold text-foreground mb-1">{tx("Ciudad o País de Residencia")}</label>
               <input
                 type="text"
                 value={profile.city}
                 onChange={e => setProfile({ ...profile, city: e.target.value })}
                 placeholder={tx("Ej: Quito, Guayaquil, Cuenca, etc.")}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
-                style={{ borderColor: "#cbd5e1" }}
+                style={{ borderColor: "var(--border)" }}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Preferencia Habitual de Habitación")}</label>
+              <label className="block text-xs font-bold text-foreground mb-1">{tx("Preferencia Habitual de Habitación")}</label>
               <input
                 type="text"
                 value={profile.roomPref}
                 onChange={e => setProfile({ ...profile, roomPref: e.target.value })}
                 placeholder={tx("Ej: Cama King, piso alto, almohadas extras...")}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
-                style={{ borderColor: "#cbd5e1" }}
+                style={{ borderColor: "var(--border)" }}
               />
             </div>
 
@@ -1332,7 +1332,7 @@ function AccountView({
               <button
                 type="button"
                 onClick={() => setActiveTab("hub")}
-                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-border hover:bg-background cursor-pointer"
               >
                 {tx("Cancelar")}
               </button>
@@ -1349,10 +1349,10 @@ function AccountView({
 
       {/* ─── TAB 4: COMPROBANTES Y CONTACTO ─── */}
       {activeTab === "billing" && (
-        <form onSubmit={handleSaveBilling} className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl" style={{ borderColor: "#e2e8f0" }}>
-          <div className="border-b pb-4 mb-5" style={{ borderColor: "#f1f5f9" }}>
+        <form onSubmit={handleSaveBilling} className="rounded-2xl border bg-card p-6 shadow-xs max-w-2xl" style={{ borderColor: "var(--border)" }}>
+          <div className="border-b pb-4 mb-5" style={{ borderColor: "var(--muted)" }}>
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <h3 className="font-bold text-foreground text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
                 <span>🏛️</span>
                 <span>{tx("Datos del Huésped y Comprobante de Reserva")}</span>
               </h3>
@@ -1360,7 +1360,7 @@ function AccountView({
                 {tx("15% IVA")}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs ttext-muted-foreground mt-1">
               <strong>{tx("El establecimiento recibe tus datos verificados para agilizar la validación de tu reserva.")}</strong> Guarda aquí tus datos para que el hotel emita tus comprobantes de estancia a tu nombre o empresa.
             </p>
           </div>
@@ -1375,52 +1375,52 @@ function AccountView({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Cédula o Pasaporte del Huésped")}</label>
+                <label className="block text-xs font-bold text-foreground mb-1">{tx("Cédula o Pasaporte del Huésped")}</label>
                 <input
                   type="text"
                   value={profile.taxId}
                   onChange={e => setProfile({ ...profile, taxId: e.target.value })}
                   placeholder={tx("Ej: 1314589201001")}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
-                  style={{ borderColor: "#cbd5e1" }}
+                  style={{ borderColor: "var(--border)" }}
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Razón Social o Nombre Fiscal")}</label>
+                <label className="block text-xs font-bold text-foreground mb-1">{tx("Razón Social o Nombre Fiscal")}</label>
                 <input
                   type="text"
                   value={profile.razonSocial}
                   onChange={e => setProfile({ ...profile, razonSocial: e.target.value })}
                   placeholder={tx("Nombre de empresa o persona natural")}
                   className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
-                  style={{ borderColor: "#cbd5e1" }}
+                  style={{ borderColor: "var(--border)" }}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Dirección Fiscal en Ecuador")}</label>
+              <label className="block text-xs font-bold text-foreground mb-1">{tx("Dirección Fiscal en Ecuador")}</label>
               <input
                 type="text"
                 value={profile.direccionFiscal}
                 onChange={e => setProfile({ ...profile, direccionFiscal: e.target.value })}
                 placeholder={tx("Calle, número y ciudad")}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none"
-                style={{ borderColor: "#cbd5e1" }}
+                style={{ borderColor: "var(--border)" }}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">{tx("Correo para Envío de Comprobante")}</label>
+              <label className="block text-xs font-bold text-foreground mb-1">{tx("Correo para Envío de Comprobante")}</label>
               <input
                 type="email"
                 value={profile.correoComprobante}
                 onChange={e => setProfile({ ...profile, correoComprobante: e.target.value })}
                 className="w-full px-3 py-2 text-sm border rounded-xl outline-none font-mono"
-                style={{ borderColor: "#cbd5e1" }}
+                style={{ borderColor: "var(--border)" }}
                 required
               />
             </div>
@@ -1429,7 +1429,7 @@ function AccountView({
               <button
                 type="button"
                 onClick={() => setActiveTab("hub")}
-                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-border hover:bg-background cursor-pointer"
               >
                 {tx("Volver")}
               </button>
@@ -1446,49 +1446,49 @@ function AccountView({
 
       {/* ─── TAB 5: MEDIOS DE PAGO ─── */}
       {activeTab === "payments" && (
-        <div className="rounded-2xl border bg-white p-6 shadow-xs max-w-2xl space-y-5" style={{ borderColor: "#e2e8f0" }}>
-          <div className="border-b pb-4" style={{ borderColor: "#f1f5f9" }}>
-            <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
+        <div className="rounded-2xl border bg-card p-6 shadow-xs max-w-2xl space-y-5" style={{ borderColor: "var(--border)" }}>
+          <div className="border-b pb-4" style={{ borderColor: "var(--muted)" }}>
+            <h3 className="font-bold text-foreground text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
               <span>💳</span>
               <span>{tx("Medios de Pago y Cobro Digital")}</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs ttext-muted-foreground mt-0.5">
               {tx("Pasarelas integradas seguras para reservas directas en Manta.")}
             </p>
           </div>
 
           <div className="space-y-3">
             {/* Tarjeta 1 */}
-            <div className="p-4 rounded-xl border flex items-center justify-between bg-slate-50" style={{ borderColor: "#cbd5e1" }}>
+            <div className="p-4 rounded-xl border flex items-center justify-between bg-background" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">💳</span>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">{tx("Visa Débito / Crédito **** 4821")}</p>
-                  <p className="text-[10px] text-slate-400">{tx("Vence 09/28 · Pago digital seguro con 3DS")}</p>
+                  <p className="text-xs font-bold text-foreground">{tx("Visa Débito / Crédito **** 4821")}</p>
+                  <p className="text-[10px] ttext-muted-foreground">{tx("Vence 09/28 · Pago digital seguro con 3DS")}</p>
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{tx("Predeterminada")}</span>
             </div>
 
             {/* PayPhone */}
-            <div className="p-4 rounded-xl border flex items-center justify-between bg-slate-50" style={{ borderColor: "#cbd5e1" }}>
+            <div className="p-4 rounded-xl border flex items-center justify-between bg-background" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📱</span>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">PayPhone Ecuador</p>
-                  <p className="text-[10px] text-slate-400">Vinculado con número {profile.phone}</p>
+                  <p className="text-xs font-bold text-foreground">PayPhone Ecuador</p>
+                  <p className="text-[10px] ttext-muted-foreground">Vinculado con número {profile.phone}</p>
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">{tx("Activo")}</span>
             </div>
 
             {/* DeUna */}
-            <div className="p-4 rounded-xl border flex items-center justify-between bg-slate-50" style={{ borderColor: "#cbd5e1" }}>
+            <div className="p-4 rounded-xl border flex items-center justify-between bg-background" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">⚡</span>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">DeUna / Banco Pichincha</p>
-                  <p className="text-[10px] text-slate-400">{tx("Cobro instantáneo por app móvil sin comisiones extra")}</p>
+                  <p className="text-xs font-bold text-foreground">DeUna / Banco Pichincha</p>
+                  <p className="text-[10px] ttext-muted-foreground">{tx("Cobro instantáneo por app móvil sin comisiones extra")}</p>
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">{tx("Disponible")}</span>
@@ -1499,23 +1499,23 @@ function AccountView({
 
       {/* ─── TAB 6: ACERCA DE ALOJAMANTA ─── */}
       {activeTab === "about" && (
-        <div className="rounded-2xl border bg-white p-6 sm:p-8 shadow-xs max-w-3xl space-y-6" style={{ borderColor: "#e2e8f0" }}>
-          <div className="border-b pb-5" style={{ borderColor: "#f1f5f9" }}>
+        <div className="rounded-2xl border bg-card p-6 sm:p-8 shadow-xs max-w-3xl space-y-6" style={{ borderColor: "var(--border)" }}>
+          <div className="border-b pb-5" style={{ borderColor: "var(--muted)" }}>
             <div className="flex items-center gap-3">
               <span className="text-3xl">ℹ️</span>
               <div>
-                <h3 className="font-bold text-slate-900 text-xl sm:text-2xl" style={{ fontFamily: "DM Serif Display, serif" }}>
+                <h3 className="font-bold text-foreground text-xl sm:text-2xl" style={{ fontFamily: "DM Serif Display, serif" }}>
                   {tx("Acerca de AlojaManta")}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                <p className="text-xs sm:text-sm ttext-muted-foreground mt-0.5">
                   {tx("Red oficial de comercialización directa y formalización hotelera del Cantón Manta.")}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800">
+          <div className="space-y-4 text-xs sm:text-sm ttext-muted-foreground leading-relaxed">
+            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-foreground">
               <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
                 <span>🏛️</span>
                 <span>{tx("Iniciativa Turística Cantonal de Hospedaje Formal")}</span>
@@ -1526,50 +1526,50 @@ function AccountView({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+              <div className="p-4 rounded-xl border border-border bg-background/80">
+                <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                   <span className="text-base">🏨</span>
                   <span>{tx("116 Alojamientos Catastrados")}</span>
                 </div>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs ttext-muted-foreground">
                   {tx("Integra hoteles, hostales, hosterías y residencias turísticas legalmente registradas e inspeccionadas en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.")}
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+              <div className="p-4 rounded-xl border border-border bg-background/80">
+                <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                   <span className="text-base">💰</span>
                   <span>{tx("0% Sobreprecio de Intermediarios")}</span>
                 </div>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs ttext-muted-foreground">
                   {tx("Elimina el sobreprecio del 18% al 20% habitual de las agencias de viajes online (OTAs) internacionales. La tarifa que pagas va íntegramente a dinamizar el sector hotelero local.")}
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+              <div className="p-4 rounded-xl border border-border bg-background/80">
+                <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                   <span className="text-base">🏛️</span>
                   <span>{tx("Comprobante de Reserva y Liquidación")}</span>
                 </div>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs ttext-muted-foreground">
                   {tx("El comprobante digital con 15% de IVA y confirmación inmediata es emitido por la plataforma al momento de tu reserva online.")}
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/80">
-                <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+              <div className="p-4 rounded-xl border border-border bg-background/80">
+                <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                   <span className="text-base">📱</span>
                   <span>{tx("Confirmación Digital Inmediata")}</span>
                 </div>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs ttext-muted-foreground">
                   {tx("Cada reserva genera un voucher oficial con código de confirmación y token de verificación instantáneo para recepción sin trámites engorrosos ni papeleo innecesario.")}
                 </p>
               </div>
             </div>
 
-            <div className="border-t pt-4 border-slate-100">
-              <h4 className="font-bold text-slate-800 text-xs sm:text-sm mb-1.5">{tx("Compromiso con el Huésped y la Ciudad")}</h4>
-              <p className="text-xs text-slate-500">
+            <div className="border-t pt-4 border-border">
+              <h4 className="font-bold text-foreground text-xs sm:text-sm mb-1.5">{tx("Compromiso con el Huésped y la Ciudad")}</h4>
+              <p className="text-xs ttext-muted-foreground">
                 {tx("Al reservar mediante AlojaManta, aseguras un trato directo con los anfitriones y hoteleros de Manta, políticas de cancelación claras, seguridad en tus pagos digitales y el respaldo de establecimientos que cumplen con los estándares de hospitalidad del puerto manabita.")}
               </p>
             </div>
@@ -1578,7 +1578,7 @@ function AccountView({
               <button
                 type="button"
                 onClick={() => setActiveTab("hub")}
-                className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-border hover:bg-background cursor-pointer"
               >
                 ← {tx("Volver al Panel")}
               </button>
@@ -1615,32 +1615,32 @@ function AboutModal({
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150" style={{ borderColor: "#e2e8f0" }}>
+      <div className="w-full max-w-2xl rounded-2xl border bg-card overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150" style={{ borderColor: "var(--border)" }}>
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div className="flex items-center gap-2.5">
             <span className="text-2xl">ℹ️</span>
             <div>
-              <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <h3 className="font-bold text-foreground text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
                 {tx("Acerca de AlojaManta")}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs ttext-muted-foreground">
                 {tx("Red oficial de reservas directas y formalización hotelera del Cantón Manta")}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer text-sm"
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center ttext-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer text-sm"
           >
             ✕
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-5 text-xs text-slate-600 leading-relaxed">
+        <div className="p-6 overflow-y-auto space-y-5 text-xs ttext-muted-foreground leading-relaxed">
           {/* Banner */}
-          <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800">
+          <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-foreground">
             <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
               <span>🏛️</span>
               <span>{tx("Iniciativa Turística y Comercial Cantonal")}</span>
@@ -1652,52 +1652,52 @@ function AboutModal({
 
           {/* 4 Pilares clave */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
-              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+            <div className="p-3.5 rounded-xl border border-border bg-background/70">
+              <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                 <span className="text-base">🏨</span>
                 <span>{tx("116 Establecimientos Registrados")}</span>
               </div>
-              <p className="text-[11px] text-slate-600">
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("Catastro completo de hoteles, hostales, hosterías y departamentos en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.")}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
-              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+            <div className="p-3.5 rounded-xl border border-border bg-background/70">
+              <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                 <span className="text-base">💰</span>
                 <span>{tx("0% Comisión de Intermediación (OTA)")}</span>
               </div>
-              <p className="text-[11px] text-slate-600">
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("A diferencia de portales foráneos que cobran entre el 18% y 20% al hotelero, aquí se garantiza la tarifa más competitiva y el dinero dinamiza directamente la economía local.")}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
-              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+            <div className="p-3.5 rounded-xl border border-border bg-background/70">
+              <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                 <span className="text-base">🏛️</span>
                 <span>{tx("Comprobante Oficial de Reserva")}</span>
               </div>
-              <p className="text-[11px] text-slate-600">
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("El comprobante oficial con 15% de IVA y detalle de reserva certifica tu estancia y pago anticipado.")}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70">
-              <div className="flex items-center gap-2 font-bold text-slate-900 mb-1">
+            <div className="p-3.5 rounded-xl border border-border bg-background/70">
+              <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                 <span className="text-base">📲</span>
                 <span>{tx("Vouchers con Código de Confirmación")}</span>
               </div>
-              <p className="text-[11px] text-slate-600">
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("Confirmación instantánea con código de reserva único descargable en PDF o guardado en tu cuenta para un registro ágil en recepción.")}
               </p>
             </div>
           </div>
 
           {/* Contacto Directo */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="p-4 rounded-xl border border-border bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <p className="font-bold text-slate-900 text-xs">{tx("Mesa de Asistencia Turística Manta")}</p>
-              <p className="text-[11px] text-slate-500">{tx("Atención directa para consultas de reserva y orientación en el cantón.")}</p>
+              <p className="font-bold text-foreground text-xs">{tx("Mesa de Asistencia Turística Manta")}</p>
+              <p className="text-[11px] ttext-muted-foreground">{tx("Atención directa para consultas de reserva y orientación en el cantón.")}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <a
@@ -1711,7 +1711,7 @@ function AboutModal({
               </a>
               <a
                 href="tel:+59352628900"
-                className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-background text-foreground font-bold text-xs flex items-center gap-1 transition-colors"
               >
                 <span>📞</span>
                 <span>{tx("Llamar")}</span>
@@ -1721,12 +1721,12 @@ function AboutModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-between text-xs" style={{ borderColor: "#e2e8f0" }}>
-          <span className="text-slate-400">{tx("Cantón Manta · Manabí · Ecuador")}</span>
+        <div className="px-6 py-3 border-t bg-background flex items-center justify-between text-xs" style={{ borderColor: "var(--border)" }}>
+          <span className="ttext-muted-foreground">{tx("Cantón Manta · Manabí · Ecuador")}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-100 cursor-pointer"
+              className="px-4 py-1.5 bg-card border border-slate-300 rounded-lg text-foreground font-medium hover:bg-muted cursor-pointer"
             >
               {tx("Cerrar")}
             </button>
@@ -1755,31 +1755,31 @@ function LegalModal({ onClose }: { onClose: () => void }) {
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150" style={{ borderColor: "#e2e8f0" }}>
+      <div className="w-full max-w-2xl rounded-2xl border bg-card overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150" style={{ borderColor: "var(--border)" }}>
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div className="flex items-center gap-2.5">
             <span className="text-2xl">🏛️</span>
             <div>
-              <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <h3 className="font-bold text-foreground text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
                 {tx("Términos del Servicio y Privacidad LOPDP")}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs ttext-muted-foreground">
                 {tx("Normativa tributaria y condiciones de reserva en AlojaManta")}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer text-sm"
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center ttext-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer text-sm"
           >
             ✕
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
-          <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-slate-800">
+        <div className="p-6 overflow-y-auto space-y-4 text-xs ttext-muted-foreground leading-relaxed">
+          <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-foreground">
             <h4 className="font-bold text-blue-950 text-sm mb-1 flex items-center gap-1.5">
               <span>🧾</span>
               <span>{tx("Comprobante Digital de Reserva y Pagos")}</span>
@@ -1790,23 +1790,23 @@ function LegalModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="space-y-3">
-            <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-              <h5 className="font-bold text-slate-900 mb-1">{tx("1. Datos Tributarios Requeridos")}</h5>
-              <p className="text-[11px] text-slate-600">
+            <div className="border border-border rounded-xl p-3.5 bg-background/50">
+              <h5 className="font-bold text-foreground mb-1">{tx("1. Datos Tributarios Requeridos")}</h5>
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("Puedes registrar previamente tu documento de identidad, nombres completos y correo electrónico desde la pestaña \"Comprobantes y Contacto\" de tu cuenta para agilizar tu registro en recepción.")}
               </p>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-              <h5 className="font-bold text-slate-900 mb-1">{tx("2. Cancelación y Modificaciones")}</h5>
-              <p className="text-[11px] text-slate-600">
+            <div className="border border-border rounded-xl p-3.5 bg-background/50">
+              <h5 className="font-bold text-foreground mb-1">{tx("2. Cancelación y Modificaciones")}</h5>
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("Las políticas de cancelación son transparentes y fijadas por cada establecimiento. Puedes anular o reprogramar tu estancia directamente desde \"Mis Reservas\" o comunicándote con el hotel a través de los canales de asistencia autorizados.")}
               </p>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/50">
-              <h5 className="font-bold text-slate-900 mb-1">{tx("3. Protección y Privacidad de Datos")}</h5>
-              <p className="text-[11px] text-slate-600">
+            <div className="border border-border rounded-xl p-3.5 bg-background/50">
+              <h5 className="font-bold text-foreground mb-1">{tx("3. Protección y Privacidad de Datos")}</h5>
+              <p className="text-[11px] ttext-muted-foreground">
                 {tx("Tus datos personales y de pago se procesan bajo protocolos cifrados y no son compartidos con terceros comerciales ajenos a la estancia hotelera contratada.")}
               </p>
             </div>
@@ -1814,7 +1814,7 @@ function LegalModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-end text-xs" style={{ borderColor: "#e2e8f0" }}>
+        <div className="px-6 py-3 border-t bg-background flex items-center justify-end text-xs" style={{ borderColor: "var(--border)" }}>
           <button
             onClick={onClose}
             className="px-5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg cursor-pointer transition-colors"
@@ -1860,51 +1860,51 @@ function ConsultReservationModal({
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-2xl rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
+      <div className="w-full max-w-2xl rounded-2xl border bg-card overflow-hidden shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-slate-900 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
+              <h3 className="font-bold text-foreground text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
                 {tx("Consultar Reservas de Hotel")}
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold border border-amber-300">
                 Manta 2026
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs ttext-muted-foreground mt-0.5">
               {tx("Busca por código de confirmación (ej: RES-4821), correo o nombre del titular")}
             </p>
           </div>
-          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-slate-800 cursor-pointer">×</button>
+          <button onClick={onClose} className="text-2xl ttext-muted-foreground hover:text-foreground cursor-pointer">×</button>
         </div>
 
         {/* Search input */}
-        <div className="p-5 border-b bg-slate-50" style={{ borderColor: "#e2e8f0" }}>
+        <div className="p-5 border-b bg-background" style={{ borderColor: "var(--border)" }}>
           <div className="relative">
             <input
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={tx("Escribe RES-4821, tu correo (cmendez@gmail.com) o nombre...")}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-              style={{ borderColor: "#cbd5e1" }}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-card focus:outline-none focus:ring-2 focus:ring-amber-400"
+              style={{ borderColor: "var(--border)" }}
               autoFocus
             />
-            <span className="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
+            <span className="absolute left-3.5 top-3 ttext-muted-foreground text-sm">🔍</span>
             {query && (
-              <button onClick={() => setQuery("")} className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={() => setQuery("")} className="absolute right-3 top-2.5 text-xs ttext-muted-foreground hover:ttext-muted-foreground cursor-pointer">
                 {tx("Limpiar")}
               </button>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-xs">
-            <span className="text-slate-400">{tx("Códigos rápidos para probar:")}</span>
+            <span className="ttext-muted-foreground">{tx("Códigos rápidos para probar:")}</span>
             {["RES-4821", "RES-5103", "RES-3970", "RES-7720", "RES-8941"].map(c => (
               <button
                 key={c}
                 onClick={() => setQuery(c)}
-                className="font-mono text-[11px] px-2 py-0.5 rounded bg-white border border-slate-200 text-amber-800 hover:bg-amber-50 cursor-pointer font-semibold"
+                className="font-mono text-[11px] px-2 py-0.5 rounded bg-card border border-border text-amber-800 hover:bg-amber-50 cursor-pointer font-semibold"
               >
                 {c}
               </button>
@@ -1924,44 +1924,44 @@ function ConsultReservationModal({
               const st = statusColors[res.status] || statusColors.upcoming;
 
               return (
-                <div key={res.id} className="rounded-xl border p-4 hover:shadow-md transition-all bg-white" style={{ borderColor: "#e2e8f0" }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b" style={{ borderColor: "#f1f5f9" }}>
+                <div key={res.id} className="rounded-xl border p-4 hover:shadow-md transition-all bg-card" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b" style={{ borderColor: "var(--muted)" }}>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-sm text-slate-800">{res.id}</span>
+                        <span className="font-mono font-bold text-sm text-foreground">{res.id}</span>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase" style={{ background: st.bg, color: st.color }}>
                           {st.label}
                         </span>
                       </div>
-                      <p className="text-xs font-semibold text-slate-700 mt-0.5">{res.hotel} · {tx(res.city)}</p>
+                      <p className="text-xs font-semibold text-foreground mt-0.5">{res.hotel} · {tx(res.city)}</p>
                     </div>
                     <div className="text-left sm:text-right">
-                      <p className="text-xs text-slate-400">{tx("Total abonado")}</p>
+                      <p className="text-xs ttext-muted-foreground">{tx("Total abonado")}</p>
                       <p className="font-bold text-base text-amber-600">{fmt(res.total)}</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-2.5 text-xs text-slate-600">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-2.5 text-xs ttext-muted-foreground">
                     <div>
-                      <p className="text-slate-400 text-[10px]">{tx("Huésped Titular")}</p>
+                      <p className="ttext-muted-foreground text-[10px]">{tx("Huésped Titular")}</p>
                       <p className="font-medium truncate">{res.guestName}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">{tx("Tipo de Habitación")}</p>
+                      <p className="ttext-muted-foreground text-[10px]">{tx("Tipo de Habitación")}</p>
                       <p className="font-medium truncate">{tx(res.room)}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">{tx("Fechas")}</p>
+                      <p className="ttext-muted-foreground text-[10px]">{tx("Fechas")}</p>
                       <p className="font-medium">{fmtDateShort(res.checkIn)} → {fmtDateShort(res.checkOut)}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-[10px]">{tx("Duración")}</p>
+                      <p className="ttext-muted-foreground text-[10px]">{tx("Duración")}</p>
                       <p className="font-medium">{res.nights} noche{res.nights > 1 ? "s" : ""}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2.5 border-t gap-2" style={{ borderColor: "#f1f5f9" }}>
-                    <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <div className="flex items-center justify-between pt-2.5 border-t gap-2" style={{ borderColor: "var(--muted)" }}>
+                    <span className="text-[11px] ttext-muted-foreground flex items-center gap-1">
                       <span>💳</span> {res.payMethod || tx("Cobro digital liquidado")}
                     </span>
                     <div className="flex gap-2">
@@ -1994,8 +1994,8 @@ function ConsultReservationModal({
           ) : (
             <div className="text-center py-12">
               <span className="text-4xl block mb-2">🔍</span>
-              <p className="font-bold text-slate-700">{tx("No encontramos reservas con ese término")}</p>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+              <p className="font-bold text-foreground">{tx("No encontramos reservas con ese término")}</p>
+              <p className="text-xs ttext-muted-foreground max-w-sm mx-auto mt-1">
                 {tx("Verifica haber escrito correctamente tu código de confirmación (ej: RES-4821) o el correo con el que hiciste la reserva.")}
               </p>
             </div>
@@ -2003,9 +2003,9 @@ function ConsultReservationModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t bg-slate-50 flex items-center justify-between text-xs text-slate-500" style={{ borderColor: "#e2e8f0" }}>
+        <div className="px-6 py-3 border-t bg-background flex items-center justify-between text-xs ttext-muted-foreground" style={{ borderColor: "var(--border)" }}>
           <span>{tx("¿Inquietudes sobre tu estancia? Central Manta: +593 5 262 8900")}</span>
-          <button onClick={onClose} className="px-4 py-1.5 bg-white border rounded-lg text-slate-700 font-medium hover:bg-slate-100 cursor-pointer">
+          <button onClick={onClose} className="px-4 py-1.5 bg-card border rounded-lg text-foreground font-medium hover:bg-muted cursor-pointer">
             {tx("Cerrar")}
           </button>
         </div>
@@ -2056,24 +2056,24 @@ function LoginModal({
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(5px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-2xl border bg-white overflow-hidden shadow-2xl flex flex-col">
+      <div className="w-full max-w-md rounded-2xl border bg-card overflow-hidden shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 flex items-center justify-between border-b" style={{ background: "#ffffff", borderColor: "#e2e8f0" }}>
+        <div className="px-6 py-4 flex items-center justify-between border-b" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div>
             <span className="font-bold text-amber-600 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>
               AlojaManta
             </span>
-            <p className="text-xs text-slate-500">{tx("Acceso al sistema y consulta de reservas")}</p>
+            <p className="text-xs ttext-muted-foreground">{tx("Acceso al sistema y consulta de reservas")}</p>
           </div>
-          <button onClick={onClose} className="text-2xl text-slate-400 hover:text-slate-800 cursor-pointer">×</button>
+          <button onClick={onClose} className="text-2xl ttext-muted-foreground hover:text-foreground cursor-pointer">×</button>
         </div>
 
         {/* Tab switch */}
-        <div className="flex border-b" style={{ borderColor: "#e2e8f0", background: "#f8fafc" }}>
+        <div className="flex border-b" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
           <button
             onClick={() => setTab("guest")}
             className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-              tab === "guest" ? "border-amber-500 text-slate-900 bg-white" : "border-transparent text-slate-500 hover:text-slate-800"
+              tab === "guest" ? "border-amber-500 text-foreground bg-card" : "border-transparent ttext-muted-foreground hover:text-foreground"
             }`}
           >
             👤 Huésped / Turista
@@ -2081,7 +2081,7 @@ function LoginModal({
           <button
             onClick={() => setTab("admin")}
             className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-              tab === "admin" ? "border-amber-500 text-slate-900 bg-white" : "border-transparent text-slate-500 hover:text-slate-800"
+              tab === "admin" ? "border-amber-500 text-foreground bg-card" : "border-transparent ttext-muted-foreground hover:text-foreground"
             }`}
           >
             {tx("🏨 Personal de Hotel / PMS")}
@@ -2094,39 +2094,39 @@ function LoginModal({
               <form onSubmit={handleGuestSubmit} className="space-y-3">
                 {mode === "register" && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Nombre y Apellido")}</label>
+                    <label className="block text-xs font-semibold text-foreground mb-1">{tx("Nombre y Apellido")}</label>
                     <input
                       type="text"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       placeholder={tx("Ej. Carlos Méndez")}
                       className="w-full px-3 py-2 text-sm border rounded-xl"
-                      style={{ borderColor: "#cbd5e1" }}
+                      style={{ borderColor: "var(--border)" }}
                       required
                     />
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Correo Electrónico")}</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">{tx("Correo Electrónico")}</label>
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="tu@correo.com"
                     className="w-full px-3 py-2 text-sm border rounded-xl"
-                    style={{ borderColor: "#cbd5e1" }}
+                    style={{ borderColor: "var(--border)" }}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Contraseña")}</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">{tx("Contraseña")}</label>
                   <input
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
                     className="w-full px-3 py-2 text-sm border rounded-xl"
-                    style={{ borderColor: "#cbd5e1" }}
+                    style={{ borderColor: "var(--border)" }}
                     required
                   />
                 </div>
@@ -2141,7 +2141,7 @@ function LoginModal({
                 </button>
               </form>
 
-              <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+              <div className="flex items-center justify-between text-xs ttext-muted-foreground pt-1">
                 <button
                   onClick={() => setMode(mode === "login" ? "register" : "login")}
                   className="text-amber-600 hover:underline font-medium cursor-pointer"
@@ -2158,7 +2158,7 @@ function LoginModal({
                       onClose();
                       onOpenConsult();
                     }}
-                    className="text-xs text-slate-500 hover:text-amber-700 transition-colors cursor-pointer"
+                    className="text-xs ttext-muted-foreground hover:text-amber-700 transition-colors cursor-pointer"
                   >
                     ¿Buscas una reserva con tu código? <span className="font-semibold underline text-amber-600">{tx("Consultar aquí")}</span>
                   </button>
@@ -2166,8 +2166,8 @@ function LoginModal({
               )}
 
               {/* Acceso Rápido Demo */}
-              <div className="pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
-                <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">
+              <div className="pt-3 border-t" style={{ borderColor: "var(--muted)" }}>
+                <p className="text-[11px] ttext-muted-foreground font-semibold uppercase tracking-wider mb-2">
                   {tx("Acceso Rápido de Prueba:")}
                 </p>
                 <button
@@ -2201,12 +2201,12 @@ function LoginModal({
                       onClose();
                       onAdminAccess?.();
                     }}
-                    className="w-full p-3 rounded-xl border text-left hover:border-amber-400 hover:bg-slate-50 transition-all flex items-center justify-between cursor-pointer"
-                    style={{ borderColor: "#e2e8f0" }}
+                    className="w-full p-3 rounded-xl border text-left hover:border-amber-400 hover:bg-background transition-all flex items-center justify-between cursor-pointer"
+                    style={{ borderColor: "var(--border)" }}
                   >
                     <div>
-                      <p className="text-xs font-bold text-slate-800">{acc.name} <span className="text-[10px] text-amber-600 font-mono">({acc.role})</span></p>
-                      <p className="text-[11px] text-slate-400">{acc.desc}</p>
+                      <p className="text-xs font-bold text-foreground">{acc.name} <span className="text-[10px] text-amber-600 font-mono">({acc.role})</span></p>
+                      <p className="text-[11px] ttext-muted-foreground">{acc.desc}</p>
                     </div>
                     <span className="text-xs text-amber-600 font-bold">{tx("Entrar →")}</span>
                   </button>
@@ -2387,7 +2387,7 @@ function BookingModal({
       style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl flex flex-col"
-        style={{ background: "#fff", maxHeight: "92vh" }}>
+        style={{ background: "var(--card)", maxHeight: "92vh" }}>
 
         {/* Step bar */}
         <div className="flex flex-shrink-0" style={{ borderBottom: "1px solid #e2e8f0" }}>
@@ -2396,7 +2396,7 @@ function BookingModal({
             const active = s.k === step;
             return (
               <div key={s.k} className="flex-1 text-center py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all"
-                style={{ background: active ? "#fef3c7" : "#f8fafc", color: active ? "#92400e" : done ? "#059669" : "#94a3b8", borderBottom: active ? "2px solid #f59e0b" : "2px solid transparent" }}>
+                style={{ background: active ? "#fef3c7" : "var(--background)", color: active ? "#92400e" : done ? "#059669" : "var(--muted-foreground)", borderBottom: active ? "2px solid #f59e0b" : "2px solid transparent" }}>
                 {done ? "✓ " : ""}{s.l}
               </div>
             );
@@ -2405,17 +2405,17 @@ function BookingModal({
 
         {/* Room strip (not on invoice) */}
         {step !== "invoice" && (
-          <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+          <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: "var(--background)", borderBottom: "1px solid #e2e8f0" }}>
             <img src={room.image} alt={tx(room.type)} className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-slate-800 text-sm truncate">{hotel.name}</p>
-              <p className="text-xs text-slate-500">{tx(room.type)} · {nights}n · {fmtDateShort(params.checkIn)} → {fmtDateShort(params.checkOut)}</p>
+              <p className="font-bold text-foreground text-sm truncate">{hotel.name}</p>
+              <p className="text-xs ttext-muted-foreground">{tx(room.type)} · {nights}n · {fmtDateShort(params.checkIn)} → {fmtDateShort(params.checkOut)}</p>
             </div>
             <div className="text-right flex-shrink-0">
               <p className="font-bold text-sm" style={{ color: "#f59e0b" }}>{fmt(total)}</p>
-              <p className="text-[10px] text-slate-400">{tx("IVA incl.")}</p>
+              <p className="text-[10px] ttext-muted-foreground">{tx("IVA incl.")}</p>
             </div>
-            <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs" style={{ background: "#e2e8f0", color: "#64748b" }}>✕</button>
+            <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs" style={{ background: "var(--border)", color: "var(--muted-foreground)" }}>✕</button>
           </div>
         )}
 
@@ -2426,10 +2426,10 @@ function BookingModal({
           {step === "auth" && (
             <div className="space-y-4">
               <div className="text-center pb-1">
-                <h3 className="font-bold text-slate-800 text-base" style={{ fontFamily: "DM Serif Display, serif" }}>
+                <h3 className="font-bold text-foreground text-base" style={{ fontFamily: "DM Serif Display, serif" }}>
                   {authMode === "login" ? tx("Inicia sesión o reserva como invitado") : tx("Crea tu cuenta gratis")}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">{tx("Accede con tu cuenta o reserva directamente sin necesidad de registrarte")}</p>
+                <p className="text-xs ttext-muted-foreground mt-1">{tx("Accede con tu cuenta o reserva directamente sin necesidad de registrarte")}</p>
               </div>
 
               {/* Guest Checkout */}
@@ -2442,37 +2442,37 @@ function BookingModal({
               </button>
 
               <div className="relative flex items-center gap-2">
-                <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
-                <span className="text-[11px] text-slate-400 uppercase font-semibold">{tx("o accede con tu cuenta")}</span>
-                <div className="flex-1 h-px" style={{ background: "#e2e8f0" }} />
+                <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                <span className="text-[11px] ttext-muted-foreground uppercase font-semibold">{tx("o accede con tu cuenta")}</span>
+                <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
               </div>
 
-              <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "#e2e8f0" }}>
+              <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
                 {[{ k: "login" as const, l: tx("Iniciar sesión") }, { k: "register" as const, l: tx("Registrarme") }].map(m => (
-                  <button key={m.k} onClick={() => setAuthMode(m.k)} className="flex-1 py-2 text-sm font-semibold transition-all" style={{ background: authMode === m.k ? "#f59e0b" : "#f8fafc", color: authMode === m.k ? "#0c1220" : "#64748b" }}>{m.l}</button>
+                  <button key={m.k} onClick={() => setAuthMode(m.k)} className="flex-1 py-2 text-sm font-semibold transition-all" style={{ background: authMode === m.k ? "#f59e0b" : "var(--background)", color: authMode === m.k ? "#0c1220" : "var(--muted-foreground)" }}>{m.l}</button>
                 ))}
               </div>
               <form onSubmit={handleAuth} className="space-y-3">
                 {authMode === "register" && (
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{tx("Nombre completo")}</label>
-                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={authName} onChange={e => setAuthName(e.target.value)} placeholder="María García" />
+                    <label className="block text-xs ttext-muted-foreground mb-1">{tx("Nombre completo")}</label>
+                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={authName} onChange={e => setAuthName(e.target.value)} placeholder="María García" />
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Email</label>
-                  <input type="email" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="maria@email.com" />
+                  <label className="block text-xs ttext-muted-foreground mb-1">Email</label>
+                  <input type="email" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="maria@email.com" />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">{tx("Contraseña")}</label>
-                  <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={authPass} onChange={e => setAuthPass(e.target.value)} placeholder="••••••••" />
+                  <label className="block text-xs ttext-muted-foreground mb-1">{tx("Contraseña")}</label>
+                  <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={authPass} onChange={e => setAuthPass(e.target.value)} placeholder="••••••••" />
                 </div>
                 {authError && <p className="text-xs px-3 py-2 rounded-lg" style={{ background: "#fee2e2", color: "#ef4444" }}>{authError}</p>}
                 <button type="submit" className="w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   {authMode === "login" ? tx("Entrar y continuar →") : tx("Crear cuenta y continuar →")}
                 </button>
               </form>
-              <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors" style={{ borderColor: "#e2e8f0", color: "#475569" }}>
+              <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 hover:bg-background transition-colors" style={{ borderColor: "var(--border)", color: "#475569" }}>
                 <span>{tx("Continuar con Google")}</span>
               </button>
             </div>
@@ -2481,13 +2481,13 @@ function BookingModal({
           {/* ── STEP: DETAILS ── */}
           {step === "details" && (
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-800">{tx("1. Datos del huésped titular")}</h3>
+              <h3 className="font-bold text-foreground">{tx("1. Datos del huésped titular")}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Nombre completo del titular *")}</label>
+                  <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("Nombre completo del titular *")}</label>
                   <input
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
-                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     placeholder={tx("Ej: Carlos Mendoza")}
@@ -2495,11 +2495,11 @@ function BookingModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Email para voucher y confirmación *")}</label>
+                  <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("Email para voucher y confirmación *")}</label>
                   <input
                     type="email"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
-                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
                     placeholder="cliente@correo.ec"
@@ -2509,9 +2509,9 @@ function BookingModal({
               </div>
 
               {/* Selector dinámico de Tipo de Documento */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-background border border-border">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Tipo de Documento *")}</label>
+                  <label className="block text-xs font-semibold text-foreground mb-1">{tx("Tipo de Documento *")}</label>
                   <select
                     value={docType}
                     onChange={e => {
@@ -2519,8 +2519,8 @@ function BookingModal({
                       setDocType(t);
                       setForm(f => ({ ...f, dni: "" }));
                     }}
-                    className="w-full px-3 py-2 rounded-lg border text-xs font-semibold outline-none bg-white cursor-pointer"
-                    style={{ borderColor: "#cbd5e1" }}
+                    className="w-full px-3 py-2 rounded-lg border text-xs font-semibold outline-none bg-card cursor-pointer"
+                    style={{ borderColor: "var(--border)" }}
                   >
                     <option value="CEDULA">{tx("Cédula de Identidad (10 dígitos)")}</option>
                     <option value="RUC">{tx("RUC (13 dígitos / Empresa)")}</option>
@@ -2529,7 +2529,7 @@ function BookingModal({
                 </div>
 
                 <div className={docType === "RUC" ? "sm:col-span-1" : "sm:col-span-2"}>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     {docType === "CEDULA" && tx("Cédula de Identidad (10 dígitos) *")}
                     {docType === "RUC" && tx("Número de RUC (13 dígitos) *")}
                     {docType === "PASAPORTE" && tx("Número de Pasaporte (Alfanumérico) *")}
@@ -2548,8 +2548,8 @@ function BookingModal({
                       setForm({ ...form, dni: val });
                     }}
                     placeholder={docType === "CEDULA" ? "1314589201" : docType === "RUC" ? "1391789456001" : "A14892015"}
-                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono bg-white"
-                    style={{ borderColor: "#cbd5e1" }}
+                    className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono bg-card"
+                    style={{ borderColor: "var(--border)" }}
                     required
                   />
                   {docType === "CEDULA" && form.dni.length > 0 && form.dni.length !== 10 && (
@@ -2562,14 +2562,14 @@ function BookingModal({
 
                 {docType === "RUC" && (
                   <div className="col-span-1 sm:col-span-3">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">{tx("Razón Social o Nombre de Empresa *")}</label>
+                    <label className="block text-xs font-semibold text-foreground mb-1">{tx("Razón Social o Nombre de Empresa *")}</label>
                     <input
                       type="text"
                       value={form.razonSocial}
                       onChange={e => setForm({ ...form, razonSocial: e.target.value })}
                       placeholder="Ej: IMPORTADORA DEL PACIFICO S.A.S."
-                      className="w-full px-3 py-2 rounded-lg border text-sm outline-none bg-white"
-                      style={{ borderColor: "#cbd5e1" }}
+                      className="w-full px-3 py-2 rounded-lg border text-sm outline-none bg-card"
+                      style={{ borderColor: "var(--border)" }}
                       required
                     />
                   </div>
@@ -2579,11 +2579,11 @@ function BookingModal({
               {/* Teléfono, País, Ciudad y Dirección */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Teléfono / WhatsApp *")}</label>
+                  <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("Teléfono / WhatsApp *")}</label>
                   <input
                     type="tel"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
-                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
                     value={form.phone}
                     onChange={e => setForm({ ...form, phone: e.target.value })}
                     placeholder="+593 98 421 8890"
@@ -2591,33 +2591,33 @@ function BookingModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("País")}</label>
+                  <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("País")}</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
                     value={form.country}
                     onChange={e => setForm({ ...form, country: e.target.value })}
                     placeholder="Ecuador"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Ciudad")}</label>
+                  <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("Ciudad")}</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
                     value={form.city}
                     onChange={e => setForm({ ...form, city: e.target.value })}
                     placeholder="Manta, Portoviejo, Quito..."
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">{tx("Dirección domiciliaria o fiscal")}</label>
+                  <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("Dirección domiciliaria o fiscal")}</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
                     value={form.address}
                     onChange={e => setForm({ ...form, address: e.target.value })}
                     placeholder="Av. 4 de Noviembre y Calle 114, Manta"
@@ -2626,52 +2626,52 @@ function BookingModal({
               </div>
 
               {/* Selección de Plan de Tarifa */}
-              <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
+              <div className="rounded-xl border p-3.5 bg-background/70 space-y-2" style={{ borderColor: "var(--border)" }}>
+                <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground flex items-center justify-between">
                   <span>{tx("2. Plan de tarifa")}</span>
                   <span className="text-[10px] font-mono text-amber-700">{fmt(effectiveNightlyRate)} / noche</span>
                 </p>
                 <div className="grid grid-cols-1 gap-2 text-xs">
-                  <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "flexible" ? "bg-amber-50 border-amber-400 text-slate-900 font-semibold" : "bg-white border-slate-200 text-slate-600"}`}>
+                  <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "flexible" ? "bg-amber-50 border-amber-400 text-foreground font-semibold" : "bg-card border-border ttext-muted-foreground"}`}>
                     <div className="flex items-center gap-2">
                       <input type="radio" name="ratePlan" checked={ratePlan === "flexible"} onChange={() => setRatePlan("flexible")} className="accent-amber-500" />
                       <div>
-                        <p className="font-bold text-slate-800">{tx("Tarifa Estándar Flexible (Reembolsable 48h)")}</p>
-                        <p className="text-[10px] text-slate-500">{tx("Cancelación gratuita hasta 48h antes de la Fecha de Entrada")}</p>
+                        <p className="font-bold text-foreground">{tx("Tarifa Estándar Flexible (Reembolsable 48h)")}</p>
+                        <p className="text-[10px] ttext-muted-foreground">{tx("Cancelación gratuita hasta 48h antes de la Fecha de Entrada")}</p>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-slate-800">{fmt(room.pricePerNight)}/n</span>
+                    <span className="font-mono font-bold text-foreground">{fmt(room.pricePerNight)}/n</span>
                   </label>
 
-                  <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "non_refundable" ? "bg-emerald-50 border-emerald-400 text-slate-900 font-semibold" : "bg-white border-slate-200 text-slate-600"}`}>
+                  <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "non_refundable" ? "bg-emerald-50 border-emerald-400 text-foreground font-semibold" : "bg-card border-border ttext-muted-foreground"}`}>
                     <div className="flex items-center gap-2">
                       <input type="radio" name="ratePlan" checked={ratePlan === "non_refundable"} onChange={() => setRatePlan("non_refundable")} className="accent-emerald-600" />
                       <div>
                         <p className="font-bold text-emerald-800">{tx("Tarifa Promocional No Reembolsable (-10%)")}</p>
-                        <p className="text-[10px] text-slate-500">{tx("10% de descuento inmediato · Pago final sin reembolso")}</p>
+                        <p className="text-[10px] ttext-muted-foreground">{tx("10% de descuento inmediato · Pago final sin reembolso")}</p>
                       </div>
                     </div>
                     <span className="font-mono font-bold text-emerald-700">{fmt(Math.round(room.pricePerNight * 0.90 * 100) / 100)}/n</span>
                   </label>
 
                   {!room.breakfastIncluded && (
-                    <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "breakfast_plus" ? "bg-amber-50 border-amber-400 text-slate-900 font-semibold" : "bg-white border-slate-200 text-slate-600"}`}>
+                    <label className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${ratePlan === "breakfast_plus" ? "bg-amber-50 border-amber-400 text-foreground font-semibold" : "bg-card border-border ttext-muted-foreground"}`}>
                       <div className="flex items-center gap-2">
                         <input type="radio" name="ratePlan" checked={ratePlan === "breakfast_plus"} onChange={() => setRatePlan("breakfast_plus")} className="accent-amber-500" />
                         <div>
-                          <p className="font-bold text-slate-800">{tx("Plan con Desayuno Manabita Incluido (+$8/noche)")}</p>
-                          <p className="text-[10px] text-slate-500">{tx("Incluye desayuno costero completo y cancelación flexible")}</p>
+                          <p className="font-bold text-foreground">{tx("Plan con Desayuno Manabita Incluido (+$8/noche)")}</p>
+                          <p className="text-[10px] ttext-muted-foreground">{tx("Incluye desayuno costero completo y cancelación flexible")}</p>
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-slate-800">{fmt(room.pricePerNight + 8)}/n</span>
+                      <span className="font-mono font-bold text-foreground">{fmt(room.pricePerNight + 8)}/n</span>
                     </label>
                   )}
                 </div>
               </div>
 
               {/* Extras y Servicios Adicionales */}
-              <div className="rounded-xl border p-3.5 bg-slate-50/70 space-y-2" style={{ borderColor: "#e2e8f0" }}>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
+              <div className="rounded-xl border p-3.5 bg-background/70 space-y-2" style={{ borderColor: "var(--border)" }}>
+                <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground flex items-center justify-between">
                   <span>{tx("3. Servicios adicionales")}</span>
                   {extrasTotal > 0 && <span className="text-[10px] font-mono font-bold text-emerald-700">+{fmt(extrasTotal)}</span>}
                 </p>
@@ -2682,8 +2682,8 @@ function BookingModal({
                     { k: "crib" as const, label: tx("Cuna para bebé sujeta a cupo"), price: tx("Cortesía $0") },
                     { k: "lateout" as const, label: tx("Salida extendida (hasta 16:00h)"), price: "+$15.00" },
                   ].map(ext => (
-                    <label key={ext.k} className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer ${selectedExtras[ext.k] ? "bg-amber-50 border-amber-400" : "bg-white border-slate-200"}`}>
-                      <span className="flex items-center gap-1.5 text-slate-700 font-medium">
+                    <label key={ext.k} className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer ${selectedExtras[ext.k] ? "bg-amber-50 border-amber-400" : "bg-card border-border"}`}>
+                      <span className="flex items-center gap-1.5 text-foreground font-medium">
                         <input
                           type="checkbox"
                           checked={selectedExtras[ext.k]}
@@ -2692,15 +2692,15 @@ function BookingModal({
                         />
                         {ext.label}
                       </span>
-                      <span className="font-mono text-[11px] font-bold text-slate-600">{ext.price}</span>
+                      <span className="font-mono text-[11px] font-bold ttext-muted-foreground">{ext.price}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">{tx("Observaciones o hora estimada de arribo")}</label>
-                <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ej: Llegada en vuelo de las 15:30, preferencia piso alto..." />
+                <label className="block text-xs ttext-muted-foreground mb-1">{tx("Observaciones o hora estimada de arribo")}</label>
+                <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ej: Llegada en vuelo de las 15:30, preferencia piso alto..." />
               </div>
 
               {/* Desglose estilo Booking.com */}
@@ -2713,7 +2713,7 @@ function BookingModal({
                 showToggle={true}
               />
               <div className="flex gap-2">
-                {!user && <button onClick={() => setStep("auth")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("← Atrás")}</button>}
+                {!user && <button onClick={() => setStep("auth")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("← Atrás")}</button>}
                 <button onClick={() => setStep("payment")} className="flex-1 py-3 rounded-xl font-bold text-sm hover:opacity-90" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   {tx("Continuar al pago seguro →")}
                 </button>
@@ -2724,7 +2724,7 @@ function BookingModal({
           {/* ── STEP: PAYMENT ── */}
           {step === "payment" && (
             <form onSubmit={handlePay} className="space-y-4">
-              <h3 className="font-bold text-slate-800">{tx("Pago con tarjeta")}</h3>
+              <h3 className="font-bold text-foreground">{tx("Pago con tarjeta")}</h3>
               {/* Visual card */}
               <div className="relative rounded-2xl p-5 overflow-hidden" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", minHeight: 140 }}>
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #f59e0b 0%, transparent 60%)" }} />
@@ -2751,13 +2751,13 @@ function BookingModal({
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">{tx("Titular de la tarjeta")}</label>
-                  <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none uppercase" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={cardHolder} onChange={e => setCardHolder(e.target.value.toUpperCase())} placeholder={tx("NOMBRE APELLIDOS")} required />
+                  <label className="block text-xs ttext-muted-foreground mb-1">{tx("Titular de la tarjeta")}</label>
+                  <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none uppercase" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={cardHolder} onChange={e => setCardHolder(e.target.value.toUpperCase())} placeholder={tx("NOMBRE APELLIDOS")} required />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">{tx("Número de tarjeta")}</label>
+                  <label className="block text-xs ttext-muted-foreground mb-1">{tx("Número de tarjeta")}</label>
                   <div className="relative">
-                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono pr-16" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono pr-16" style={{ borderColor: "var(--border)", color: "#1e293b" }}
                       value={cardNum}
                       onChange={e => {
                         const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
@@ -2772,8 +2772,8 @@ function BookingModal({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{tx("Fecha de expiración")}</label>
-                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}
+                    <label className="block text-xs ttext-muted-foreground mb-1">{tx("Fecha de expiración")}</label>
+                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "var(--border)", color: "#1e293b" }}
                       value={cardExp}
                       onChange={e => {
                         let v = e.target.value.replace(/\D/g, "").slice(0, 4);
@@ -2783,22 +2783,22 @@ function BookingModal({
                       placeholder="MM/AA" maxLength={5} required />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">CVV</label>
-                    <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "#e2e8f0", color: "#1e293b" }} value={cardCvv} onChange={e => setCardCvv(e.target.value.slice(0, 3))} placeholder="•••" maxLength={3} required />
+                    <label className="block text-xs ttext-muted-foreground mb-1">CVV</label>
+                    <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={cardCvv} onChange={e => setCardCvv(e.target.value.slice(0, 3))} placeholder="•••" maxLength={3} required />
                   </div>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" className="accent-amber-400 rounded" checked={saveCard} onChange={e => setSaveCard(e.target.checked)} />
-                  <span className="text-xs text-slate-500">{tx("Guardar tarjeta para futuras reservas")}</span>
+                  <span className="text-xs ttext-muted-foreground">{tx("Guardar tarjeta para futuras reservas")}</span>
                 </label>
               </div>
 
-              <div className="rounded-xl p-3 space-y-1.5" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                <div className="flex justify-between text-sm text-slate-500"><span>{tx("Subtotal Hospedaje")} ({nights}n)</span><span>{fmt(roomBase)}</span></div>
+              <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--background)", border: "1px solid #e2e8f0" }}>
+                <div className="flex justify-between text-sm ttext-muted-foreground"><span>{tx("Subtotal Hospedaje")} ({nights}n)</span><span>{fmt(roomBase)}</span></div>
                 {extrasTotal > 0 && (
-                  <div className="flex justify-between text-sm text-slate-500"><span>{tx("Extras de Alojamiento")}</span><span>{fmt(extrasTotal)}</span></div>
+                  <div className="flex justify-between text-sm ttext-muted-foreground"><span>{tx("Extras de Alojamiento")}</span><span>{fmt(extrasTotal)}</span></div>
                 )}
-                <div className="flex justify-between text-sm text-slate-500">
+                <div className="flex justify-between text-sm ttext-muted-foreground">
                   <span>{ivaPct}% IVA {ivaPct === 8 ? tx("(Decreto Feriado Turístico)") : tx("(Tarifa Ordinaria)")}</span>
                   <span className={ivaPct === 8 ? "text-emerald-700 font-bold" : ""}>{fmt(iva)}</span>
                 </div>
@@ -2808,23 +2808,23 @@ function BookingModal({
                     <span className="font-mono font-bold">{fmt(servicio)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-base pt-1.5 border-t" style={{ borderColor: "#e2e8f0", color: "#1e293b" }}><span>{tx("Total a cargar")}</span><span style={{ color: "#f59e0b" }}>{fmt(total)}</span></div>
+                <div className="flex justify-between font-bold text-base pt-1.5 border-t" style={{ borderColor: "var(--border)", color: "#1e293b" }}><span>{tx("Total a cargar")}</span><span style={{ color: "#f59e0b" }}>{fmt(total)}</span></div>
               </div>
 
               {/* LOPDP Consent */}
-              <label className="flex items-start gap-2 cursor-pointer select-none text-left p-2.5 rounded-lg border bg-slate-50/60 border-slate-200">
+              <label className="flex items-start gap-2 cursor-pointer select-none text-left p-2.5 rounded-lg border bg-background/60 border-border">
                 <input type="checkbox" required defaultChecked className="mt-0.5 accent-amber-500 rounded" />
-                <span className="text-[11px] text-slate-600 leading-tight">
+                <span className="text-[11px] ttext-muted-foreground leading-tight">
                   {tx("Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la")} <strong>{tx("Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)")}</strong>. {tx("Mis datos personales se tratarán exclusivamente para la reserva y gestión de mi estancia.")}
                 </span>
               </label>
 
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 justify-center">
+              <div className="flex items-center gap-1.5 text-xs ttext-muted-foreground justify-center">
                 <span>🔒</span> {tx("Pago tokenizado seguro (PCI-DSS compliant) · Cifrado SSL 256-bit · Sin almacenar CVV")}
               </div>
 
               <div className="flex gap-2">
-                <button type="button" onClick={() => setStep("details")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("← Atrás")}</button>
+                <button type="button" onClick={() => setStep("details")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("← Atrás")}</button>
                 <button type="submit" disabled={processing} className="flex-1 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-70" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   {processing ? (
                     <span className="flex items-center justify-center gap-2">
@@ -2843,12 +2843,12 @@ function BookingModal({
               {/* Success banner */}
               <div className="text-center py-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mx-auto mb-2" style={{ background: "#d1fae5" }}>✓</div>
-                <h3 className="font-bold text-slate-800 text-base">{tx("¡Pago procesado y reserva confirmada!")}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{tx("Voucher Oficial de Reserva Garantizada y liquidación de pasarela")}</p>
+                <h3 className="font-bold text-foreground text-base">{tx("¡Pago procesado y reserva confirmada!")}</h3>
+                <p className="text-xs ttext-muted-foreground mt-0.5">{tx("Voucher Oficial de Reserva Garantizada y liquidación de pasarela")}</p>
               </div>
 
               {/* Electronic payment receipt & Voucher */}
-              <div className="rounded-2xl border overflow-hidden shadow-lg" style={{ borderColor: "#e2e8f0" }}>
+              <div className="rounded-2xl border overflow-hidden shadow-lg" style={{ borderColor: "var(--border)" }}>
                 {/* Header: Payment gateway receipt */}
                 <div className="px-5 py-4 flex items-start justify-between" style={{ background: "#0c1220" }}>
                   <div>
@@ -2857,13 +2857,13 @@ function BookingModal({
                       <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">{tx("RESERVA GARANTIZADA")}</span>
                     </div>
                     <p className="text-xs text-slate-300 font-medium">{hotelMeta.razonSocial}</p>
-                    <p className="text-[10px] text-slate-400 font-mono">RUC: {hotelMeta.ruc} · {hotelMeta.city}</p>
-                    <p className="text-[10px] text-slate-400">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
+                    <p className="text-[10px] ttext-muted-foreground font-mono">RUC: {hotelMeta.ruc} · {hotelMeta.city}</p>
+                    <p className="text-[10px] ttext-muted-foreground">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
                   </div>
                   <div className="text-right">
                     <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{tx("VOUCHER DIGITAL")}</span>
                     <p className="font-bold mt-1 text-slate-100 font-mono text-xs">{invoiceId}</p>
-                    <p className="mono text-[10px] text-slate-400">{issueDate}</p>
+                    <p className="mono text-[10px] ttext-muted-foreground">{issueDate}</p>
                   </div>
                 </div>
 
@@ -2876,38 +2876,38 @@ function BookingModal({
                 </div>
 
                 {/* Client + hotel */}
-                <div className="grid grid-cols-2 gap-px" style={{ background: "#e2e8f0" }}>
-                  <div className="px-4 py-3 bg-white">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Huésped titular")}</p>
-                    <p className="font-semibold text-slate-800 text-sm">{form.name || user?.name || "Huésped Invitado"}</p>
+                <div className="grid grid-cols-2 gap-px" style={{ background: "var(--border)" }}>
+                  <div className="px-4 py-3 bg-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Huésped titular")}</p>
+                    <p className="font-semibold text-foreground text-sm">{form.name || user?.name || "Huésped Invitado"}</p>
                     {docType === "RUC" && form.razonSocial && (
-                      <p className="text-xs text-slate-600 font-medium">🏢 {form.razonSocial}</p>
+                      <p className="text-xs ttext-muted-foreground font-medium">🏢 {form.razonSocial}</p>
                     )}
-                    <p className="text-xs text-slate-500">{form.email || user?.email || "invitado@alojamanta.ec"}</p>
+                    <p className="text-xs ttext-muted-foreground">{form.email || user?.email || "invitado@alojamanta.ec"}</p>
                     {form.dni && (
-                      <p className="mono text-xs text-slate-500">
+                      <p className="mono text-xs ttext-muted-foreground">
                         {docType === "CEDULA" ? tx("Cédula: ") : docType === "RUC" ? "RUC: " : tx("Pasaporte: ")}
                         {form.dni}
                       </p>
                     )}
-                    {form.phone && <p className="text-xs text-slate-500">Tel: {form.phone}</p>}
+                    {form.phone && <p className="text-xs ttext-muted-foreground">Tel: {form.phone}</p>}
                     {(form.city || form.country) && (
-                      <p className="text-[11px] text-slate-400 truncate">
+                      <p className="text-[11px] ttext-muted-foreground truncate">
                         📍 {[form.address, form.city, form.country].filter(Boolean).join(", ")}
                       </p>
                     )}
                   </div>
-                  <div className="px-4 py-3 bg-white">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{tx("Hotel prestador")}</p>
-                    <p className="font-semibold text-slate-800 text-sm">{hotel.name}</p>
-                    <p className="text-xs text-slate-500">{hotel.address}</p>
-                    <p className="text-xs text-slate-500">{tx(hotel.city)}</p>
+                  <div className="px-4 py-3 bg-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Hotel prestador")}</p>
+                    <p className="font-semibold text-foreground text-sm">{hotel.name}</p>
+                    <p className="text-xs ttext-muted-foreground">{hotel.address}</p>
+                    <p className="text-xs ttext-muted-foreground">{tx(hotel.city)}</p>
                   </div>
                 </div>
 
                 {/* Reservation details */}
-                <div className="px-4 py-3 bg-white" style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">{tx("Detalle de la estancia reservada")}</p>
+                <div className="px-4 py-3 bg-card" style={{ borderTop: "1px solid #e2e8f0" }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground mb-2">{tx("Detalle de la estancia reservada")}</p>
                   <div className="grid grid-cols-4 gap-3 text-xs">
                     {[
                       { l: tx("Nº Reserva"), v: resId },
@@ -2916,8 +2916,8 @@ function BookingModal({
                       { l: tx("Noches"), v: String(nights) },
                     ].map(item => (
                       <div key={item.l}>
-                        <p className="text-slate-400">{item.l}</p>
-                        <p className="font-semibold text-slate-700 font-mono">{item.v}</p>
+                        <p className="ttext-muted-foreground">{item.l}</p>
+                        <p className="font-semibold text-foreground font-mono">{item.v}</p>
                       </div>
                     ))}
                   </div>
@@ -2925,49 +2925,49 @@ function BookingModal({
 
                 {/* Line items con desglose transparente */}
                 <table className="w-full text-sm" style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <thead style={{ background: "#f8fafc" }}>
+                  <thead style={{ background: "var(--background)" }}>
                     <tr>
                       {[tx("Concepto"), tx("Cantidad"), tx("Precio/u."), "Total"].map(h => (
-                        <th key={h} className="text-left px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">{h}</th>
+                        <th key={h} className="text-left px-4 py-2 text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     <tr style={{ borderTop: "1px solid #e2e8f0" }}>
                       <td className="px-4 py-3">
-                        <p className="font-semibold text-slate-800">{tx(room.type)}</p>
-                        <p className="text-xs text-slate-400">{hotel.name} · {tx(room.beds)}</p>
+                        <p className="font-semibold text-foreground">{tx(room.type)}</p>
+                        <p className="text-xs ttext-muted-foreground">{hotel.name} · {tx(room.beds)}</p>
                       </td>
-                      <td className="px-4 py-3 text-slate-600">{nights} noche{nights > 1 ? "s" : ""}</td>
-                      <td className="px-4 py-3 font-mono text-slate-600">{fmt(effectiveNightlyRate)}</td>
-                      <td className="px-4 py-3 font-mono font-semibold text-slate-800">{fmt(roomBase)}</td>
+                      <td className="px-4 py-3 ttext-muted-foreground">{nights} noche{nights > 1 ? "s" : ""}</td>
+                      <td className="px-4 py-3 font-mono ttext-muted-foreground">{fmt(effectiveNightlyRate)}</td>
+                      <td className="px-4 py-3 font-mono font-semibold text-foreground">{fmt(roomBase)}</td>
                     </tr>
                     {extrasTotal > 0 && (
                       <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                        <td className="px-4 py-2 text-xs text-slate-600" colSpan={3}>{tx("Servicios adicionales y extras seleccionados")}</td>
-                        <td className="px-4 py-2 font-mono text-xs font-semibold text-slate-800">{fmt(extrasTotal)}</td>
+                        <td className="px-4 py-2 text-xs ttext-muted-foreground" colSpan={3}>{tx("Servicios adicionales y extras seleccionados")}</td>
+                        <td className="px-4 py-2 font-mono text-xs font-semibold text-foreground">{fmt(extrasTotal)}</td>
                       </tr>
                     )}
                   </tbody>
                   <tfoot>
-                    <tr style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">{tx("Subtotal Neto (Hospedaje y Extras)")}</td>
-                      <td className="px-4 py-2 font-mono text-sm text-slate-700">{fmt(base)}</td>
+                    <tr style={{ borderTop: "1px solid #e2e8f0", background: "var(--background)" }}>
+                      <td colSpan={3} className="px-4 py-2 text-xs text-right ttext-muted-foreground">{tx("Subtotal Neto (Hospedaje y Extras)")}</td>
+                      <td className="px-4 py-2 font-mono text-sm text-foreground">{fmt(base)}</td>
                     </tr>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right text-slate-500">
+                    <tr style={{ background: "var(--background)" }}>
+                      <td colSpan={3} className="px-4 py-2 text-xs text-right ttext-muted-foreground">
                         {ivaPct}% IVA {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}
                       </td>
-                      <td className="px-4 py-2 font-mono text-sm text-slate-700">{fmt(iva)}</td>
+                      <td className="px-4 py-2 font-mono text-sm text-foreground">{fmt(iva)}</td>
                     </tr>
                     {hasService && (
-                      <tr style={{ background: "#f8fafc" }}>
+                      <tr style={{ background: "var(--background)" }}>
                         <td colSpan={3} className="px-4 py-2 text-xs text-right text-emerald-700 font-medium">{tx("10% Servicio Turístico (Ley Turismo Art. 41)")}</td>
                         <td className="px-4 py-2 font-mono text-sm text-emerald-700 font-bold">{fmt(servicio)}</td>
                       </tr>
                     )}
                     <tr style={{ borderTop: "2px solid #e2e8f0" }}>
-                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-slate-800">{tx("TOTAL LIQUIDADO")}</td>
+                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-foreground">{tx("TOTAL LIQUIDADO")}</td>
                       <td className="px-4 py-3 font-bold font-mono text-lg" style={{ color: "#f59e0b" }}>{fmt(total)}</td>
                     </tr>
                   </tfoot>
@@ -2983,18 +2983,18 @@ function BookingModal({
                 </div>
 
                 {/* Verification code & Booking Reference */}
-                <div className="px-4 py-3 flex items-center justify-between" style={{ background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
+                <div className="px-4 py-3 flex items-center justify-between" style={{ background: "var(--background)", borderTop: "1px solid #e2e8f0" }}>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{tx("Código de Confirmación de Reserva")}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground">{tx("Código de Confirmación de Reserva")}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="font-mono font-bold text-slate-800 tracking-wider text-sm">{resId}</p>
+                      <p className="font-mono font-bold text-foreground tracking-wider text-sm">{resId}</p>
                       <span className="text-slate-300">|</span>
                       <span className="font-mono font-bold text-amber-600 text-xs">PIN: {verifyCode}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{tx("Menciona este código o tu nombre al presentarte en el establecimiento.")}</p>
+                    <p className="text-[10px] ttext-muted-foreground mt-0.5">{tx("Menciona este código o tu nombre al presentarte en el establecimiento.")}</p>
                   </div>
-                  <div className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-center shadow-xs">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">{tx("Estado")}</span>
+                  <div className="px-3 py-2 rounded-lg border border-border bg-card text-center shadow-xs">
+                    <span className="text-[9px] font-bold uppercase tracking-wider ttext-muted-foreground block">{tx("Estado")}</span>
                     <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 justify-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
                       {tx("Confirmada")}
@@ -3004,13 +3004,13 @@ function BookingModal({
               </div>
 
               <div className="flex gap-2 pt-3">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border" style={{ borderColor: "#e2e8f0", color: "#64748b" }}>{tx("Cerrar")}</button>
+                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("Cerrar")}</button>
                 <button className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-1.5" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   <span>⬇</span>
                   <span>{tx("Descargar Comprobante & Voucher PDF")}</span>
                 </button>
               </div>
-              <p className="text-center text-xs text-slate-400 pt-1">{tx("Comprobante enviado a")} <strong>{form.email || user?.email}</strong></p>
+              <p className="text-center text-xs ttext-muted-foreground pt-1">{tx("Comprobante enviado a")} <strong>{form.email || user?.email}</strong></p>
             </div>
           )}
 
@@ -3026,47 +3026,47 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
   const tx = useI18n();
   const n = Math.max(nights, 1);
   return (
-    <div className="rounded-2xl overflow-hidden border bg-white transition-all hover:shadow-lg cursor-pointer group" style={{ borderColor: "#e2e8f0" }} onClick={onSelect}>
+    <div className="rounded-2xl overflow-hidden border bg-card transition-all hover:shadow-lg cursor-pointer group" style={{ borderColor: "var(--border)" }} onClick={onSelect}>
       <div className="flex flex-col sm:flex-row">
         <div className="sm:w-64 flex-shrink-0 relative overflow-hidden" style={{ height: 200 }}>
           <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-            {hotel.tags.slice(0, 2).map(t => <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>{tx(t)}</span>)}
+            {hotel.tags.slice(0, 2).map(t => <span key={t} className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.55)", color: "var(--card)" }}>{tx(t)}</span>)}
           </div>
         </div>
         <div className="flex-1 p-4 flex flex-col justify-between">
           <div>
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <div className="flex items-center gap-2 mb-0.5"><StarsRow n={hotel.stars} /><span className="text-xs text-slate-400">{tx(hotel.city)}</span></div>
-                <h3 className="font-bold text-slate-800 text-base group-hover:text-amber-600 transition-colors">{hotel.name}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">{hotel.address}</p>
+                <div className="flex items-center gap-2 mb-0.5"><StarsRow n={hotel.stars} /><span className="text-xs ttext-muted-foreground">{tx(hotel.city)}</span></div>
+                <h3 className="font-bold text-foreground text-base group-hover:text-amber-600 transition-colors">{hotel.name}</h3>
+                <p className="text-xs ttext-muted-foreground mt-0.5">{hotel.address}</p>
               </div>
               <div className="flex-shrink-0 text-right">
                 <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: "#1e3a5f" }}>
                   <span className="font-bold text-white text-sm">{hotel.rating}</span><span className="text-white/60 text-xs">/ 5</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-0.5">{hotel.reviews} {tx("opiniones")}</p>
+                <p className="text-[10px] ttext-muted-foreground mt-0.5">{hotel.reviews} {tx("opiniones")}</p>
               </div>
             </div>
-            <p className="text-sm text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{txDesc(hotel.description)}</p>
+            <p className="text-sm ttext-muted-foreground mt-1.5 leading-relaxed line-clamp-2">{txDesc(hotel.description)}</p>
             <p className="text-xs mt-1 font-medium" style={{ color: "#059669" }}>📍 {tx(hotel.distance)}</p>
             <div className="flex flex-wrap gap-1 mt-2">
-              {hotel.amenities.slice(0, 5).map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{tx(a)}</span>)}
+              {hotel.amenities.slice(0, 5).map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "var(--muted)", color: "#475569" }}>{tx(a)}</span>)}
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mt-3 pt-3 border-t" style={{ borderColor: "#f1f5f9" }}>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--muted)" }}>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wide">{tx("Precio desde")}</p>
+              <p className="text-[10px] ttext-muted-foreground uppercase tracking-wide">{tx("Precio desde")}</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-slate-900 leading-none">US${hotel.priceFrom}</span>
-                <span className="text-xs text-slate-500 font-medium">{tx("/ noche")}</span>
+                <span className="text-2xl font-black text-foreground leading-none">US${hotel.priceFrom}</span>
+                <span className="text-xs ttext-muted-foreground font-medium">{tx("/ noche")}</span>
               </div>
-              <p className="text-[11px] font-semibold text-slate-500 mt-1">
+              <p className="text-[11px] font-semibold ttext-muted-foreground mt-1">
                 + US${(((hotel.priceFrom * n) * (getActiveIvaPercent(hotel.id) / 100)) + (hotel.gravaServicio10 ? ((hotel.priceFrom * n) * 0.10) : 0)).toFixed(2)} {tx("de impuestos")} ({n}n)
               </p>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-foreground font-medium border border-border">
                   {hotel.gravaServicio10
                     ? `${getActiveIvaPercent(hotel.id)}% IVA + ${tx("10% Servicio Turístico")}`
                     : `${getActiveIvaPercent(hotel.id)}% IVA (${tx("Hostal Exento 10% Serv.")})`}
@@ -3120,9 +3120,9 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-medium mb-5 hover:opacity-70 transition-opacity" style={{ color: "#64748b" }}>{tx("← Volver a resultados")}</button>
-      <div className="rounded-2xl overflow-hidden border mb-6 bg-white" style={{ borderColor: "#e2e8f0" }}>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 bg-slate-100">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-sm font-medium mb-5 hover:opacity-70 transition-opacity" style={{ color: "var(--muted-foreground)" }}>{tx("← Volver a resultados")}</button>
+      <div className="rounded-2xl overflow-hidden border mb-6 bg-card" style={{ borderColor: "var(--border)" }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 bg-muted">
           {gallery.map((image, index) => (
             <div key={`${image}-${index}`} className={`${index === 0 ? "col-span-2 row-span-2" : ""} overflow-hidden`} style={{ minHeight: index === 0 ? 260 : 128 }}>
               <img
@@ -3136,21 +3136,21 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
         <div className="p-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <div className="flex items-center gap-2 mb-1"><StarsRow n={hotel.stars} /><span className="text-xs text-slate-400">{tx(hotel.city)}</span></div>
-              <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>{hotel.name}</h1>
-              <p className="text-sm text-slate-400 mt-0.5">📍 {hotel.address} · {tx(hotel.distance)}</p>
+              <div className="flex items-center gap-2 mb-1"><StarsRow n={hotel.stars} /><span className="text-xs ttext-muted-foreground">{tx(hotel.city)}</span></div>
+              <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "DM Serif Display, serif" }}>{hotel.name}</h1>
+              <p className="text-sm ttext-muted-foreground mt-0.5">📍 {hotel.address} · {tx(hotel.distance)}</p>
             </div>
             <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl" style={{ background: "#1e3a5f" }}>
               <span className="text-white font-bold text-xl">{score10}</span>
               <div><p className="text-amber-300 font-bold text-xs">{tx("Excelente (/10)")}</p><p className="text-white/60 text-[10px]">{hotel.reviews} {tx("reseñas verificadas")}</p></div>
             </div>
           </div>
-          <p className="text-sm text-slate-600 mt-3 leading-relaxed">{txDesc(hotel.description)}</p>
-          <div className="mt-5 pt-4 border-t" style={{ borderColor: "#f1f5f9" }}>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">{tx("Servicios del alojamiento")}</p>
+          <p className="text-sm ttext-muted-foreground mt-3 leading-relaxed">{txDesc(hotel.description)}</p>
+          <div className="mt-5 pt-4 border-t" style={{ borderColor: "var(--muted)" }}>
+            <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground mb-3">{tx("Servicios del alojamiento")}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {hotel.amenities.map(a => (
-                <div key={a} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium" style={{ background: "#f8fafc", color: "#475569" }}>
+                <div key={a} className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium" style={{ background: "var(--background)", color: "#475569" }}>
                   <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "#d1fae5", color: "#047857" }}>✓</span>
                   {tx(a)}
                 </div>
@@ -3159,27 +3159,27 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
           </div>
 
           {/* Puntos de referencia y tiempos de traslado en Manta */}
-          <div className="mt-5 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4" style={{ borderColor: "#f1f5f9" }}>
-            <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5">
+          <div className="mt-5 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4" style={{ borderColor: "var(--muted)" }}>
+            <div className="rounded-xl p-4 border bg-background/70" style={{ borderColor: "var(--border)" }}>
+              <p className="text-xs font-bold uppercase tracking-wider text-foreground mb-2.5">
                 {tx("Lugares de interés cercanos")}
               </p>
               <div className="space-y-2 text-xs">
                 {landmarks.map(lm => (
-                  <div key={lm.place} className="flex items-center justify-between gap-2 py-1 border-b border-slate-200/60 last:border-0">
-                    <span className="text-slate-700 font-medium">
+                  <div key={lm.place} className="flex items-center justify-between gap-2 py-1 border-b border-border/60 last:border-0">
+                    <span className="text-foreground font-medium">
                       {lm.place}
                     </span>
-                    <span className="text-[11px] font-mono text-slate-500 whitespace-nowrap">{lm.dist} · {lm.time}</span>
+                    <span className="text-[11px] font-mono ttext-muted-foreground whitespace-nowrap">{lm.dist} · {lm.time}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Reseñas y Valoraciones Verificadas */}
-            <div className="rounded-xl p-4 border bg-slate-50/70" style={{ borderColor: "#e2e8f0" }}>
+            <div className="rounded-xl p-4 border bg-background/70" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-2.5">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <p className="text-xs font-bold uppercase tracking-wider text-foreground">
                   {tx("Puntuación de los huéspedes")}
                 </p>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{tx("Opiniones verificadas")}</span>
@@ -3188,8 +3188,8 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                 {subcriteria.map(sc => (
                   <div key={sc.label}>
                     <div className="flex justify-between text-[11px] mb-0.5">
-                      <span className="text-slate-600 font-medium">{sc.label}</span>
-                      <span className="font-mono font-bold text-slate-800">{sc.val} / 10</span>
+                      <span className="ttext-muted-foreground font-medium">{sc.label}</span>
+                      <span className="font-mono font-bold text-foreground">{sc.val} / 10</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                       <div className="h-full rounded-full bg-amber-500" style={{ width: `${sc.val * 10}%` }} />
@@ -3209,10 +3209,10 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
         </div>
         <p className="text-xs text-amber-700">{tx("Confirmación inmediata · Cancelación flexible según tarifa")}</p>
       </div>
-      <h2 className="text-lg font-bold text-slate-800 mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Tipos de Habitación y Cupos para Venta Web")}</h2>
+      <h2 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Tipos de Habitación y Cupos para Venta Web")}</h2>
       <div className="space-y-4">
         {hotel.rooms.filter(r => r.capacity >= params.adults).map(room => (
-          <div key={room.id} className="rounded-2xl overflow-hidden border bg-white hover:shadow-md transition-all" style={{ borderColor: "#e2e8f0" }}>
+          <div key={room.id} className="rounded-2xl overflow-hidden border bg-card hover:shadow-md transition-all" style={{ borderColor: "var(--border)" }}>
             <div className="flex flex-col sm:flex-row">
               <div className="sm:w-52 flex-shrink-0" style={{ height: 160 }}>
                 <img src={room.image} alt={tx(room.type)} className="w-full h-full object-cover" />
@@ -3221,22 +3221,22 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-bold text-slate-800">{tx(room.type)}</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{tx(room.beds)} · {room.size} m² · {tx("hasta")} {room.capacity} {tx("pers.")}</p>
+                      <h3 className="font-bold text-foreground">{tx(room.type)}</h3>
+                      <p className="text-xs ttext-muted-foreground mt-0.5">{tx(room.beds)} · {room.size} m² · {tx("hasta")} {room.capacity} {tx("pers.")}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      {room.originalPrice && <p className="text-xs line-through text-slate-400">{fmt(room.originalPrice)}</p>}
+                      {room.originalPrice && <p className="text-xs line-through ttext-muted-foreground">{fmt(room.originalPrice)}</p>}
                       <p className="text-xl font-bold" style={{ color: "#f59e0b" }}>{fmt(room.pricePerNight)}</p>
-                      <p className="text-[10px] text-slate-400">{tx("/ noche base")}</p>
+                      <p className="text-[10px] ttext-muted-foreground">{tx("/ noche base")}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    {room.amenities.map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#475569" }}>{tx(a)}</span>)}
+                    {room.amenities.map(a => <span key={a} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "var(--muted)", color: "#475569" }}>{tx(a)}</span>)}
                     {room.breakfastIncluded && <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ background: "#d1fae5", color: "#065f46" }}>{tx("Desayuno incluido")}</span>}
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t space-y-3" style={{ borderColor: "#f1f5f9" }}>
+                <div className="mt-3 pt-3 border-t space-y-3" style={{ borderColor: "var(--muted)" }}>
                   <PriceBreakdownBox
                     basePrice={room.pricePerNight}
                     nights={nights}
@@ -3289,23 +3289,23 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
   if (sortBy === "rating") results = [...results].sort((a, b) => b.rating - a.rating);
 
   return (
-    <div style={{ background: "#f8fafc", minHeight: "100vh" }}>
-      <div className="sticky top-0 z-20 border-b shadow-sm" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
+    <div style={{ background: "var(--background)", minHeight: "100vh" }}>
+      <div className="sticky top-0 z-20 border-b shadow-sm" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="max-w-5xl mx-auto px-4 py-3">
           <SearchBar params={params} onChange={onChange} onSearch={onSearch} variant="sticky" />
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-4 py-6 flex gap-5">
         <aside className="w-56 flex-shrink-0 hidden lg:block space-y-4">
-          <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
+          <div className="rounded-xl p-4 border bg-card" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-slate-700 text-sm">{tx("Categoría")}</h4>
+              <h4 className="font-bold text-foreground text-sm">{tx("Categoría")}</h4>
               {stars.length > 0 && (
                 <button onClick={() => setStars([])} className="text-[11px] text-amber-600 hover:underline">{tx("Limpiar")}</button>
               )}
             </div>
             {[5, 4, 3, 2, 1].map(s => (
-              <label key={s} className="flex items-center justify-between gap-1 mb-2 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors">
+              <label key={s} className="flex items-center justify-between gap-1 mb-2 cursor-pointer hover:bg-background p-1 rounded transition-colors">
                 <div className="flex items-center gap-1.5">
                   <input
                     type="checkbox"
@@ -3317,17 +3317,17 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
                     {Array.from({ length: s }).map((_, i) => <span key={i} style={{ color: "#f59e0b", fontSize: 11 }}>★</span>)}
                     {Array.from({ length: 5 - s }).map((_, i) => <span key={i} style={{ color: "#d1d5db", fontSize: 11 }}>★</span>)}
                   </div>
-                  <span className="text-[11px] text-slate-600 font-medium">
+                  <span className="text-[11px] ttext-muted-foreground font-medium">
                     {s === 5 ? tx("5★ Lujo") : s === 4 ? tx("4★ Primera") : s === 3 ? tx("3★ Superior") : s === 2 ? tx("2★ Turista") : tx("1★ Económico")}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">({HOTELS.filter(h => h.stars === s).length})</span>
+                <span className="text-[10px] ttext-muted-foreground font-mono">({HOTELS.filter(h => h.stars === s).length})</span>
               </label>
             ))}
           </div>
 
-          <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-            <h4 className="font-bold text-slate-700 text-sm mb-2">{tx("Clasificación")}</h4>
+          <div className="rounded-xl p-4 border bg-card" style={{ borderColor: "var(--border)" }}>
+            <h4 className="font-bold text-foreground text-sm mb-2">{tx("Clasificación")}</h4>
             <div className="space-y-1">
               {[
                 { id: "all", label: tx("Todos los tipos"), count: HOTELS.length },
@@ -3339,22 +3339,22 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
                   key={item.id}
                   onClick={() => setClassification(item.id)}
                   className={`w-full flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg text-left transition-all ${
-                    classification === item.id ? "bg-amber-100 text-amber-900 font-bold" : "text-slate-600 hover:bg-slate-50"
+                    classification === item.id ? "bg-amber-100 text-amber-900 font-bold" : "ttext-muted-foreground hover:bg-background"
                   }`}
                 >
                   <span>{item.label}</span>
-                  <span className="font-mono text-[10px] text-slate-400">({item.count})</span>
+                  <span className="font-mono text-[10px] ttext-muted-foreground">({item.count})</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
-            <h4 className="font-bold text-slate-700 text-sm mb-2">{tx("Parroquia")}</h4>
+          <div className="rounded-xl p-4 border bg-card" style={{ borderColor: "var(--border)" }}>
+            <h4 className="font-bold text-foreground text-sm mb-2">{tx("Parroquia")}</h4>
             <select
               value={parish}
               onChange={e => setParish(e.target.value)}
-              className="w-full text-xs rounded-lg border p-2 bg-slate-50 border-slate-200 text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full text-xs rounded-lg border p-2 bg-background border-border text-foreground focus:outline-none focus:ring-1 focus:ring-amber-500"
             >
               <option value="all">{tx("Todas las parroquias (116)")}</option>
               {Array.from(new Set(HOTELS.map(h => h.parish).filter(Boolean))).sort().map(p => (
@@ -3363,9 +3363,9 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
             </select>
           </div>
 
-          <div className="rounded-xl p-4 border bg-white" style={{ borderColor: "#e2e8f0" }}>
+          <div className="rounded-xl p-4 border bg-card" style={{ borderColor: "var(--border)" }}>
             <div className="flex justify-between items-center mb-2">
-              <h4 className="font-bold text-slate-700 text-sm">{tx("Precio máx./noche")}</h4>
+              <h4 className="font-bold text-foreground text-sm">{tx("Precio máx./noche")}</h4>
               <span className="font-bold text-amber-600 text-sm font-mono">${maxPrice}</span>
             </div>
             <input
@@ -3377,7 +3377,7 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
               onChange={e => setMaxPrice(Number(e.target.value))}
               className="w-full accent-amber-500 cursor-pointer"
             />
-            <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+            <div className="flex justify-between text-[11px] ttext-muted-foreground mt-1">
               <span>$25</span>
               <span>$150</span>
               <span>$300+</span>
@@ -3387,14 +3387,14 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
-              <h2 className="font-bold text-slate-800">{results.length} {results.length !== 1 ? tx("alojamientos") : tx("alojamiento")}{params.destination ? ` ${tx("en")} ${params.destination}` : ""}</h2>
-              {nights > 0 && <p className="text-xs text-slate-400">{nights} {nights > 1 ? tx("noches") : tx("noche")} · {params.adults} {params.adults > 1 ? tx("adultos") : tx("adulto")}</p>}
+              <h2 className="font-bold text-foreground">{results.length} {results.length !== 1 ? tx("alojamientos") : tx("alojamiento")}{params.destination ? ` ${tx("en")} ${params.destination}` : ""}</h2>
+              {nights > 0 && <p className="text-xs ttext-muted-foreground">{nights} {nights > 1 ? tx("noches") : tx("noche")} · {params.adults} {params.adults > 1 ? tx("adultos") : tx("adulto")}</p>}
             </div>
             <div className="flex gap-1.5 text-xs items-center">
-              <button onClick={() => setShowResultsMap(true)} className="px-3 py-1.5 rounded-lg font-semibold border bg-white hover:bg-slate-50 transition-all" style={{ borderColor: "#e2e8f0", color: "#334155" }}>🗺️ {tx("Ver en mapa")}</button>
-              <span className="text-slate-400 self-center">{tx("Ordenar:")}</span>
+              <button onClick={() => setShowResultsMap(true)} className="px-3 py-1.5 rounded-lg font-semibold border bg-card hover:bg-background transition-all" style={{ borderColor: "var(--border)", color: "#334155" }}>🗺️ {tx("Ver en mapa")}</button>
+              <span className="ttext-muted-foreground self-center">{tx("Ordenar:")}</span>
               {[{ k: "rating" as const, l: tx("Valoración") }, { k: "price" as const, l: tx("Precio") }].map(s => (
-                <button key={s.k} onClick={() => setSortBy(s.k)} className="px-3 py-1.5 rounded-lg font-semibold border transition-all" style={{ background: sortBy === s.k ? "#f59e0b" : "#fff", color: sortBy === s.k ? "#0c1220" : "#64748b", borderColor: sortBy === s.k ? "#f59e0b" : "#e2e8f0" }}>{s.l}</button>
+                <button key={s.k} onClick={() => setSortBy(s.k)} className="px-3 py-1.5 rounded-lg font-semibold border transition-all" style={{ background: sortBy === s.k ? "#f59e0b" : "var(--card)", color: sortBy === s.k ? "#0c1220" : "var(--muted-foreground)", borderColor: sortBy === s.k ? "#f59e0b" : "var(--border)" }}>{s.l}</button>
               ))}
             </div>
           </div>
@@ -3410,9 +3410,9 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
           <div className="space-y-4">
             {results.map(h => <HotelCard key={h.id} hotel={h} nights={nights} onSelect={() => onSelect(h)} />)}
             {results.length === 0 && (
-              <div className="text-center py-16 rounded-2xl border bg-white" style={{ borderColor: "#e2e8f0" }}>
+              <div className="text-center py-16 rounded-2xl border bg-card" style={{ borderColor: "var(--border)" }}>
                 <p className="text-4xl mb-3">🏨</p>
-                <p className="font-semibold text-slate-700">{tx("No encontramos alojamientos con estos filtros.")}</p>
+                <p className="font-semibold text-foreground">{tx("No encontramos alojamientos con estos filtros.")}</p>
               </div>
             )}
           </div>
@@ -3447,7 +3447,7 @@ function HomePage({
   const [isHomeMapOpen, setIsHomeMapOpen] = useState(false);
 
   return (
-    <div style={{ background: "#f8fafc" }}>
+    <div style={{ background: "var(--background)" }}>
       <div className="relative" style={{ minHeight: 400 }}>
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #0c1220 0%, #1e3a5f 50%, #0f2744 100%)" }}>
           <img src="https://images.unsplash.com/photo-1722191847760-8426e74d4b3d?w=1400&h=600&fit=crop&auto=format" alt="" className="w-full h-full object-cover opacity-25" />
@@ -3461,10 +3461,10 @@ function HomePage({
           <div className="max-w-4xl mx-auto"><SearchBar params={params} onChange={onChange} onSearch={onSearch} /></div>
         </div>
       </div>
-      <div className="border-b" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
+      <div className="border-b" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
           {[tx("Pago digital seguro"), tx("Confirmación de reserva inmediata"), tx("Cancelación flexible"), tx("Tarifa directa sin comisiones ocultas"), tx("Atención local en Manta")].map(text => (
-            <div key={text} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 shrink-0">
+            <div key={text} className="flex items-center gap-1.5 text-xs font-medium ttext-muted-foreground shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
               <span>{text}</span>
             </div>
@@ -3474,8 +3474,8 @@ function HomePage({
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
           <div>
-            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Sectores y Playas de Manta")}</h2>
-            <p className="text-xs text-slate-500">{tx("Distribución en las 7 parroquias del cantón Manta")}</p>
+            <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Sectores y Playas de Manta")}</h2>
+            <p className="text-xs ttext-muted-foreground">{tx("Distribución en las 7 parroquias del cantón Manta")}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -3486,7 +3486,7 @@ function HomePage({
               <span>🗺️</span>
               <span>{tx("Ver en Mapa")}</span>
             </button>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-foreground">
               {tx("116 Alojamientos Catastrados")}
             </span>
           </div>
@@ -3496,7 +3496,7 @@ function HomePage({
             <button
               key={d.city}
               onClick={() => { onChange({ ...params, destination: d.city }); onSearch(); }}
-              className="relative rounded-2xl overflow-hidden transition-all hover:scale-[1.03] hover:shadow-xl cursor-pointer group text-left border border-slate-200/50"
+              className="relative rounded-2xl overflow-hidden transition-all hover:scale-[1.03] hover:shadow-xl cursor-pointer group text-left border border-border/50"
               style={{ height: 125 }}
             >
               <img src={d.img} alt={d.city} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -3511,16 +3511,16 @@ function HomePage({
             </button>
           ))}
         </div>
-        <h2 className="text-xl font-bold text-slate-800 mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Alojamientos Destacados de Manta")}</h2>
+        <h2 className="text-xl font-bold text-foreground mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Alojamientos Destacados de Manta")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
           {HOTELS.filter(h => h.rating >= 4.4).slice(0, 6).map(h => (
-            <button key={h.id} onClick={() => { onChange({ ...params, destination: h.city }); onSearch(); }} className="rounded-2xl overflow-hidden border bg-white text-left hover:shadow-lg group transition-all cursor-pointer" style={{ borderColor: "#e2e8f0" }}>
+            <button key={h.id} onClick={() => { onChange({ ...params, destination: h.city }); onSearch(); }} className="rounded-2xl overflow-hidden border bg-card text-left hover:shadow-lg group transition-all cursor-pointer" style={{ borderColor: "var(--border)" }}>
               <div style={{ height: 160 }} className="overflow-hidden"><img src={h.image} alt={h.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" /></div>
               <div className="p-3">
                 <div className="flex items-center justify-between mb-0.5"><StarsRow n={h.stars} /><span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "#1e3a5f", color: "#93c5fd" }}>{h.rating}</span></div>
-                <p className="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">{h.name}</p>
-                <p className="text-xs text-slate-400">{h.city}</p>
-                <div className="flex items-baseline gap-1 mt-2"><span className="font-bold" style={{ color: "#f59e0b" }}>{tx("desde")} {fmt(h.priceFrom)}</span><span className="text-xs text-slate-400">{tx("/ noche")}</span></div>
+                <p className="font-bold text-foreground text-sm group-hover:text-amber-600 transition-colors">{h.name}</p>
+                <p className="text-xs ttext-muted-foreground">{h.city}</p>
+                <div className="flex items-baseline gap-1 mt-2"><span className="font-bold" style={{ color: "#f59e0b" }}>{tx("desde")} {fmt(h.priceFrom)}</span><span className="text-xs ttext-muted-foreground">{tx("/ noche")}</span></div>
               </div>
             </button>
           ))}
@@ -3531,53 +3531,53 @@ function HomePage({
             [tx("Alojamientos verificados"), tx("Establecimientos registrados y validados en el cantón Manta.")],
             [tx("Confirmación inmediata"), tx("Comprobante digital emitido al instante con código de reserva para validar a tu llegada.")]
           ].map(([title, desc]) => (
-            <div key={title} className="rounded-2xl p-5 border bg-white" style={{ borderColor: "#e2e8f0" }}>
+            <div key={title} className="rounded-2xl p-5 border bg-card" style={{ borderColor: "var(--border)" }}>
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xs mb-3">✓</div>
-              <h4 className="font-bold text-slate-800 mb-1 text-sm">{title}</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+              <h4 className="font-bold text-foreground mb-1 text-sm">{title}</h4>
+              <p className="text-xs ttext-muted-foreground leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
       </div>
-      <footer className="border-t mt-10" style={{ background: "#0f172a", borderColor: "#1e293b" }}>
+      <footer className="border-t mt-10" style={{ background: "var(--foreground)", borderColor: "#1e293b" }}>
         <div className="max-w-5xl mx-auto px-4 py-10 flex flex-wrap gap-8 justify-between">
           <div className="max-w-xs space-y-2">
             <p className="font-bold text-white text-xl" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
-            <p className="text-xs text-slate-400 leading-relaxed">{tx("Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.")}</p>
+            <p className="text-xs ttext-muted-foreground leading-relaxed">{tx("Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.")}</p>
             <div className="pt-1">
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
                 {tx("116 Alojamientos Catastrados")}
               </span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-10 text-xs text-slate-400">
+          <div className="flex flex-wrap gap-10 text-xs ttext-muted-foreground">
             <div className="space-y-2">
               <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">{tx("Sectores y Playas")}</p>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Barbasquillo" }); onSearch(); }}
-                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
               >
                 Barbasquillo & El Murciélago
               </button>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Tarqui" }); onSearch(); }}
-                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
               >
                 Tarqui & Los Esteros
               </button>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Santa Marianita" }); onSearch(); }}
-                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
               >
                 Santa Marianita & San Mateo
               </button>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - San Lorenzo" }); onSearch(); }}
-                className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
               >
                 San Lorenzo & Reserva Pacoche
               </button>
@@ -3588,7 +3588,7 @@ function HomePage({
                 <button
                   type="button"
                   onClick={onOpenAbout}
-                  className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                  className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
                 >
                   {tx("Acerca de AlojaManta")}
                 </button>
@@ -3597,7 +3597,7 @@ function HomePage({
                 <button
                   type="button"
                   onClick={onOpenConsult}
-                  className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                  className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
                 >
                   {tx("Consultar mi reserva")}
                 </button>
@@ -3606,7 +3606,7 @@ function HomePage({
                 <button
                   type="button"
                   onClick={onOpenLegal}
-                  className="hover:text-amber-400 text-slate-400 transition-colors text-left block cursor-pointer"
+                  className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
                 >
                   {tx("Términos y Privacidad")}
                 </button>
@@ -3615,27 +3615,27 @@ function HomePage({
                 href="https://wa.me/593998765432?text=Hola%2C%20requiero%20asistencia%20en%20AlojaManta"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-emerald-400 text-slate-400 transition-colors text-left flex items-center gap-1 cursor-pointer"
+                className="hover:text-emerald-400 ttext-muted-foreground transition-colors text-left flex items-center gap-1 cursor-pointer"
               >
                 <span>WhatsApp: +593 99 876 5432</span>
               </a>
               <a
                 href="tel:+59352628900"
-                className="hover:text-amber-400 text-slate-400 transition-colors text-left flex items-center gap-1 cursor-pointer"
+                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left flex items-center gap-1 cursor-pointer"
               >
                 <span>Central: +593 5 262 8900</span>
               </a>
             </div>
           </div>
         </div>
-        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400" style={{ borderColor: "#1e293b" }}>
+        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] ttext-muted-foreground" style={{ borderColor: "#1e293b" }}>
           <span>{tx("© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta · 116 Alojamientos Catastrados")}</span>
           <div className="flex items-center gap-4">
             {onOpenAbout && (
               <button
                 type="button"
                 onClick={onOpenAbout}
-                className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
+                className="ttext-muted-foreground hover:text-amber-400 transition-colors cursor-pointer"
               >
                 {tx("Acerca de la Plataforma")}
               </button>
@@ -3644,7 +3644,7 @@ function HomePage({
               <button
                 type="button"
                 onClick={onOpenLegal}
-                className="text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
+                className="ttext-muted-foreground hover:text-amber-400 transition-colors cursor-pointer"
               >
                 {tx("Comprobantes y Contacto")}
               </button>
@@ -3769,9 +3769,9 @@ export default function GuestPage({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden w-full max-w-full" style={{ background: "#f8fafc" }}>
+    <div className="min-h-screen overflow-x-hidden w-full max-w-full" style={{ background: "var(--background)" }}>
       {/* Nav */}
-      <header className="sticky top-0 z-30 border-b shadow-xs" style={{ background: "#fff", borderColor: "#e2e8f0" }}>
+      <header className="sticky top-0 z-30 border-b shadow-xs" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
           <button onClick={handleLogoClick} className="flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0">
             <span className="font-bold text-lg sm:text-xl" style={{ fontFamily: "DM Serif Display, serif", color: "#0c1220" }}>
@@ -3788,21 +3788,21 @@ export default function GuestPage({
                 <button
                   type="button"
                   onClick={() => setShowProfileMenu(prev => !prev)}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-slate-200 hover:border-amber-400 bg-white hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full border border-border hover:border-amber-400 bg-card hover:bg-background transition-all cursor-pointer shadow-2xs"
                   title={tx("Menú de perfil y cuenta")}
                 >
                   <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 text-xs flex items-center justify-center font-black shadow-2xs">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                   <div className="text-left hidden sm:block">
-                    <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">
+                    <p className="text-xs font-bold text-foreground leading-tight truncate max-w-[110px]">
                       {user.name.split(" ")[0]}
                     </p>
-                    <p className="text-[9px] text-slate-500 font-semibold leading-none">
+                    <p className="text-[9px] ttext-muted-foreground font-semibold leading-none">
                       {tx("Mi cuenta")}
                     </p>
                   </div>
-                  <span className="text-xs text-slate-400">▾</span>
+                  <span className="text-xs ttext-muted-foreground">▾</span>
                 </button>
 
                 {showProfileMenu && (
@@ -3812,8 +3812,8 @@ export default function GuestPage({
                       onClick={() => setShowProfileMenu(false)}
                     />
                     <div
-                      className="absolute right-0 mt-2 w-72 rounded-2xl border bg-white shadow-2xl z-50 overflow-hidden divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-100"
-                      style={{ borderColor: "#e2e8f0" }}
+                      className="absolute right-0 mt-2 w-72 rounded-2xl border bg-card shadow-2xl z-50 overflow-hidden divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-100"
+                      style={{ borderColor: "var(--border)" }}
                     >
                       {/* Cabecera del usuario */}
                       <div className="p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white">
@@ -3826,82 +3826,82 @@ export default function GuestPage({
                             <span className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 mt-0.5">
                               {tx("Cuenta de Huésped")}
                             </span>
-                            <p className="text-[11px] text-slate-400 truncate mt-0.5">{user.email}</p>
+                            <p className="text-[11px] ttext-muted-foreground truncate mt-0.5">{user.email}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Enlaces del Menú (100% Asociados) */}
-                      <div className="py-1.5 text-xs text-slate-700 font-medium">
+                      <div className="py-1.5 text-xs text-foreground font-medium">
                         <button
                           onClick={() => { setAccountInitialTab("hub"); setView("account"); setShowProfileMenu(false); }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full px-4 py-2.5 text-left hover:bg-background flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <span className="text-base">🏠</span>
                           <div>
-                            <p className="font-semibold text-slate-800">{tx("Centro de mi cuenta")}</p>
-                            <p className="text-[10px] text-slate-400">{tx("Panel general de perfil y servicios")}</p>
+                            <p className="font-semibold text-foreground">{tx("Centro de mi cuenta")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Panel general de perfil y servicios")}</p>
                           </div>
                         </button>
 
                         <button
                           onClick={() => { setAccountInitialTab("reservations"); setView("account"); setShowProfileMenu(false); }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full px-4 py-2.5 text-left hover:bg-background flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <span className="text-base">🛎️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">{tx("Mis Reservas y Viajes")}</p>
-                            <p className="text-[10px] text-slate-400">{tx("Ver vouchers y códigos de reserva")}</p>
+                            <p className="font-semibold text-foreground">{tx("Mis Reservas y Viajes")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Ver vouchers y códigos de reserva")}</p>
                           </div>
                         </button>
 
                         <button
                           onClick={() => { setAccountInitialTab("personal"); setView("account"); setShowProfileMenu(false); }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full px-4 py-2.5 text-left hover:bg-background flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <span className="text-base">👤</span>
                           <div>
-                            <p className="font-semibold text-slate-800">{tx("Datos Personales del Huésped")}</p>
-                            <p className="text-[10px] text-slate-400">{tx("Cédula, contacto y preferencias de estadía")}</p>
+                            <p className="font-semibold text-foreground">{tx("Datos Personales del Huésped")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Cédula, contacto y preferencias de estadía")}</p>
                           </div>
                         </button>
 
                         <button
                           onClick={() => { setAccountInitialTab("billing"); setView("account"); setShowProfileMenu(false); }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full px-4 py-2.5 text-left hover:bg-background flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <span className="text-base">🏛️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">{tx("Datos de Comprobantes y Contacto")}</p>
-                            <p className="text-[10px] text-slate-400">{tx("Datos registrados para la reserva")}</p>
+                            <p className="font-semibold text-foreground">{tx("Datos de Comprobantes y Contacto")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Datos registrados para la reserva")}</p>
                           </div>
                         </button>
 
                         <button
                           onClick={() => { setAccountInitialTab("payments"); setView("account"); setShowProfileMenu(false); }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full px-4 py-2.5 text-left hover:bg-background flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <span className="text-base">💳</span>
                           <div>
-                            <p className="font-semibold text-slate-800">{tx("Medios de Pago")}</p>
-                            <p className="text-[10px] text-slate-400">{tx("Tarjetas, DeUna y PayPhone")}</p>
+                            <p className="font-semibold text-foreground">{tx("Medios de Pago")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Tarjetas, DeUna y PayPhone")}</p>
                           </div>
                         </button>
 
                         <button
                           onClick={() => { setAccountInitialTab("about"); setView("account"); setShowProfileMenu(false); }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full px-4 py-2.5 text-left hover:bg-background flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                           <span className="text-base">ℹ️</span>
                           <div>
-                            <p className="font-semibold text-slate-800">{tx("Acerca de AlojaManta")}</p>
-                            <p className="text-[10px] text-slate-400">{tx("Información del proyecto y reserva directa")}</p>
+                            <p className="font-semibold text-foreground">{tx("Acerca de AlojaManta")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Información del proyecto y reserva directa")}</p>
                           </div>
                         </button>
                       </div>
 
                       {/* Cerrar Sesión */}
-                      <div className="p-2 bg-slate-50">
+                      <div className="p-2 bg-background">
                         <button
                           onClick={() => { setShowProfileMenu(false); onLogout(); }}
                           className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 transition-colors cursor-pointer"
@@ -4020,14 +4020,14 @@ export default function GuestPage({
       <button
         type="button"
         onClick={() => setLang(lang === "es" ? "en" : "es")}
-        className="fixed bottom-5 left-5 z-40 h-11 px-3.5 rounded-full shadow-xl border flex items-center gap-1.5 text-xs font-bold transition-transform hover:scale-110 active:scale-90 cursor-pointer bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
+        className="fixed bottom-5 left-5 z-40 h-11 px-3.5 rounded-full shadow-xl border flex items-center gap-1.5 text-xs font-bold transition-transform hover:scale-110 active:scale-90 cursor-pointer bg-card text-foreground border-slate-300 hover:bg-muted"
         style={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)" }}
         title={tx("Cambiar idioma")}
         aria-label={tx("Cambiar idioma")}
       >
-        <span style={{ color: lang === "es" ? "#b45309" : "#94a3b8" }}>ES</span>
+        <span style={{ color: lang === "es" ? "#b45309" : "var(--muted-foreground)" }}>ES</span>
         <span className="text-slate-300">|</span>
-        <span style={{ color: lang === "en" ? "#b45309" : "#94a3b8" }}>EN</span>
+        <span style={{ color: lang === "en" ? "#b45309" : "var(--muted-foreground)" }}>EN</span>
       </button>
 
       {/* Botón flotante para cambiar tema (Modo Claro / Modo Oscuro) */}
@@ -4035,7 +4035,7 @@ export default function GuestPage({
         <button
           type="button"
           onClick={onToggleTheme}
-          className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full shadow-xl border flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-90 cursor-pointer bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
+          className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full shadow-xl border flex items-center justify-center text-lg transition-transform hover:scale-110 active:scale-90 cursor-pointer bg-card text-foreground border-slate-300 hover:bg-muted"
           style={{
             boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)",
           }}
