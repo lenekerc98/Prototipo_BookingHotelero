@@ -44,7 +44,7 @@ export default function PaymentLinkModal({
   onClose,
   onPaymentCreated,
 }: PaymentLinkModalProps) {
-  const lang = useLang();
+  useLang();
   const [guest, setGuest] = useState(initialGuest || "Carlos Méndez");
   const [amount, setAmount] = useState<number>(initialAmount || 150);
   const [concept, setConcept] = useState(initialConcept || "Estancia y Alojamiento");

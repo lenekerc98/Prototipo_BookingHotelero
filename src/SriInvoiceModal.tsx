@@ -68,10 +68,10 @@ export default function SriInvoiceModal({
   invoice,
   hotelId,
   onClose,
-  onMarkPaid,
+  onMarkPaid: _onMarkPaid,
   onRegisterHotelInvoice,
 }: SriInvoiceModalProps) {
-  const lang = useLang();
+  useLang();
   const [viewTab, setViewTab] = useState<"voucher" | "reception">("voucher");
   const [copiedData, setCopiedData] = useState(false);
   const [hotelInvoiceInput, setHotelInvoiceInput] = useState(invoice.hotelInvoiceNumber || "");

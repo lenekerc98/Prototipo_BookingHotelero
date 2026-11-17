@@ -130,9 +130,9 @@ export default function MantaMapModal({
   isOpen,
   onClose,
   onSelectDestination,
-  hotels = [],
+  hotels: _hotels = [],
 }: MantaMapModalProps) {
-  const lang = useLang();
+  useLang();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);

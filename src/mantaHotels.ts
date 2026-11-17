@@ -1,6 +1,9 @@
 // ─── Catálogo Oficial Completo de Alojamientos de Manta (Consolidado 2026) ─────────────
 // 116 establecimientos registrados oficialmente ante el Ministerio de Turismo y GAD Manta
 
+import type { MyReservation } from "./features/reservations/types";
+export type { MyReservation } from "./features/reservations/types";
+
 export interface RoomOffer {
   id: string;
   type: string; // Tipo de Habitación (Ej: "1 Cama King Size Frente al Mar", "1 Cama Queen Matrimonial")
@@ -39,24 +42,6 @@ export interface Hotel {
   owner?: string;
   regNumber?: string;
   rooms: RoomOffer[];
-}
-
-export interface MyReservation {
-  id: string;
-  hotel: string;
-  hotelId: string;
-  city: string;
-  room: string; // Tipo de habitación reservada
-  checkIn: string;
-  checkOut: string;
-  nights: number;
-  total: number;
-  status: "upcoming" | "completed" | "cancelled";
-  image: string;
-  guestName: string;
-  guestEmail: string;
-  guestPhone?: string;
-  payMethod?: string;
 }
 
 export const MANTA_HOTELS: Hotel[] = [

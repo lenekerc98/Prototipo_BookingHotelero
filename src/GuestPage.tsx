@@ -1,22 +1,24 @@
+import { getPublicHotels } from "./app/roomCatalog";
 import { useState, useRef, useEffect } from "react";
 import type { GuestUser } from "./AuthPage";
 import {
-  HOTEL_COMMERCIAL_INFO,
   getActiveIvaPercent,
   getIvaDecretoConfig,
   addAuditLog,
-  playNewBookingSound,
 } from "./hotelData";
 import {
-  MANTA_HOTELS,
-  INITIAL_DEMO_RESERVATIONS,
   type Hotel,
   type RoomOffer,
-  type MyReservation,
 } from "./mantaHotels";
 import MantaMapModal from "./MantaMapModal";
-import { GUEST_RESERVATIONS_KEY, readGuestReservationsRaw } from "./storage";
-import { getRoomAvailability, consumeRoomAvailability, releaseRoomAvailability } from "./availability";
+import { reservationWorkflow, getRoomAvailability } from "./app/reservations";
+import { useGuestReservations, useReservationSnapshot } from "./app/useGuestReservations";
+import { useArrivalPolicy } from "./app/arrivalPolicy";
+import { RequestDeadline } from "./features/reservations/RequestDeadline";
+import { ReservationDialog } from "./features/reservations/ReservationDialog";
+import { ReservationSummary, ReservationVoucherModal as InvoiceModal } from "./features/reservations/ReservationSummary";
+import { canCancelReservation, getPaymentLabel, getReservationStatus, getReservationStyle } from "./features/reservations/status";
+import type { MyReservation } from "./features/reservations/types";
 import { useI18n, useLang, setLang, getLang, txDesc } from "./i18n";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -33,7 +35,7 @@ interface SearchParams {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const HOTELS: Hotel[] = MANTA_HOTELS;
+
 
 const DESTINATIONS = [
   { city: "Manta - Barbasquillo", img: "https://images.unsplash.com/photo-1563629986-97c92e385f66?w=400&h=300&fit=crop&auto=format", hotels: 18, type: "Playa & Zona Hotelera" },
@@ -65,7 +67,7 @@ const MANTA_SECTORES_DESTACADOS = [
   { name: "Puerto San Mateo", query: "San Mateo", parroquia: "Parroquia San Mateo", desc: "Miradores marinos y surf sobre olas derechas", count: 8, badge: "Surf & Puerto", icon: "🌊" },
 ];
 
-const DEMO_RESERVATIONS: MyReservation[] = INITIAL_DEMO_RESERVATIONS;
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -610,7 +612,7 @@ function SearchBar({
         isOpen={isMapModalOpen}
         onClose={() => setIsMapModalOpen(false)}
         onSelectDestination={handleSelectDestination}
-        hotels={HOTELS}
+        hotels={getPublicHotels()}
       />
     </div>
   );
@@ -618,106 +620,7 @@ function SearchBar({
 
 // ─── Invoice modal ────────────────────────────────────────────────────────────
 
-export function InvoiceModal({ res, onClose }: { res: MyReservation; onClose: () => void }) {
-  const tx = useI18n();
-  // Buscar datos comerciales del hotel en Manta
-  const hotelKey = Object.keys(HOTEL_COMMERCIAL_INFO).find(k => 
-    res.hotel.toLowerCase().includes(k.replace(/-/g, " ")) || 
-    HOTEL_COMMERCIAL_INFO[k].nombreComercial.toLowerCase().includes(res.hotel.toLowerCase())
-  ) || "costa-sol";
-  const hotelMeta = HOTEL_COMMERCIAL_INFO[hotelKey] || HOTEL_COMMERCIAL_INFO["costa-sol"];
-
-  const hasServicio = hotelMeta.gravaServicio10 ?? (res.hotel.includes("Costa Sol") || res.hotel.includes("Palmeras") || res.hotel.includes("Pacífico") || res.hotel.toLowerCase().includes("hotel"));
-  const ivaPct = getActiveIvaPercent();
-  const divisor = 1 + (ivaPct / 100) + (hasServicio ? 0.10 : 0);
-  const base = res.total / divisor;
-  const iva = base * (ivaPct / 100);
-  const servicio = hasServicio ? base * 0.10 : 0;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md rounded-2xl border overflow-hidden shadow-2xl" style={{ background: "var(--card)" }}>
-        <div className="px-6 py-5 border-b" style={{ borderColor: "var(--border)", background: "#0c1220" }}>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-bold text-amber-400 text-lg" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</p>
-                <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-emerald-500/30">{tx("RESERVA GARANTIZADA")}</span>
-              </div>
-              <p className="text-xs text-slate-300">{hotelMeta.razonSocial}</p>
-              <p className="text-[10px] ttext-muted-foreground font-mono">RUC: {hotelMeta.ruc} · Manta, Manabí</p>
-            </div>
-            <div className="text-right">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{tx("VOUCHER DIGITAL")}</span>
-              <p className="font-mono font-bold text-slate-100 text-xs mt-1">REC-{res.id}</p>
-              <p className="text-[10px] ttext-muted-foreground">Entrada: {fmtDateShort(res.checkIn)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-3 bg-blue-50 border-b border-blue-200 text-[11px] text-blue-900">
-          <span><strong>{tx("Voucher Digital de Reserva:")}</strong> {tx("Certifica tu reserva garantizada y pago en línea. Presenta tu código de reserva en {name} a tu llegada.", { name: hotelMeta.nombreComercial })}</span>
-        </div>
-
-        <div className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Titular de Reserva")}</p>
-              <p className="font-semibold text-foreground">{tx("Huésped Registrado")}</p>
-              <p className="text-xs ttext-muted-foreground font-mono">Código {res.id}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Establecimiento Destino")}</p>
-              <p className="font-semibold text-foreground">{res.hotel}</p>
-              <p className="text-xs ttext-muted-foreground">{tx(res.city)}</p>
-            </div>
-          </div>
-
-          <div className="rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
-            <table className="w-full text-sm">
-              <thead><tr style={{ background: "var(--background)" }}><th className="text-left px-4 py-2.5 text-xs font-bold ttext-muted-foreground">{tx("Detalle de Hospedaje")}</th><th className="text-right px-4 py-2.5 text-xs font-bold ttext-muted-foreground">{tx("Monto")}</th></tr></thead>
-              <tbody>
-                <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-2.5"><p className="font-medium text-foreground">{tx(res.room)}</p><p className="text-xs ttext-muted-foreground">{res.nights} noche{res.nights > 1 ? "s" : ""} · Entrada {fmtDateShort(res.checkIn)} → Salida {fmtDateShort(res.checkOut)}</p></td>
-                  <td className="px-4 py-2.5 text-right font-medium text-foreground">{fmt(base)}</td>
-                </tr>
-                <tr style={{ borderTop: "1px solid #e2e8f0", background: "var(--background)" }}>
-                  <td className="px-4 py-2 text-xs ttext-muted-foreground">IVA ({ivaPct}% {ivaPct === 8 ? "Decreto Feriado Turístico" : "Tarifa Ordinaria"})</td>
-                  <td className="px-4 py-2 text-right text-xs ttext-muted-foreground">{fmt(iva)}</td>
-                </tr>
-                {hasServicio ? (
-                  <tr style={{ background: "var(--background)" }}>
-                    <td className="px-4 py-2 text-xs text-emerald-600 font-medium">{tx("10% Servicio Turístico (Art. 41 Ley Turismo)")}</td>
-                    <td className="px-4 py-2 text-right text-xs text-emerald-600 font-bold">{fmt(servicio)}</td>
-                  </tr>
-                ) : (
-                  <tr style={{ background: "var(--background)" }}>
-                    <td className="px-4 py-2 text-xs ttext-muted-foreground italic">{tx("10% Servicio Turístico (Hostal exento)")}</td>
-                    <td className="px-4 py-2 text-right text-xs ttext-muted-foreground">$0.00</td>
-                  </tr>
-                )}
-                <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <td className="px-4 py-3 font-bold text-foreground">{tx("Total Liquidado")}</td>
-                  <td className="px-4 py-3 text-right font-bold text-lg" style={{ color: "#f59e0b" }}>{fmt(res.total)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex items-center gap-2 rounded-xl p-3" style={{ background: "#d1fae5", border: "1px solid #a7f3d0" }}>
-            <span className="text-green-600 font-bold">✓</span>
-            <span className="text-xs font-semibold text-green-700">{tx("Cobro liquidado vía pasarela y transferido al hotel")}</span>
-          </div>
-        </div>
-        <div className="px-6 py-4 border-t flex gap-2" style={{ borderColor: "var(--border)" }}>
-          <button onClick={onClose} className="flex-1 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("Cerrar")}</button>
-          <button className="flex-1 py-2 rounded-xl text-sm font-bold" style={{ background: "#f59e0b", color: "#0c1220" }}>{tx("⬇ Descargar Voucher PDF")}</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+export { InvoiceModal };
 
 // ─── My Account view (Hub & Perfil) ──────────────────────────────────────────
 
@@ -740,7 +643,7 @@ function AccountView({
 }) {
   const tx = useI18n();
   const [activeTab, setActiveTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "about">(initialTab);
-  const [resFilter, setResFilter] = useState<"all" | "upcoming" | "completed" | "cancelled">("all");
+  const [resFilter, setResFilter] = useState<"all" | MyReservation["status"]>("all");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -759,16 +662,16 @@ function AccountView({
       fullName: user.name,
       email: user.email,
       documentType: "Cédula de Identidad (Ecuador)",
-      documentNumber: "1314589201",
-      phone: "+593 99 234 5678",
-      city: "Guayaquil / Ecuador",
-      roomPref: "Cama Matrimonial King · Piso alto con vista",
-      dietPref: "Desayuno incluido en estancia",
+      documentNumber: "",
+      phone: "",
+      city: "",
+      roomPref: "",
+      dietPref: "",
       // Datos de contacto para comprobante
-      wantsInvoice: true,
-      taxId: "1314589201001",
+      wantsInvoice: false,
+      taxId: "",
       razonSocial: user.name,
-      direccionFiscal: "Av. Malecón y Calle 15, Edif. Poseidón",
+      direccionFiscal: "",
       correoComprobante: user.email,
     };
   });
@@ -794,25 +697,15 @@ function AccountView({
     showToast(tx("✓ Datos de contacto y comprobante actualizados"));
   }
 
-  const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-    upcoming: { bg: "#1e3a5f", color: "#93c5fd", label: tx("Próxima estancia") },
-    completed: { bg: "#064e3b", color: "#6ee7b7", label: "Completada" },
-    cancelled: { bg: "#450a0a", color: "#fca5a5", label: "Cancelada" },
-  };
-
-  const userReservations = reservations.filter(r =>
-    r.guestEmail.toLowerCase() === user.email.toLowerCase() ||
-    r.guestName.toLowerCase().includes(user.name.toLowerCase())
-  );
-  const allList = userReservations.length > 0 ? userReservations : reservations;
+  const allList = reservations.filter(reservation => reservation.guestEmail.toLowerCase() === user.email.toLowerCase());
 
   const filteredReservations = allList.filter(r => {
     if (resFilter === "all") return true;
-    return r.status === resFilter;
+    return getReservationStatus(r) === resFilter;
   });
 
   const totalNights = allList.reduce((s, r) => s + r.nights, 0);
-  const totalPaid = allList.reduce((s, r) => s + r.total, 0);
+  const _totalPaid = allList.reduce((s, r) => s + r.total, 0);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
@@ -857,7 +750,7 @@ function AccountView({
                   {profile.fullName || user.name}
                 </h1>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
-                  ✓ {tx("Cuenta Verificada")}
+                  {tx("Cuenta de prueba local")}
                 </span>
               </div>
               <p className="text-xs ttext-muted-foreground mt-0.5">{user.email} · {profile.phone}</p>
@@ -913,7 +806,7 @@ function AccountView({
                   {tx("Estancias y viajes")}
                 </h3>
                 <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  {allList.length} activas
+                  {allList.length} registradas
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1018,7 +911,7 @@ function AccountView({
                   {tx("Cobro y pagos")}
                 </h3>
                 <span className="text-[10px] font-bold ttext-muted-foreground bg-muted px-2 py-0.5 rounded">
-                  {tx("Digital seguro")}
+                  {tx("Registro local")}
                 </span>
               </div>
               <div className="space-y-1 divide-y divide-slate-100 text-xs">
@@ -1026,21 +919,21 @@ function AccountView({
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Tarjetas de crédito y débito vinculadas")}</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Cobros registrados en mis reservas")}</span>
                   <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Cobro local vía PayPhone & DeUna")}</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Método registrado por recepción")}</span>
                   <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Certificados de acreditación hotelera")}</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("Historial de cobros de prueba")}</span>
                   <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
@@ -1061,7 +954,7 @@ function AccountView({
                   onClick={() => setActiveTab("about")}
                   className="w-full py-2.5 flex items-center justify-between text-left hover:text-amber-600 transition-colors cursor-pointer group"
                 >
-                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("116 Alojamientos catastrados y validados")}</span>
+                  <span className="text-foreground font-medium group-hover:text-amber-600">{tx("116 Alojamientos y validados")}</span>
                   <span className="ttext-muted-foreground group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button
@@ -1129,7 +1022,11 @@ function AccountView({
             <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs font-semibold">
               {[
                 { id: "all", label: tx("Todas") },
-                { id: "upcoming", label: tx("Próximas") },
+                { id: "pending", label: tx("Pendientes") },
+                { id: "confirmed", label: tx("Confirmadas") },
+                { id: "validated", label: tx("Validadas") },
+                { id: "rejected", label: tx("Rechazadas") },
+                { id: "expired", label: tx("Vencidas") },
                 { id: "completed", label: tx("Completadas") },
                 { id: "cancelled", label: tx("Canceladas") },
               ].map(f => (
@@ -1142,7 +1039,7 @@ function AccountView({
                       : "ttext-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  {f.label} ({f.id === "all" ? allList.length : allList.filter(x => x.status === f.id).length})
+                  {f.label} ({f.id === "all" ? allList.length : allList.filter(reservation => getReservationStatus(reservation) === f.id).length})
                 </button>
               ))}
             </div>
@@ -1155,7 +1052,7 @@ function AccountView({
           {/* Listado */}
           <div className="space-y-4">
             {filteredReservations.map(res => {
-              const st = statusStyle[res.status] || statusStyle.upcoming;
+              const st = getReservationStyle(res);
               return (
                 <div key={res.id} className="rounded-2xl border bg-card overflow-hidden shadow-xs hover:shadow-md transition-all" style={{ borderColor: "var(--border)" }}>
                   <div className="flex flex-col sm:flex-row">
@@ -1168,7 +1065,7 @@ function AccountView({
                             <p className="text-xs ttext-muted-foreground font-medium">{tx(res.city)} · {tx(res.room)}</p>
                           </div>
                           <span className="mono text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider" style={{ background: st.bg, color: st.color }}>
-                            {st.label}
+                            {tx(st.label)}
                           </span>
                         </div>
                         <p className="text-xs ttext-muted-foreground mt-2 flex items-center gap-2">
@@ -1180,8 +1077,10 @@ function AccountView({
 
                       <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: "var(--muted)" }}>
                         <div>
-                          <p className="text-[10px] ttext-muted-foreground uppercase tracking-wider font-semibold">{tx("Código de confirmación")}</p>
-                          <p className="font-mono text-sm font-bold text-foreground">{res.id}</p>
+                          <p className="text-[10px] ttext-muted-foreground uppercase tracking-wider font-semibold">{tx("Código de reserva")}</p>
+                          <p className="font-mono text-sm font-bold text-foreground break-all">{res.id}</p>
+                          <p className="text-xs text-muted-foreground">{tx(getPaymentLabel(res))}</p>
+                          <RequestDeadline reservation={res} />
                         </div>
                         <div className="flex items-center gap-2.5">
                           <p className="font-black text-lg text-foreground">{fmt(res.total)}</p>
@@ -1192,7 +1091,7 @@ function AccountView({
                             <span>🧾</span>
                             <span>{tx("Ver Voucher")}</span>
                           </button>
-                          {res.status === "upcoming" && (
+                          {canCancelReservation(res) && (
                             <button
                               onClick={() => {
                                 if (confirm(`¿Deseas cancelar la reserva ${res.id}? Recuerda que la política flexible te reintegra el valor total.`)) {
@@ -1446,54 +1345,14 @@ function AccountView({
 
       {/* ─── TAB 5: MEDIOS DE PAGO ─── */}
       {activeTab === "payments" && (
-        <div className="rounded-2xl border bg-card p-6 shadow-xs max-w-2xl space-y-5" style={{ borderColor: "var(--border)" }}>
-          <div className="border-b pb-4" style={{ borderColor: "var(--muted)" }}>
-            <h3 className="font-bold text-foreground text-lg flex items-center gap-2" style={{ fontFamily: "DM Serif Display, serif" }}>
-              <span>💳</span>
-              <span>{tx("Medios de Pago y Cobro Digital")}</span>
-            </h3>
-            <p className="text-xs ttext-muted-foreground mt-0.5">
-              {tx("Pasarelas integradas seguras para reservas directas en Manta.")}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {/* Tarjeta 1 */}
-            <div className="p-4 rounded-xl border flex items-center justify-between bg-background" style={{ borderColor: "var(--border)" }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">💳</span>
-                <div>
-                  <p className="text-xs font-bold text-foreground">{tx("Visa Débito / Crédito **** 4821")}</p>
-                  <p className="text-[10px] ttext-muted-foreground">{tx("Vence 09/28 · Pago digital seguro con 3DS")}</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{tx("Predeterminada")}</span>
-            </div>
-
-            {/* PayPhone */}
-            <div className="p-4 rounded-xl border flex items-center justify-between bg-background" style={{ borderColor: "var(--border)" }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📱</span>
-                <div>
-                  <p className="text-xs font-bold text-foreground">PayPhone Ecuador</p>
-                  <p className="text-[10px] ttext-muted-foreground">Vinculado con número {profile.phone}</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">{tx("Activo")}</span>
-            </div>
-
-            {/* DeUna */}
-            <div className="p-4 rounded-xl border flex items-center justify-between bg-background" style={{ borderColor: "var(--border)" }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">⚡</span>
-                <div>
-                  <p className="text-xs font-bold text-foreground">DeUna / Banco Pichincha</p>
-                  <p className="text-[10px] ttext-muted-foreground">{tx("Cobro instantáneo por app móvil sin comisiones extra")}</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">{tx("Disponible")}</span>
-            </div>
-          </div>
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+          <h3 className="text-xl text-foreground">{tx("Pagos de mis reservas")}</h3>
+          <p className="text-sm text-muted-foreground">{tx("La pasarela no está conectada. Solo se muestran los cobros de prueba registrados por el hotel.")}</p>
+          {allList.filter(item => item.payment).length === 0 && <p>{tx("No hay cobros registrados.")}</p>}
+          {allList.filter(item => item.payment).map(item => <div key={item.id} className="border-t border-border pt-3">
+            <p className="break-all">{item.hotel} · {item.id}</p>
+            <p>{fmt(item.payment!.amount)} · {item.payment!.method} · {item.payment!.recordedAt.slice(0, 10)}</p>
+          </div>)}
         </div>
       )}
 
@@ -1529,7 +1388,7 @@ function AccountView({
               <div className="p-4 rounded-xl border border-border bg-background/80">
                 <div className="flex items-center gap-2 font-bold text-foreground mb-1">
                   <span className="text-base">🏨</span>
-                  <span>{tx("116 Alojamientos Catastrados")}</span>
+                  <span>{tx("116 Alojamientos")}</span>
                 </div>
                 <p className="text-xs ttext-muted-foreground">
                   {tx("Integra hoteles, hostales, hosterías y residencias turísticas legalmente registradas e inspeccionadas en Barbasquillo, El Murciélago, Tarqui, Los Esteros, San Mateo y Santa Marianita.")}
@@ -1552,7 +1411,7 @@ function AccountView({
                   <span>{tx("Comprobante de Reserva y Liquidación")}</span>
                 </div>
                 <p className="text-xs ttext-muted-foreground">
-                  {tx("El comprobante digital con 15% de IVA y confirmación inmediata es emitido por la plataforma al momento de tu reserva online.")}
+                  {tx("La solicitud requiere aceptación del hotel. El resumen de reserva no acredita el pago ni sustituye una factura.")}
                 </p>
               </div>
 
@@ -1916,27 +1775,22 @@ function ConsultReservationModal({
         <div className="p-5 overflow-y-auto space-y-3 flex-1">
           {results.length > 0 ? (
             results.map(res => {
-              const statusColors: Record<string, { bg: string; color: string; label: string }> = {
-                upcoming: { bg: "#eff6ff", color: "#1d4ed8", label: tx("Próxima estancia") },
-                completed: { bg: "#ecfdf5", color: "#047857", label: "Completada / Pagada" },
-                cancelled: { bg: "#fef2f2", color: "#b91c1c", label: "Cancelada" },
-              };
-              const st = statusColors[res.status] || statusColors.upcoming;
+              const st = getReservationStyle(res);
 
               return (
                 <div key={res.id} className="rounded-xl border p-4 hover:shadow-md transition-all bg-card" style={{ borderColor: "var(--border)" }}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b" style={{ borderColor: "var(--muted)" }}>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-sm text-foreground">{res.id}</span>
+                        <span className="font-mono font-bold text-sm text-foreground break-all">{res.id}</span>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase" style={{ background: st.bg, color: st.color }}>
-                          {st.label}
+                          {tx(st.label)}
                         </span>
                       </div>
                       <p className="text-xs font-semibold text-foreground mt-0.5">{res.hotel} · {tx(res.city)}</p>
                     </div>
                     <div className="text-left sm:text-right">
-                      <p className="text-xs ttext-muted-foreground">{tx("Total abonado")}</p>
+                      <p className="text-xs ttext-muted-foreground">{tx("Importe de la reserva")}</p>
                       <p className="font-bold text-base text-amber-600">{fmt(res.total)}</p>
                     </div>
                   </div>
@@ -1960,12 +1814,13 @@ function ConsultReservationModal({
                     </div>
                   </div>
 
+                  <RequestDeadline reservation={res} />
                   <div className="flex items-center justify-between pt-2.5 border-t gap-2" style={{ borderColor: "var(--muted)" }}>
                     <span className="text-[11px] ttext-muted-foreground flex items-center gap-1">
-                      <span>💳</span> {res.payMethod || tx("Cobro digital liquidado")}
+                      <span aria-hidden="true">💳</span> <span>{tx(getPaymentLabel(res))}</span>
                     </span>
                     <div className="flex gap-2">
-                      {res.status === "upcoming" && (
+                      {canCancelReservation(res) && (
                         <button
                           onClick={() => {
                             if (confirm(`¿Estás seguro de cancelar la reserva ${res.id}?`)) {
@@ -2174,9 +2029,16 @@ function LoginModal({
                   onClick={() => handleDemoLogin({ name: "Carlos Méndez", email: "cmendez@gmail.com" })}
                   className="w-full py-2 px-3 text-xs rounded-xl border border-amber-300 bg-amber-50 text-amber-900 font-semibold hover:bg-amber-100 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>⚡</span>
-                  <span>{tx("Ingresar como Carlos Méndez (3 reservas listas)")}</span>
+                  <span aria-hidden="true">⚡</span>
+                  <span>{tx("Ingresar como Carlos Méndez")}</span>
                 </button>
+                <button
+                  onClick={() => handleDemoLogin({ name: "Laura Fernández", email: "lfernandez@hotmail.com" })}
+                  className="w-full mt-2 py-2 px-3 text-xs rounded-xl border border-border bg-background text-foreground font-semibold hover:bg-secondary cursor-pointer"
+                >
+                  {tx("Ingresar como Laura Fernández")}
+                </button>
+                <p className="text-xs text-muted-foreground mt-2">{tx("Cuentas de prueba sin reservas precargadas.")}</p>
               </div>
             </div>
           ) : (
@@ -2232,7 +2094,7 @@ function LoginModal({
 
 // ─── Booking modal ────────────────────────────────────────────────────────────
 
-type BookingStep = "auth" | "details" | "payment" | "invoice";
+type BookingStep = "auth" | "details" | "review" | "submitted";
 
 function BookingModal({
   hotel,
@@ -2241,7 +2103,6 @@ function BookingModal({
   user,
   onClose,
   onGuestLogin,
-  onReservationCreated,
 }: {
   hotel: Hotel;
   room: RoomOffer;
@@ -2249,7 +2110,6 @@ function BookingModal({
   user: GuestUser | null;
   onClose: () => void;
   onGuestLogin: (u: GuestUser) => void;
-  onReservationCreated?: (r: MyReservation) => void;
 }) {
   const tx = useI18n();
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
@@ -2287,6 +2147,10 @@ function BookingModal({
   const initialStep: BookingStep = user ? "details" : "auth";
   const [step, setStep] = useState<BookingStep>(initialStep);
   const [processing, setProcessing] = useState(false);
+  const [requestError, setRequestError] = useState("");
+  const [submittedReservation, setSubmittedReservation] = useState<MyReservation | null>(null);
+  const currentReservations = useGuestReservations();
+  const arrivalPolicy = useArrivalPolicy(hotel.id, params.checkIn);
 
   // Auth sub-state
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -2309,23 +2173,11 @@ function BookingModal({
     notes: "",
   });
 
-  // Card
-  const [cardHolder, setCardHolder] = useState(user?.name ?? "");
-  const [cardNum, setCardNum] = useState("");
-  const [cardExp, setCardExp] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [saveCard, setSaveCard] = useState(false);
-
-  const hotelMeta = HOTEL_COMMERCIAL_INFO[hotel.id] || HOTEL_COMMERCIAL_INFO["costa-sol"];
-  const [resId] = useState(`RES-${Math.floor(Math.random() * 90000) + 10000}`);
-  const [invoiceId] = useState(`${hotelMeta.estab}-${hotelMeta.ptoEmi}-${String(Math.floor(Math.random() * 900000) + 100000).padStart(9, "0")}`);
-  const issueDate = new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  const verifyCode = Math.random().toString(36).slice(2, 10).toUpperCase();
-  const last4 = cardNum.replace(/\s/g, "").slice(-4) || "****";
+  const [resId] = useState(() => `RES-${crypto.randomUUID().toUpperCase()}`);
 
   const STEPS: { k: BookingStep; l: string }[] = user
-    ? [{ k: "details", l: tx("1. Datos y Tarifa") }, { k: "payment", l: tx("2. Pago Seguro") }, { k: "invoice", l: tx("3. Voucher de Reserva") }]
-    : [{ k: "auth", l: tx("1. Acceso / Invitado") }, { k: "details", l: tx("2. Datos y Tarifa") }, { k: "payment", l: tx("3. Pago Seguro") }, { k: "invoice", l: tx("4. Voucher de Reserva") }];
+    ? [{ k: "details", l: tx("1. Datos y Tarifa") }, { k: "review", l: tx("2. Revisar solicitud") }, { k: "submitted", l: tx("3. Solicitud guardada") }]
+    : [{ k: "auth", l: tx("1. Acceso / Invitado") }, { k: "details", l: tx("2. Datos y Tarifa") }, { k: "review", l: tx("3. Revisar solicitud") }, { k: "submitted", l: tx("4. Solicitud guardada") }];
 
   const stepIndex = STEPS.findIndex(s => s.k === step);
 
@@ -2336,29 +2188,17 @@ function BookingModal({
     const u: GuestUser = { name: authMode === "register" ? authName : authEmail.split("@")[0], email: authEmail };
     onGuestLogin(u);
     setForm(f => ({ ...f, name: u.name, email: u.email }));
-    setCardHolder(u.name);
     setAuthError("");
     setStep("details");
   }
 
-  function handlePay(e: React.FormEvent) {
-    e.preventDefault();
-    if (!cardNum || !cardExp || !cardCvv || !cardHolder) return;
-    if (getRoomAvailability(hotel.id, room) <= 0) return;
+  function handleSubmitRequest(event: React.FormEvent) {
+    event.preventDefault();
+    if (processing) return;
     setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
-      setStep("invoice");
-      playNewBookingSound();
-      const guestFullName = form.name || cardHolder || "Huésped Invitado";
-      addAuditLog({
-        usuario: guestFullName,
-        rol: user ? "Huésped Registrado" : "Checkout Invitado",
-        modulo: "Motor de Reservas Web",
-        accion: "RESERVA_WEB_CONFIRMADA",
-        detalle: `Reserva ${resId} en ${hotel.name} (${room.type}, ${nights} noches) · Plan: ${ratePlan} · Total USD $${total.toFixed(2)} (IVA ${ivaPct}%)`,
-      });
-      const newRes: MyReservation = {
+    setRequestError("");
+    try {
+      const newRes = reservationWorkflow.submitPortal({
         id: resId,
         hotel: hotel.name,
         hotelId: hotel.id,
@@ -2366,20 +2206,41 @@ function BookingModal({
         room: room.type,
         checkIn: params.checkIn,
         checkOut: params.checkOut,
-        nights,
         total,
-        status: "upcoming",
         image: room.image || hotel.image,
-        guestName: guestFullName,
-        guestEmail: form.email || user?.email || "invitado@alojamanta.ec",
-        guestPhone: form.phone || "+593 98 421 8890",
-        payMethod: "Tarjeta Digital (PayPhone / Kushki)",
-      };
-      consumeRoomAvailability(hotel.id, room);
-      onReservationCreated?.(newRes);
-      window.dispatchEvent(new CustomEvent("alojamanta-new-booking", { detail: newRes }));
-    }, 1500);
+        guestName: form.name.trim(),
+        guestEmail: form.email.trim(),
+        guestPhone: form.phone,
+        guestDocumentType: docType,
+        guestDocument: form.dni,
+        guestCity: form.city,
+        guestCountry: form.country,
+        guestAddress: form.address,
+        adults: params.adults,
+        children: params.children,
+        notes: form.notes,
+      }, room);
+      setSubmittedReservation(newRes);
+      setStep("submitted");
+      addAuditLog({
+        usuario: newRes.guestName,
+        rol: user ? "Huésped Registrado" : "Checkout Invitado",
+        modulo: "Motor de Reservas Web",
+        accion: "SOLICITUD_WEB_CREADA",
+        detalle: `Solicitud ${newRes.id} en ${hotel.name}; pendiente de aceptación y pago`,
+      });
+    } catch (error) {
+      setRequestError(error instanceof Error ? error.message : "No se pudo guardar la solicitud.");
+    } finally {
+      setProcessing(false);
+    }
   }
+
+  if (!arrivalPolicy.allowed && step !== "submitted") return (
+    <ReservationDialog title={tx("Atención directa del hotel")} onClose={onClose}>
+      <div className="p-5 space-y-3 text-foreground"><p>{tx(arrivalPolicy.message)}</p><p>{hotel.name}</p></div>
+    </ReservationDialog>
+  );
 
   // ── Shared backdrop
   return (
@@ -2404,7 +2265,7 @@ function BookingModal({
         </div>
 
         {/* Room strip (not on invoice) */}
-        {step !== "invoice" && (
+        {step !== "submitted" && (
           <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: "var(--background)", borderBottom: "1px solid #e2e8f0" }}>
             <img src={room.image} alt={tx(room.type)} className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -2461,18 +2322,18 @@ function BookingModal({
                 )}
                 <div>
                   <label className="block text-xs ttext-muted-foreground mb-1">Email</label>
-                  <input type="email" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="maria@email.com" />
+                  <input type="email" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#FFFFFF" }} value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="maria@email.com" />
                 </div>
                 <div>
                   <label className="block text-xs ttext-muted-foreground mb-1">{tx("Contraseña")}</label>
-                  <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={authPass} onChange={e => setAuthPass(e.target.value)} placeholder="••••••••" />
+                  <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none" style={{ borderColor: "var(--border)", color: "#FFFFFF" }} value={authPass} onChange={e => setAuthPass(e.target.value)} placeholder="••••••••" />
                 </div>
                 {authError && <p className="text-xs px-3 py-2 rounded-lg" style={{ background: "#fee2e2", color: "#ef4444" }}>{authError}</p>}
                 <button type="submit" className="w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all" style={{ background: "#f59e0b", color: "#0c1220" }}>
                   {authMode === "login" ? tx("Entrar y continuar →") : tx("Crear cuenta y continuar →")}
                 </button>
               </form>
-              <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setCardHolder(u.name); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 hover:bg-background transition-colors" style={{ borderColor: "var(--border)", color: "#475569" }}>
+              <button onClick={() => { const u = { name: "Usuario Google", email: "usuario@gmail.com" }; onGuestLogin(u); setForm(f => ({ ...f, ...u })); setStep("details"); }} className="w-full py-2.5 rounded-xl border text-sm font-medium flex items-center justify-center gap-2 hover:bg-background transition-colors" style={{ borderColor: "var(--border)", color: "#475569" }}>
                 <span>{tx("Continuar con Google")}</span>
               </button>
             </div>
@@ -2487,7 +2348,7 @@ function BookingModal({
                   <label className="block text-xs font-semibold ttext-muted-foreground mb-1">{tx("Nombre completo del titular *")}</label>
                   <input
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
-                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#FFFFFF" }}
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     placeholder={tx("Ej: Carlos Mendoza")}
@@ -2499,7 +2360,7 @@ function BookingModal({
                   <input
                     type="email"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:border-amber-500"
-                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#FFFFFF" }}
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
                     placeholder="cliente@correo.ec"
@@ -2583,7 +2444,7 @@ function BookingModal({
                   <input
                     type="tel"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono"
-                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#3 98 4" }}
                     value={form.phone}
                     onChange={e => setForm({ ...form, phone: e.target.value })}
                     placeholder="+593 98 421 8890"
@@ -2595,7 +2456,7 @@ function BookingModal({
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#FFFFFF" }}
                     value={form.country}
                     onChange={e => setForm({ ...form, country: e.target.value })}
                     placeholder="Ecuador"
@@ -2606,7 +2467,7 @@ function BookingModal({
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#FFFFFF" }}
                     value={form.city}
                     onChange={e => setForm({ ...form, city: e.target.value })}
                     placeholder="Manta, Portoviejo, Quito..."
@@ -2617,7 +2478,7 @@ function BookingModal({
                   <input
                     type="text"
                     className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
-                    style={{ borderColor: "var(--border)", color: "#1e293b" }}
+                    style={{ borderColor: "var(--border)", color: "#FFFFFF" }}
                     value={form.address}
                     onChange={e => setForm({ ...form, address: e.target.value })}
                     placeholder="Av. 4 de Noviembre y Calle 114, Manta"
@@ -2700,7 +2561,7 @@ function BookingModal({
 
               <div>
                 <label className="block text-xs ttext-muted-foreground mb-1">{tx("Observaciones o hora estimada de arribo")}</label>
-                <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "var(--border)", color: "#1e293b" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ej: Llegada en vuelo de las 15:30, preferencia piso alto..." />
+                <textarea className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none" style={{ borderColor: "var(--border)", color: "#FFFFFF" }} rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ej: Llegada en vuelo de las 15:30, preferencia piso alto..." />
               </div>
 
               {/* Desglose estilo Booking.com */}
@@ -2714,303 +2575,41 @@ function BookingModal({
               />
               <div className="flex gap-2">
                 {!user && <button onClick={() => setStep("auth")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("← Atrás")}</button>}
-                <button onClick={() => setStep("payment")} className="flex-1 py-3 rounded-xl font-bold text-sm hover:opacity-90" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                  {tx("Continuar al pago seguro →")}
+                <button onClick={() => setStep("review")} className="flex-1 py-3 rounded-xl font-bold text-sm hover:opacity-90" style={{ background: "#f59e0b", color: "#0c1220" }}>
+                  {tx("Revisar solicitud →")}
                 </button>
               </div>
             </div>
           )}
 
-          {/* ── STEP: PAYMENT ── */}
-          {step === "payment" && (
-            <form onSubmit={handlePay} className="space-y-4">
-              <h3 className="font-bold text-foreground">{tx("Pago con tarjeta")}</h3>
-              {/* Visual card */}
-              <div className="relative rounded-2xl p-5 overflow-hidden" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", minHeight: 140 }}>
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #f59e0b 0%, transparent 60%)" }} />
-                <div className="flex items-start justify-between mb-6">
-                  <div className="space-y-0.5">
-                    <div className="w-8 h-5 rounded-sm opacity-80" style={{ background: "linear-gradient(135deg, #fcd34d, #f59e0b)" }} />
-                  </div>
-                  <span className="text-white/40 text-xs font-bold uppercase tracking-widest">VISA / MASTERCARD</span>
-                </div>
-                <p className="font-mono text-white text-lg tracking-widest mb-3">
-                  {cardNum ? cardNum.padEnd(19, " ").replace(/ /g, " ") : "•••• •••• •••• ••••"}
-                </p>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-white/40 text-[9px] uppercase tracking-widest">{tx("Titular")}</p>
-                    <p className="text-white text-sm font-medium truncate max-w-[180px]">{cardHolder || tx("NOMBRE APELLIDOS")}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-white/40 text-[9px] uppercase tracking-widest">{tx("Vence")}</p>
-                    <p className="text-white text-sm font-mono">{cardExp || "MM/AA"}</p>
-                  </div>
-                </div>
+          {step === "review" && (
+            <form onSubmit={handleSubmitRequest} className="space-y-4">
+              <h3 className="font-bold text-foreground">{tx("Revisar solicitud")}</h3>
+              <p className="text-sm text-foreground">{hotel.name} · {tx(room.type)}</p>
+              <p className="text-sm text-foreground">{params.checkIn} → {params.checkOut} · {nights} {tx("noches")}</p>
+              <p className="text-sm text-foreground">{form.name} · {form.email}</p>
+              <div className="rounded-xl border p-4 space-y-2 text-sm text-foreground">
+                <p className="font-bold">{tx("Importe de la reserva")}: {fmt(total)}</p>
+                <p>{tx("El hotel debe aceptar tu solicitud. No se cobra al enviarla.")}</p>
+                <p>{tx("Pago completo en recepción, en efectivo o tarjeta. El pago con tarjeta desde el portal todavía no está disponible.")}</p>
+                <p>{tx(arrivalPolicy.message)}</p>
+                <p>{tx("Hora de llegada del hotel")}: {arrivalPolicy.arrivalTime} · {tx("hora de Manta")}</p>
+                <p className="text-xs">{tx("Demostración local: el vencimiento se actualiza al consultar o reabrir la aplicación. No se envían avisos reales.")}</p>
               </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs ttext-muted-foreground mb-1">{tx("Titular de la tarjeta")}</label>
-                  <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none uppercase" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={cardHolder} onChange={e => setCardHolder(e.target.value.toUpperCase())} placeholder={tx("NOMBRE APELLIDOS")} required />
-                </div>
-                <div>
-                  <label className="block text-xs ttext-muted-foreground mb-1">{tx("Número de tarjeta")}</label>
-                  <div className="relative">
-                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono pr-16" style={{ borderColor: "var(--border)", color: "#1e293b" }}
-                      value={cardNum}
-                      onChange={e => {
-                        const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
-                        setCardNum(raw.replace(/(\d{4})/g, "$1 ").trim());
-                      }}
-                      placeholder="4242 4242 4242 4242" maxLength={19} required />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                      <div className="w-5 h-3 rounded-sm opacity-70" style={{ background: "#ef4444" }} />
-                      <div className="w-5 h-3 rounded-sm opacity-70 -ml-2" style={{ background: "#f59e0b" }} />
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs ttext-muted-foreground mb-1">{tx("Fecha de expiración")}</label>
-                    <input className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "var(--border)", color: "#1e293b" }}
-                      value={cardExp}
-                      onChange={e => {
-                        let v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                        if (v.length >= 2) v = v.slice(0, 2) + "/" + v.slice(2);
-                        setCardExp(v);
-                      }}
-                      placeholder="MM/AA" maxLength={5} required />
-                  </div>
-                  <div>
-                    <label className="block text-xs ttext-muted-foreground mb-1">CVV</label>
-                    <input type="password" className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none font-mono" style={{ borderColor: "var(--border)", color: "#1e293b" }} value={cardCvv} onChange={e => setCardCvv(e.target.value.slice(0, 3))} placeholder="•••" maxLength={3} required />
-                  </div>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" className="accent-amber-400 rounded" checked={saveCard} onChange={e => setSaveCard(e.target.checked)} />
-                  <span className="text-xs ttext-muted-foreground">{tx("Guardar tarjeta para futuras reservas")}</span>
-                </label>
-              </div>
-
-              <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--background)", border: "1px solid #e2e8f0" }}>
-                <div className="flex justify-between text-sm ttext-muted-foreground"><span>{tx("Subtotal Hospedaje")} ({nights}n)</span><span>{fmt(roomBase)}</span></div>
-                {extrasTotal > 0 && (
-                  <div className="flex justify-between text-sm ttext-muted-foreground"><span>{tx("Extras de Alojamiento")}</span><span>{fmt(extrasTotal)}</span></div>
-                )}
-                <div className="flex justify-between text-sm ttext-muted-foreground">
-                  <span>{ivaPct}% IVA {ivaPct === 8 ? tx("(Decreto Feriado Turístico)") : tx("(Tarifa Ordinaria)")}</span>
-                  <span className={ivaPct === 8 ? "text-emerald-700 font-bold" : ""}>{fmt(iva)}</span>
-                </div>
-                {hasService && (
-                  <div className="flex justify-between text-sm text-emerald-700 font-medium bg-emerald-50/60 px-2 py-0.5 rounded">
-                    <span>{tx("10% Servicio Turístico (Art. 41 Ley Turismo)")}</span>
-                    <span className="font-mono font-bold">{fmt(servicio)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold text-base pt-1.5 border-t" style={{ borderColor: "var(--border)", color: "#1e293b" }}><span>{tx("Total a cargar")}</span><span style={{ color: "#f59e0b" }}>{fmt(total)}</span></div>
-              </div>
-
-              {/* LOPDP Consent */}
-              <label className="flex items-start gap-2 cursor-pointer select-none text-left p-2.5 rounded-lg border bg-background/60 border-border">
-                <input type="checkbox" required defaultChecked className="mt-0.5 accent-amber-500 rounded" />
-                <span className="text-[11px] ttext-muted-foreground leading-tight">
-                  {tx("Acepto los Términos y la Política de Tratamiento de Datos Personales conforme a la")} <strong>{tx("Ley Orgánica de Protección de Datos Personales (LOPDP Ecuador)")}</strong>. {tx("Mis datos personales se tratarán exclusivamente para la reserva y gestión de mi estancia.")}
-                </span>
-              </label>
-
-              <div className="flex items-center gap-1.5 text-xs ttext-muted-foreground justify-center">
-                <span>🔒</span> {tx("Pago tokenizado seguro (PCI-DSS compliant) · Cifrado SSL 256-bit · Sin almacenar CVV")}
-              </div>
-
+              {requestError && <p role="alert" className="text-sm text-red-600">{tx(requestError)}</p>}
               <div className="flex gap-2">
-                <button type="button" onClick={() => setStep("details")} className="px-4 py-3 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("← Atrás")}</button>
-                <button type="submit" disabled={processing} className="flex-1 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-70" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                  {processing ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="60" strokeDashoffset="20" /></svg>
-                      {tx("Procesando pago...")}
-                    </span>
-                  ) : `${tx("Pagar")} ${fmt(total)} →`}
+                <button type="button" onClick={() => setStep("details")} className="px-4 py-3 rounded-xl border text-sm text-foreground">{tx("← Atrás")}</button>
+                <button type="submit" disabled={processing || !arrivalPolicy.allowed} className="flex-1 py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 disabled:opacity-60">
+                  {tx(processing ? "Guardando solicitud..." : "Enviar solicitud al hotel")}
                 </button>
               </div>
             </form>
           )}
-
-          {/* ── STEP: INVOICE ── */}
-          {step === "invoice" && (
-            <div className="space-y-0">
-              {/* Success banner */}
-              <div className="text-center py-4">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl mx-auto mb-2" style={{ background: "#d1fae5" }}>✓</div>
-                <h3 className="font-bold text-foreground text-base">{tx("¡Pago procesado y reserva confirmada!")}</h3>
-                <p className="text-xs ttext-muted-foreground mt-0.5">{tx("Voucher Oficial de Reserva Garantizada y liquidación de pasarela")}</p>
-              </div>
-
-              {/* Electronic payment receipt & Voucher */}
-              <div className="rounded-2xl border overflow-hidden shadow-lg" style={{ borderColor: "var(--border)" }}>
-                {/* Header: Payment gateway receipt */}
-                <div className="px-5 py-4 flex items-start justify-between" style={{ background: "#0c1220" }}>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-lg text-amber-400" style={{ fontFamily: "DM Serif Display, serif" }}>{hotelMeta.nombreComercial}</p>
-                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded border border-emerald-500/30">{tx("RESERVA GARANTIZADA")}</span>
-                    </div>
-                    <p className="text-xs text-slate-300 font-medium">{hotelMeta.razonSocial}</p>
-                    <p className="text-[10px] ttext-muted-foreground font-mono">RUC: {hotelMeta.ruc} · {hotelMeta.city}</p>
-                    <p className="text-[10px] ttext-muted-foreground">Pasarela: PayPhone / Tarjeta · Aut: AUTH-PP-{resId.replace(/\D/g, "").slice(-6) || "948210"}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{tx("VOUCHER DIGITAL")}</span>
-                    <p className="font-bold mt-1 text-slate-100 font-mono text-xs">{invoiceId}</p>
-                    <p className="mono text-[10px] ttext-muted-foreground">{issueDate}</p>
-                  </div>
-                </div>
-
-                {/* Banner de Comprobante */}
-                <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-900 leading-tight">
-                  <p className="font-bold">Voucher de reserva - {hotel.name}:</p>
-                  <p className="text-amber-800 text-[10px] mt-0.5">
-                    {tx("Este documento confirma tu reserva garantizada y pago en línea. Presenta tu código de reserva al llegar al hotel para validar tu estancia.")}
-                  </p>
-                </div>
-
-                {/* Client + hotel */}
-                <div className="grid grid-cols-2 gap-px" style={{ background: "var(--border)" }}>
-                  <div className="px-4 py-3 bg-card">
-                    <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Huésped titular")}</p>
-                    <p className="font-semibold text-foreground text-sm">{form.name || user?.name || "Huésped Invitado"}</p>
-                    {docType === "RUC" && form.razonSocial && (
-                      <p className="text-xs ttext-muted-foreground font-medium">🏢 {form.razonSocial}</p>
-                    )}
-                    <p className="text-xs ttext-muted-foreground">{form.email || user?.email || "invitado@alojamanta.ec"}</p>
-                    {form.dni && (
-                      <p className="mono text-xs ttext-muted-foreground">
-                        {docType === "CEDULA" ? tx("Cédula: ") : docType === "RUC" ? "RUC: " : tx("Pasaporte: ")}
-                        {form.dni}
-                      </p>
-                    )}
-                    {form.phone && <p className="text-xs ttext-muted-foreground">Tel: {form.phone}</p>}
-                    {(form.city || form.country) && (
-                      <p className="text-[11px] ttext-muted-foreground truncate">
-                        📍 {[form.address, form.city, form.country].filter(Boolean).join(", ")}
-                      </p>
-                    )}
-                  </div>
-                  <div className="px-4 py-3 bg-card">
-                    <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground mb-1">{tx("Hotel prestador")}</p>
-                    <p className="font-semibold text-foreground text-sm">{hotel.name}</p>
-                    <p className="text-xs ttext-muted-foreground">{hotel.address}</p>
-                    <p className="text-xs ttext-muted-foreground">{tx(hotel.city)}</p>
-                  </div>
-                </div>
-
-                {/* Reservation details */}
-                <div className="px-4 py-3 bg-card" style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground mb-2">{tx("Detalle de la estancia reservada")}</p>
-                  <div className="grid grid-cols-4 gap-3 text-xs">
-                    {[
-                      { l: tx("Nº Reserva"), v: resId },
-                      { l: tx("Fecha Entrada"), v: `${fmtDateShort(params.checkIn)} · 14:00h` },
-                      { l: tx("Fecha Salida"), v: `${fmtDateShort(params.checkOut)} · 12:00h` },
-                      { l: tx("Noches"), v: String(nights) },
-                    ].map(item => (
-                      <div key={item.l}>
-                        <p className="ttext-muted-foreground">{item.l}</p>
-                        <p className="font-semibold text-foreground font-mono">{item.v}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Line items con desglose transparente */}
-                <table className="w-full text-sm" style={{ borderTop: "1px solid #e2e8f0" }}>
-                  <thead style={{ background: "var(--background)" }}>
-                    <tr>
-                      {[tx("Concepto"), tx("Cantidad"), tx("Precio/u."), "Total"].map(h => (
-                        <th key={h} className="text-left px-4 py-2 text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                      <td className="px-4 py-3">
-                        <p className="font-semibold text-foreground">{tx(room.type)}</p>
-                        <p className="text-xs ttext-muted-foreground">{hotel.name} · {tx(room.beds)}</p>
-                      </td>
-                      <td className="px-4 py-3 ttext-muted-foreground">{nights} noche{nights > 1 ? "s" : ""}</td>
-                      <td className="px-4 py-3 font-mono ttext-muted-foreground">{fmt(effectiveNightlyRate)}</td>
-                      <td className="px-4 py-3 font-mono font-semibold text-foreground">{fmt(roomBase)}</td>
-                    </tr>
-                    {extrasTotal > 0 && (
-                      <tr style={{ borderTop: "1px solid #e2e8f0" }}>
-                        <td className="px-4 py-2 text-xs ttext-muted-foreground" colSpan={3}>{tx("Servicios adicionales y extras seleccionados")}</td>
-                        <td className="px-4 py-2 font-mono text-xs font-semibold text-foreground">{fmt(extrasTotal)}</td>
-                      </tr>
-                    )}
-                  </tbody>
-                  <tfoot>
-                    <tr style={{ borderTop: "1px solid #e2e8f0", background: "var(--background)" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right ttext-muted-foreground">{tx("Subtotal Neto (Hospedaje y Extras)")}</td>
-                      <td className="px-4 py-2 font-mono text-sm text-foreground">{fmt(base)}</td>
-                    </tr>
-                    <tr style={{ background: "var(--background)" }}>
-                      <td colSpan={3} className="px-4 py-2 text-xs text-right ttext-muted-foreground">
-                        {ivaPct}% IVA {ivaPct === 8 ? "(Decreto Feriado Turístico)" : "(Tarifa Ordinaria)"}
-                      </td>
-                      <td className="px-4 py-2 font-mono text-sm text-foreground">{fmt(iva)}</td>
-                    </tr>
-                    {hasService && (
-                      <tr style={{ background: "var(--background)" }}>
-                        <td colSpan={3} className="px-4 py-2 text-xs text-right text-emerald-700 font-medium">{tx("10% Servicio Turístico (Ley Turismo Art. 41)")}</td>
-                        <td className="px-4 py-2 font-mono text-sm text-emerald-700 font-bold">{fmt(servicio)}</td>
-                      </tr>
-                    )}
-                    <tr style={{ borderTop: "2px solid #e2e8f0" }}>
-                      <td colSpan={3} className="px-4 py-3 font-bold text-right text-foreground">{tx("TOTAL LIQUIDADO")}</td>
-                      <td className="px-4 py-3 font-bold font-mono text-lg" style={{ color: "#f59e0b" }}>{fmt(total)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-
-                {/* Payment confirmation */}
-                <div className="px-4 py-3 flex items-center gap-3" style={{ background: "#d1fae5", borderTop: "1px solid #a7f3d0" }}>
-                  <span className="text-green-600 text-lg">✓</span>
-                  <div>
-                    <p className="text-xs font-bold text-green-700">{tx("Pago procesado correctamente")}</p>
-                    <p className="text-xs text-green-600">Tarjeta **** **** **** {last4} · {fmt(total)} · {issueDate}</p>
-                  </div>
-                </div>
-
-                {/* Verification code & Booking Reference */}
-                <div className="px-4 py-3 flex items-center justify-between" style={{ background: "var(--background)", borderTop: "1px solid #e2e8f0" }}>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider ttext-muted-foreground">{tx("Código de Confirmación de Reserva")}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="font-mono font-bold text-foreground tracking-wider text-sm">{resId}</p>
-                      <span className="text-slate-300">|</span>
-                      <span className="font-mono font-bold text-amber-600 text-xs">PIN: {verifyCode}</span>
-                    </div>
-                    <p className="text-[10px] ttext-muted-foreground mt-0.5">{tx("Menciona este código o tu nombre al presentarte en el establecimiento.")}</p>
-                  </div>
-                  <div className="px-3 py-2 rounded-lg border border-border bg-card text-center shadow-xs">
-                    <span className="text-[9px] font-bold uppercase tracking-wider ttext-muted-foreground block">{tx("Estado")}</span>
-                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 justify-center">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                      {tx("Confirmada")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-3">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}>{tx("Cerrar")}</button>
-                <button className="flex-1 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm flex items-center justify-center gap-1.5" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                  <span>⬇</span>
-                  <span>{tx("Descargar Comprobante & Voucher PDF")}</span>
-                </button>
-              </div>
-              <p className="text-center text-xs ttext-muted-foreground pt-1">{tx("Comprobante enviado a")} <strong>{form.email || user?.email}</strong></p>
+          {step === "submitted" && submittedReservation && (
+            <div className="space-y-4">
+              <h3 className="font-bold text-foreground">{tx("Solicitud guardada")}</h3>
+              <ReservationSummary reservation={currentReservations.find(item => item.id === submittedReservation.id) ?? submittedReservation} />
+              <button onClick={onClose} className="w-full py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950">{tx("Cerrar")}</button>
             </div>
           )}
 
@@ -3072,7 +2671,7 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
                     : `${getActiveIvaPercent(hotel.id)}% IVA (${tx("Hostal Exento 10% Serv.")})`}
                 </span>
                 <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                  ✓ {tx("Reserva Garantizada")}
+                  ✓ {tx("Sujeta a aceptación del hotel")}
                 </span>
               </div>
             </div>
@@ -3090,6 +2689,7 @@ function HotelCard({ hotel, nights, onSelect }: { hotel: Hotel; nights: number; 
 
 function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: SearchParams; onBack: () => void; onBook: (r: RoomOffer) => void }) {
   const tx = useI18n();
+  const arrivalPolicy = useArrivalPolicy(hotel.id, params.checkIn);
   const nights = Math.max(nightsBetween(params.checkIn, params.checkOut), 1);
   const gallery = [hotel.image, ...hotel.rooms.map(room => room.image)].slice(0, 4);
   const score10 = Math.min(9.9, Math.max(8.2, Number((hotel.rating * 1.98).toFixed(1))));
@@ -3207,7 +2807,7 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
           <span>{nights} {nights > 1 ? tx("noches") : tx("noche")}</span>
           <span>{params.adults + params.children} {params.adults + params.children > 1 ? tx("huéspedes") : tx("huésped")}</span>
         </div>
-        <p className="text-xs text-amber-700">{tx("Confirmación inmediata · Cancelación flexible según tarifa")}</p>
+        <p className="text-xs text-amber-700">{tx("Aceptación manual del hotel · Pago pendiente hasta registrar el cobro")}</p>
       </div>
       <h2 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Tipos de Habitación y Cupos para Venta Web")}</h2>
       <div className="space-y-4">
@@ -3247,13 +2847,17 @@ function HotelDetail({ hotel, params, onBack, onBook }: { hotel: Hotel; params: 
                   />
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${getRoomAvailability(hotel.id, room) <= 2 ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
-                        {getRoomAvailability(hotel.id, room) <= 2 ? tx("Últimas {n} habitaciones disponibles", { n: getRoomAvailability(hotel.id, room) }) : tx("{n} habitaciones disponibles", { n: getRoomAvailability(hotel.id, room) })}
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${getRoomAvailability(hotel.id, room, params) <= 2 ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+                        {getRoomAvailability(hotel.id, room, params) <= 2 ? tx("Últimas {n} habitaciones disponibles", { n: getRoomAvailability(hotel.id, room, params) }) : tx("{n} habitaciones disponibles", { n: getRoomAvailability(hotel.id, room, params) })}
                       </span>
                     </div>
-                    <button disabled={getRoomAvailability(hotel.id, room) <= 0} onClick={() => onBook(room)} className="px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: "#f59e0b", color: "#0c1220" }}>
-                      {getRoomAvailability(hotel.id, room) <= 0 ? tx("Agotado") : tx("Reservar Cupo →")}
+                    <button aria-label={tx("Solicitar habitación: {room}", { room: room.type })} disabled={!arrivalPolicy.allowed || getRoomAvailability(hotel.id, room, params) <= 0} onClick={() => onBook(room)} className="px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed" style={{ background: "#f59e0b", color: "#0c1220" }}>
+                      {!arrivalPolicy.allowed ? tx("Atención directa del hotel") : getRoomAvailability(hotel.id, room, params) <= 0 ? tx("Agotado") : tx("Reservar Cupo →")}
                     </button>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card text-foreground p-3 text-sm space-y-1">
+                    {arrivalPolicy.arrivalTime && <p>{tx("Hora de llegada del hotel")}: {arrivalPolicy.arrivalTime} · {tx("hora de Manta")}</p>}
+                    <p>{tx(arrivalPolicy.message)}</p>
                   </div>
                 </div>
               </div>
@@ -3276,7 +2880,7 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
   const [sortBy, setSortBy] = useState<"price" | "rating">("rating");
   const [showResultsMap, setShowResultsMap] = useState(false);
   const nights = nightsBetween(params.checkIn, params.checkOut);
-  let results = HOTELS.filter(h => {
+  let results = getPublicHotels().filter(h => {
     const d = !params.destination || h.city.toLowerCase().includes(params.destination.toLowerCase()) || (h.parish && h.parish.toLowerCase().includes(params.destination.toLowerCase()));
     const s = stars.length === 0 || stars.includes(h.stars);
     const p = h.priceFrom <= maxPrice;
@@ -3321,7 +2925,7 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
                     {s === 5 ? tx("5★ Lujo") : s === 4 ? tx("4★ Primera") : s === 3 ? tx("3★ Superior") : s === 2 ? tx("2★ Turista") : tx("1★ Económico")}
                   </span>
                 </div>
-                <span className="text-[10px] ttext-muted-foreground font-mono">({HOTELS.filter(h => h.stars === s).length})</span>
+                <span className="text-[10px] ttext-muted-foreground font-mono">({getPublicHotels().filter(h => h.stars === s).length})</span>
               </label>
             ))}
           </div>
@@ -3330,10 +2934,10 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
             <h4 className="font-bold text-foreground text-sm mb-2">{tx("Clasificación")}</h4>
             <div className="space-y-1">
               {[
-                { id: "all", label: tx("Todos los tipos"), count: HOTELS.length },
-                { id: "Hotel", label: "Hotel", count: HOTELS.filter(h => h.classification === "Hotel").length },
-                { id: "Hostal", label: "Hostal", count: HOTELS.filter(h => h.classification === "Hostal").length },
-                { id: "Hostería", label: "Hostería", count: HOTELS.filter(h => h.classification === "Hostería").length },
+                { id: "all", label: tx("Todos los tipos"), count: getPublicHotels().length },
+                { id: "Hotel", label: "Hotel", count: getPublicHotels().filter(h => h.classification === "Hotel").length },
+                { id: "Hostal", label: "Hostal", count: getPublicHotels().filter(h => h.classification === "Hostal").length },
+                { id: "Hostería", label: "Hostería", count: getPublicHotels().filter(h => h.classification === "Hostería").length },
               ].map(item => (
                 <button
                   key={item.id}
@@ -3357,8 +2961,8 @@ function ResultsView({ params, onChange, onSearch, onSelect }: { params: SearchP
               className="w-full text-xs rounded-lg border p-2 bg-background border-border text-foreground focus:outline-none focus:ring-1 focus:ring-amber-500"
             >
               <option value="all">{tx("Todas las parroquias (116)")}</option>
-              {Array.from(new Set(HOTELS.map(h => h.parish).filter(Boolean))).sort().map(p => (
-                <option key={p} value={p}>{p} ({HOTELS.filter(h => h.parish === p).length})</option>
+              {Array.from(new Set(getPublicHotels().map(h => h.parish).filter(Boolean))).sort().map(p => (
+                <option key={p} value={p}>{p} ({getPublicHotels().filter(h => h.parish === p).length})</option>
               ))}
             </select>
           </div>
@@ -3428,8 +3032,8 @@ function HomePage({
   params,
   onChange,
   onSearch,
-  theme,
-  onToggleTheme,
+  theme: _theme,
+  onToggleTheme: _onToggleTheme,
   onOpenConsult,
   onOpenAbout,
   onOpenLegal,
@@ -3463,7 +3067,7 @@ function HomePage({
       </div>
       <div className="border-b" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-          {[tx("Pago digital seguro"), tx("Confirmación de reserva inmediata"), tx("Cancelación flexible"), tx("Tarifa directa sin comisiones ocultas"), tx("Atención local en Manta")].map(text => (
+          {[tx("Pago en recepción"), tx("Aceptación manual del hotel"), tx("Solicitud sin cobro"), tx("Tarifa directa sin comisiones ocultas"), tx("Atención local en Manta")].map(text => (
             <div key={text} className="flex items-center gap-1.5 text-xs font-medium ttext-muted-foreground shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
               <span>{text}</span>
@@ -3487,7 +3091,7 @@ function HomePage({
               <span>{tx("Ver en Mapa")}</span>
             </button>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-foreground">
-              {tx("116 Alojamientos Catastrados")}
+              {tx("116 Alojamientos")}
             </span>
           </div>
         </div>
@@ -3513,7 +3117,7 @@ function HomePage({
         </div>
         <h2 className="text-xl font-bold text-foreground mb-5" style={{ fontFamily: "DM Serif Display, serif" }}>{tx("Alojamientos Destacados de Manta")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-          {HOTELS.filter(h => h.rating >= 4.4).slice(0, 6).map(h => (
+          {getPublicHotels().filter(h => h.rating >= 4.4).slice(0, 6).map(h => (
             <button key={h.id} onClick={() => { onChange({ ...params, destination: h.city }); onSearch(); }} className="rounded-2xl overflow-hidden border bg-card text-left hover:shadow-lg group transition-all cursor-pointer" style={{ borderColor: "var(--border)" }}>
               <div style={{ height: 160 }} className="overflow-hidden"><img src={h.image} alt={h.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" /></div>
               <div className="p-3">
@@ -3529,7 +3133,7 @@ function HomePage({
           {[
             [tx("Tarifa directa"), tx("Reserva directamente con el establecimiento sin recargos adicionales de intermediarios internacionales.")],
             [tx("Alojamientos verificados"), tx("Establecimientos registrados y validados en el cantón Manta.")],
-            [tx("Confirmación inmediata"), tx("Comprobante digital emitido al instante con código de reserva para validar a tu llegada.")]
+            [tx("Aceptación manual del hotel"), tx("Consulta el estado de tu solicitud con su código. La aceptación no acredita el pago.")]
           ].map(([title, desc]) => (
             <div key={title} className="rounded-2xl p-5 border bg-card" style={{ borderColor: "var(--border)" }}>
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xs mb-3">✓</div>
@@ -3539,56 +3143,56 @@ function HomePage({
           ))}
         </div>
       </div>
-      <footer className="border-t mt-10" style={{ background: "var(--foreground)", borderColor: "#1e293b" }}>
+      <footer className="portal-footer border-t mt-10">
         <div className="max-w-5xl mx-auto px-4 py-10 flex flex-wrap gap-8 justify-between">
           <div className="max-w-xs space-y-2">
-            <p className="font-bold text-white text-xl" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
-            <p className="text-xs ttext-muted-foreground leading-relaxed">{tx("Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.")}</p>
+            <p className="font-bold footer-title text-xl" style={{ fontFamily: "DM Serif Display, serif" }}>AlojaManta</p>
+            <p className="text-xs footer-muted leading-relaxed">{tx("Plataforma oficial de reservas directas y comercialización para el cantón Manta, Manabí. Sin comisiones abusivas ni sobreprecios OTA.")}</p>
             <div className="pt-1">
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                {tx("116 Alojamientos Catastrados")}
+                {tx("116 Alojamientos")}
               </span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-10 text-xs ttext-muted-foreground">
+          <div className="flex flex-wrap gap-10 text-xs footer-muted">
             <div className="space-y-2">
-              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">{tx("Sectores y Playas")}</p>
+              <p className="font-bold footer-title mb-2 uppercase tracking-wider text-[11px]">{tx("Sectores y Playas")}</p>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Barbasquillo" }); onSearch(); }}
-                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
               >
                 Barbasquillo & El Murciélago
               </button>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Tarqui" }); onSearch(); }}
-                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
               >
                 Tarqui & Los Esteros
               </button>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - Santa Marianita" }); onSearch(); }}
-                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
               >
                 Santa Marianita & San Mateo
               </button>
               <button
                 type="button"
                 onClick={() => { onChange({ ...params, destination: "Manta - San Lorenzo" }); onSearch(); }}
-                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
               >
                 San Lorenzo & Reserva Pacoche
               </button>
             </div>
             <div className="space-y-2">
-              <p className="font-bold text-slate-200 mb-2 uppercase tracking-wider text-[11px]">{tx("Ayuda & Información")}</p>
+              <p className="font-bold footer-title mb-2 uppercase tracking-wider text-[11px]">{tx("Ayuda & Información")}</p>
               {onOpenAbout && (
                 <button
                   type="button"
                   onClick={onOpenAbout}
-                  className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                  className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
                 >
                   {tx("Acerca de AlojaManta")}
                 </button>
@@ -3597,7 +3201,7 @@ function HomePage({
                 <button
                   type="button"
                   onClick={onOpenConsult}
-                  className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                  className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
                 >
                   {tx("Consultar mi reserva")}
                 </button>
@@ -3606,7 +3210,7 @@ function HomePage({
                 <button
                   type="button"
                   onClick={onOpenLegal}
-                  className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left block cursor-pointer"
+                  className="hover:text-amber-400 footer-muted transition-colors text-left block cursor-pointer"
                 >
                   {tx("Términos y Privacidad")}
                 </button>
@@ -3615,27 +3219,27 @@ function HomePage({
                 href="https://wa.me/593998765432?text=Hola%2C%20requiero%20asistencia%20en%20AlojaManta"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-emerald-400 ttext-muted-foreground transition-colors text-left flex items-center gap-1 cursor-pointer"
+                className="hover:text-emerald-400 footer-muted transition-colors text-left flex items-center gap-1 cursor-pointer"
               >
                 <span>WhatsApp: +593 99 876 5432</span>
               </a>
               <a
                 href="tel:+59352628900"
-                className="hover:text-amber-400 ttext-muted-foreground transition-colors text-left flex items-center gap-1 cursor-pointer"
+                className="hover:text-amber-400 footer-muted transition-colors text-left flex items-center gap-1 cursor-pointer"
               >
                 <span>Central: +593 5 262 8900</span>
               </a>
             </div>
           </div>
         </div>
-        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] ttext-muted-foreground" style={{ borderColor: "#1e293b" }}>
-          <span>{tx("© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta · 116 Alojamientos Catastrados")}</span>
+        <div className="border-t py-4 px-4 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] footer-muted" style={{ borderColor: "var(--footer-border)" }}>
+          <span>{tx("© 2026 AlojaManta · Red Oficial de Alojamientos del Cantón Manta · 116 Alojamientos")}</span>
           <div className="flex items-center gap-4">
             {onOpenAbout && (
               <button
                 type="button"
                 onClick={onOpenAbout}
-                className="ttext-muted-foreground hover:text-amber-400 transition-colors cursor-pointer"
+                className="footer-muted hover:text-amber-400 transition-colors cursor-pointer"
               >
                 {tx("Acerca de la Plataforma")}
               </button>
@@ -3644,7 +3248,7 @@ function HomePage({
               <button
                 type="button"
                 onClick={onOpenLegal}
-                className="ttext-muted-foreground hover:text-amber-400 transition-colors cursor-pointer"
+                className="footer-muted hover:text-amber-400 transition-colors cursor-pointer"
               >
                 {tx("Comprobantes y Contacto")}
               </button>
@@ -3661,7 +3265,7 @@ function HomePage({
           onChange({ ...params, destination: dest });
           onSearch();
         }}
-        hotels={HOTELS}
+        hotels={getPublicHotels()}
       />
     </div>
   );
@@ -3674,6 +3278,7 @@ export default function GuestPage({
   onGuestLogin,
   onLogout,
   onAdminAccess,
+  adminSessionActive = false,
   theme = "light",
   onToggleTheme,
 }: {
@@ -3681,6 +3286,7 @@ export default function GuestPage({
   onGuestLogin: (u: GuestUser) => void;
   onLogout: () => void;
   onAdminAccess?: () => void;
+  adminSessionActive?: boolean;
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
 }) {
@@ -3707,37 +3313,16 @@ export default function GuestPage({
   const [accountInitialTab, setAccountInitialTab] = useState<"hub" | "reservations" | "personal" | "billing" | "payments" | "about">("hub");
 
   // Reservas persistentes
-  const [reservations, setReservations] = useState<MyReservation[]>(() => {
-    try {
-      const saved = readGuestReservationsRaw();
-      return saved ? JSON.parse(saved) : INITIAL_DEMO_RESERVATIONS;
-    } catch {
-      return INITIAL_DEMO_RESERVATIONS;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(GUEST_RESERVATIONS_KEY, JSON.stringify(reservations));
-    } catch {
-      // Ignorar si no hay storage
-    }
-  }, [reservations]);
+  const { reservations, syncError } = useReservationSnapshot();
+  const [reservationError, setReservationError] = useState("");
 
   function handleCancelReservation(resId: string) {
-    const target = reservations.find(r => r.id === resId);
-    if (target && target.status === "upcoming") {
-      const hotel = HOTELS.find(h => h.id === target.hotelId);
-      const room = hotel?.rooms.find(r => r.type === target.room);
-      if (hotel && room) releaseRoomAvailability(hotel.id, room);
+    setReservationError("");
+    try {
+      reservationWorkflow.cancel(resId);
+    } catch (error) {
+      setReservationError(error instanceof Error ? error.message : "No se pudo cancelar la solicitud.");
     }
-    setReservations(prev =>
-      prev.map(r => (r.id === resId ? { ...r, status: "cancelled" as const } : r))
-    );
-  }
-
-  function handleReservationCreated(newRes: MyReservation) {
-    setReservations(prev => [newRes, ...prev]);
   }
 
   const logoClickCount = useRef(0);
@@ -3770,6 +3355,8 @@ export default function GuestPage({
 
   return (
     <div className="min-h-screen overflow-x-hidden w-full max-w-full" style={{ background: "var(--background)" }}>
+      {syncError && <p role="alert" className="bg-card text-destructive p-3 text-sm">{tx(syncError)}</p>}
+      {reservationError && <p role="alert" className="fixed bottom-4 left-4 right-4 z-[60] rounded-xl bg-red-100 p-4 text-sm text-red-800">{tx(reservationError)}</p>}
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b shadow-xs" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
@@ -3884,7 +3471,7 @@ export default function GuestPage({
                           <span className="text-base">💳</span>
                           <div>
                             <p className="font-semibold text-foreground">{tx("Medios de Pago")}</p>
-                            <p className="text-[10px] ttext-muted-foreground">{tx("Tarjetas, DeUna y PayPhone")}</p>
+                            <p className="text-[10px] ttext-muted-foreground">{tx("Consultar registros del hotel")}</p>
                           </div>
                         </button>
 
@@ -3900,10 +3487,15 @@ export default function GuestPage({
                         </button>
                       </div>
 
+                      {onAdminAccess && <button type="button"
+                        onClick={() => { setShowProfileMenu(false); onAdminAccess(); }}
+                        className="w-full px-4 py-3 text-left text-xs text-foreground hover:bg-secondary cursor-pointer">
+                        {tx(adminSessionActive ? "Volver al panel hotelero" : "Personal de Hotel / PMS")}
+                      </button>}
                       {/* Cerrar Sesión */}
                       <div className="p-2 bg-background">
                         <button
-                          onClick={() => { setShowProfileMenu(false); onLogout(); }}
+                          onClick={() => { setShowProfileMenu(false); setView("home"); onLogout(); }}
                           className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 transition-colors cursor-pointer"
                         >
                           <span>🚪</span>
@@ -3941,12 +3533,13 @@ export default function GuestPage({
         />
       )}
       {view === "results" && <ResultsView params={params} onChange={setParams} onSearch={handleSearch} onSelect={handleSelectHotel} />}
-      {view === "hotel" && selectedHotel && <HotelDetail hotel={selectedHotel} params={params} onBack={() => setView("results")} onBook={r => setBookingRoom(r)} />}
+      {view === "hotel" && selectedHotel && <HotelDetail hotel={getPublicHotels().find(hotel => hotel.id === selectedHotel.id) ?? selectedHotel} params={params} onBack={() => setView("results")} onBook={r => setBookingRoom(r)} />}
       {view === "account" && user && (
         <AccountView
+          key={user.email}
           user={user}
           reservations={reservations}
-          onLogout={onLogout}
+          onLogout={() => { setView("home"); onLogout(); }}
           onCancelReservation={handleCancelReservation}
           onViewVoucher={setVoucherRes}
           onBack={() => setView("home")}
@@ -3963,7 +3556,6 @@ export default function GuestPage({
           user={user}
           onClose={() => setBookingRoom(null)}
           onGuestLogin={onGuestLogin}
-          onReservationCreated={handleReservationCreated}
         />
       )}
 
@@ -3997,7 +3589,7 @@ export default function GuestPage({
 
       {/* Modal de Voucher / Comprobante de Cobro */}
       {voucherRes && (
-        <InvoiceModal res={voucherRes} onClose={() => setVoucherRes(null)} />
+        <InvoiceModal res={reservations.find(reservation => reservation.id === voucherRes.id) ?? voucherRes} onClose={() => setVoucherRes(null)} />
       )}
 
       {/* Modal Acerca de AlojaManta */}

@@ -1052,9 +1052,9 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
 export function getAuditLogs(): AuditLogEntry[] {
   try {
     const raw = localStorage.getItem("alojamanta.audit_logs");
-    if (raw) return JSON.parse(raw);
+    if (raw) return JSON.parse(raw).filter((entry: AuditLogEntry) => !INITIAL_AUDIT_LOGS.some(example => example.id === entry.id && example.timestamp === entry.timestamp && example.detail === entry.detail));
   } catch {}
-  return INITIAL_AUDIT_LOGS;
+  return [];
 }
 
 export interface AuditLogInput {
@@ -1079,7 +1079,7 @@ export function addAuditLog(entry: AuditLogInput): AuditLogEntry {
     module: entry.modulo,
     action: entry.accion,
     detail: entry.detalle,
-    ip: "186.46.120." + Math.floor(10 + Math.random() * 200),
+    ip: "Demo local",
   };
   const updated = [newEntry, ...logs].slice(0, 100);
   try {
